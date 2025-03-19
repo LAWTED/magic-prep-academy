@@ -312,7 +312,7 @@ function CarouselContent({
         }
       }
       className={cn(
-        "flex items-center h-full",
+        "flex items-start h-full",
         !disableDrag && "cursor-grab active:cursor-grabbing",
         className
       )}

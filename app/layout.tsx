@@ -20,14 +20,13 @@ export const metadata: Metadata = {
     startupImage: [
       {
         url: "/splash/launch.png",
-        media: "(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)",
+        media:
+          "(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)",
       },
     ],
   },
   icons: {
-    apple: [
-      { url: "/icons/icon-192x192.png", sizes: "192x192" },
-    ],
+    apple: [{ url: "/icons/icon-192x192.png", sizes: "192x192" }],
   },
 };
 
@@ -58,16 +57,16 @@ export default function RootLayout({
   return (
     <html lang="en" className={geistSans.className} suppressHydrationWarning>
       <body className="bg-background text-foreground overscroll-y-contain">
-        <ThemeProvider
+        {/* <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
-        >
-          <main className="min-h-screen w-full flex flex-col items-center">
-            {children}
-          </main>
-        </ThemeProvider>
+        > */}
+        <main className="min-h-screen w-full flex flex-col items-center">
+          {children}
+        </main>
+        {/* </ThemeProvider> */}
       </body>
     </html>
   );

@@ -32,14 +32,14 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
+      <div className="flex flex-col items-center justify-center h-[100dvh]">
         <p>Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-8 w-full">
+    <div className="flex flex-col items-center justify-center h-[100dvh] p-8 w-full">
       <h1 className="text-6xl font-bold mb-6 text-black">
         Magic Prep Academy
       </h1>

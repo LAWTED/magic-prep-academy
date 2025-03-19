@@ -22,9 +22,10 @@ interface MatchingQuizProps {
       matches: Record<string, string>;
     }[];
   };
+  onComplete: () => void;
 }
 
-export default function MatchingQuiz({ data }: MatchingQuizProps) {
+export default function MatchingQuiz({ data, onComplete }: MatchingQuizProps) {
   const [selections, setSelections] = useState<Record<string, string>>({});
   const [matchedConcepts, setMatchedConcepts] = useState<string[]>([]);
   const [showHint, setShowHint] = useState(false);
@@ -254,7 +255,27 @@ export default function MatchingQuiz({ data }: MatchingQuizProps) {
             <p className="text-xl font-medium">All matches found!</p>
           </div>
         </div>
-      ) : null}
+      ) : (
+        <div className="text-center py-8">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="mb-6"
+          >
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+              <Check className="w-10 h-10 text-green-600" />
+            </div>
+          </motion.div>
+          <h2 className="text-xl font-bold mb-2">Congratulations!</h2>
+          <p className="text-gray-600 mb-6">You've completed this matching exercise.</p>
+          <button
+            onClick={onComplete}
+            className="px-6 py-3 rounded-xl bg-primary text-white font-medium"
+          >
+            Continue
+          </button>
+        </div>
+      )}
 
       {/* Selected options indicator */}
       {Object.keys(selections).length > 0 && (
@@ -296,22 +317,6 @@ export default function MatchingQuiz({ data }: MatchingQuizProps) {
         </motion.div>
       )}
 
-      {/* Completion message */}
-      {completed && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-lg mb-6 bg-green-100"
-        >
-          <div className="flex items-center">
-            <Check className="w-5 h-5 text-green-600 mr-2" />
-            <p className="text-green-700">
-              All matches complete! Great job!
-            </p>
-          </div>
-        </motion.div>
-      )}
-
       {/* Hint */}
       <div className="mb-6">
         <button
@@ -329,32 +334,6 @@ export default function MatchingQuiz({ data }: MatchingQuizProps) {
           >
             <p>Select one option from each category. If your combination is correct, the options will disappear.</p>
           </motion.div>
-        )}
-      </div>
-
-      {/* Actions */}
-      <div className="flex justify-between">
-        <button
-          onClick={resetQuiz}
-          className="px-6 py-3 rounded-xl border border-gray-300 text-gray-700"
-          disabled={matchedConcepts.length === 0 && Object.keys(selections).length === 0}
-        >
-          Reset
-        </button>
-
-        {completed ? (
-          <Link href="/homepage">
-            <button className="px-6 py-3 rounded-xl bg-green-500 text-white font-medium">
-              Continue
-            </button>
-          </Link>
-        ) : (
-          <div className="opacity-0">
-            {/* Hidden placeholder for layout alignment */}
-            <button className="px-6 py-3">
-              Placeholder
-            </button>
-          </div>
         )}
       </div>
     </div>

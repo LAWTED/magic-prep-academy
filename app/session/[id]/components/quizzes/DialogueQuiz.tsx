@@ -19,9 +19,10 @@ interface DialogueQuizProps {
       };
     }[];
   };
+  onComplete: () => void;
 }
 
-export default function DialogueQuiz({ data }: DialogueQuizProps) {
+export default function DialogueQuiz({ data, onComplete }: DialogueQuizProps) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [currentStep, setCurrentStep] = useState(0);
   const [showHint, setShowHint] = useState<Record<string, boolean>>({});
@@ -65,9 +66,10 @@ export default function DialogueQuiz({ data }: DialogueQuizProps) {
       [id]: isCorrect,
     }));
 
-    // If all dialogues with blanks have feedback, quiz is completed
+    // Check if this was the last question to be answered
+    const newFeedback = { ...feedback, [id]: isCorrect };
     const allAnswered = dialogueWithBlanks.every(
-      (item) => feedback[item.blank?.id || ""] || item.blank?.id === id
+      (item) => item.blank && item.blank.id in newFeedback
     );
 
     if (allAnswered) {
@@ -85,7 +87,10 @@ export default function DialogueQuiz({ data }: DialogueQuizProps) {
     <div className="p-4 max-w-xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <Link href="/homepage" className="inline-flex items-center text-primary mb-4">
+        <Link
+          href="/homepage"
+          className="inline-flex items-center text-primary mb-4"
+        >
           <ArrowLeft className="mr-2 h-4 w-4" />
           <span>Back to Learning Map</span>
         </Link>
@@ -120,11 +125,12 @@ export default function DialogueQuiz({ data }: DialogueQuizProps) {
           <p className="text-gray-600 mb-6">
             You've successfully completed this dialogue exercise.
           </p>
-          <Link href="/homepage">
-            <button className="px-6 py-3 rounded-xl bg-primary text-white font-medium">
-              Back to Learning Map
-            </button>
-          </Link>
+          <button
+            onClick={onComplete}
+            className="px-6 py-3 rounded-xl bg-primary text-white font-medium"
+          >
+            Continue
+          </button>
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
@@ -156,7 +162,10 @@ export default function DialogueQuiz({ data }: DialogueQuizProps) {
                             type="text"
                             value={answers[item.blank.id] || ""}
                             onChange={(e) =>
-                              handleInputChange(item.blank?.id || "", e.target.value)
+                              handleInputChange(
+                                item.blank?.id || "",
+                                e.target.value
+                              )
                             }
                             className={`bg-transparent px-2 py-1 outline-none w-full ${
                               feedback[item.blank.id] !== undefined
@@ -208,14 +217,21 @@ export default function DialogueQuiz({ data }: DialogueQuizProps) {
                             className="text-primary flex items-center text-xs"
                           >
                             <HelpCircle className="w-3 h-3 mr-1" />
-                            {showHint[item.blank?.id || ""] ? "Hide hint" : "Show hint"}
+                            {showHint[item.blank?.id || ""]
+                              ? "Hide hint"
+                              : "Show hint"}
                           </button>
 
                           <button
                             onClick={() =>
-                              checkAnswer(item.blank?.id || "", item.blank?.answer || "")
+                              checkAnswer(
+                                item.blank?.id || "",
+                                item.blank?.answer || ""
+                              )
                             }
-                            disabled={!answers[item.blank?.id || ""] || isChecking}
+                            disabled={
+                              !answers[item.blank?.id || ""] || isChecking
+                            }
                             className={`px-4 py-1 rounded-lg text-xs font-medium ${
                               answers[item.blank?.id || ""]
                                 ? "bg-primary text-white"

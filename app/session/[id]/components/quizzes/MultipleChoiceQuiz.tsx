@@ -5,55 +5,52 @@ import { motion } from "framer-motion";
 import { Check, X, ArrowLeft, HelpCircle, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
-interface FillInTheBlankQuizProps {
+interface MultipleChoiceQuizProps {
   data: {
     title: string;
     instruction: string;
     questions: {
       id: string;
       text: string;
-      answer: string;
-      hint: string;
+      options: {
+        id: string;
+        text: string;
+      }[];
+      correctAnswer: string;
+      explanation: string;
     }[];
   };
+  onComplete: () => void;
 }
 
-export default function FillInTheBlankQuiz({ data }: FillInTheBlankQuizProps) {
+export default function MultipleChoiceQuiz({ data, onComplete }: MultipleChoiceQuizProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [showHint, setShowHint] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [feedback, setFeedback] = useState<{
     isCorrect: boolean;
-    correctAnswer: string;
+    explanation: string;
   } | null>(null);
   const [completed, setCompleted] = useState(false);
 
   const currentQuestion = data.questions[currentQuestionIndex];
 
-  // Split text to identify where the blank is
-  const textParts = currentQuestion?.text.split("_______");
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSelectOption = (optionId: string) => {
     if (isChecking || feedback) return;
 
     setAnswers((prev) => ({
       ...prev,
-      [currentQuestion.id]: e.target.value,
+      [currentQuestion.id]: optionId,
     }));
   };
 
   const checkAnswer = () => {
     setIsChecking(true);
-
-    // Simple check - could be enhanced with more sophisticated matching
-    const userAnswer = answers[currentQuestion.id]?.trim().toLowerCase() || "";
-    const correctAnswer = currentQuestion.answer.toLowerCase();
-    const isCorrect = userAnswer === correctAnswer;
+    const isCorrect = answers[currentQuestion.id] === currentQuestion.correctAnswer;
 
     setFeedback({
       isCorrect,
-      correctAnswer: currentQuestion.answer,
+      explanation: currentQuestion.explanation,
     });
 
     setTimeout(() => {
@@ -63,7 +60,6 @@ export default function FillInTheBlankQuiz({ data }: FillInTheBlankQuizProps) {
 
   const goToNextQuestion = () => {
     setFeedback(null);
-    setShowHint(false);
 
     if (currentQuestionIndex < data.questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
@@ -107,63 +103,52 @@ export default function FillInTheBlankQuiz({ data }: FillInTheBlankQuizProps) {
           </motion.div>
           <h2 className="text-xl font-bold mb-2">Congratulations!</h2>
           <p className="text-gray-600 mb-6">You've completed this quiz section.</p>
-          <Link href="/homepage">
-            <button className="px-6 py-3 rounded-xl bg-primary text-white font-medium">
-              Back to Learning Map
-            </button>
-          </Link>
+          <button
+            onClick={onComplete}
+            className="px-6 py-3 rounded-xl bg-primary text-white font-medium"
+          >
+            Continue
+          </button>
         </div>
       ) : (
         <>
           {/* Question */}
           <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <div className="text-lg mb-6">
-              {textParts.length > 0 && (
-                <div className="flex flex-wrap items-center">
-                  <span>{textParts[0]}</span>
-                  <div className="mx-2 my-2 min-w-[150px] border-b-2 border-primary">
-                    <input
-                      type="text"
-                      value={answers[currentQuestion.id] || ""}
-                      onChange={handleInputChange}
-                      className={`w-full bg-transparent px-2 py-1 outline-none ${
-                        feedback
-                          ? feedback.isCorrect
-                            ? "text-green-600 font-medium"
-                            : "text-red-600 font-medium"
-                          : ""
-                      }`}
-                      placeholder="Your answer"
-                      disabled={!!feedback}
-                    />
-                  </div>
-                  {textParts.length > 1 && <span>{textParts[1]}</span>}
-                </div>
-              )}
+            <h3 className="font-semibold text-lg mb-4">{currentQuestion.text}</h3>
+            <div className="space-y-3">
+              {currentQuestion.options.map((option) => (
+                <motion.button
+                  key={option.id}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleSelectOption(option.id)}
+                  className={`w-full p-4 rounded-lg border-2 text-left flex justify-between items-center ${
+                    answers[currentQuestion.id] === option.id
+                      ? "border-primary bg-primary/10"
+                      : "border-gray-200"
+                  } ${
+                    feedback &&
+                    option.id === currentQuestion.correctAnswer
+                      ? "border-green-500 bg-green-50"
+                      : feedback &&
+                        answers[currentQuestion.id] === option.id &&
+                        option.id !== currentQuestion.correctAnswer
+                      ? "border-red-500 bg-red-50"
+                      : ""
+                  }`}
+                  disabled={!!feedback}
+                >
+                  <span>{option.text}</span>
+                  {feedback && option.id === currentQuestion.correctAnswer && (
+                    <Check className="w-5 h-5 text-green-600" />
+                  )}
+                  {feedback &&
+                    answers[currentQuestion.id] === option.id &&
+                    option.id !== currentQuestion.correctAnswer && (
+                      <X className="w-5 h-5 text-red-600" />
+                    )}
+                </motion.button>
+              ))}
             </div>
-
-            {/* Hint button */}
-            <div className="mb-2">
-              <button
-                onClick={() => setShowHint(!showHint)}
-                className="text-primary flex items-center text-sm"
-                disabled={!!feedback}
-              >
-                <HelpCircle className="w-4 h-4 mr-1" />
-                {showHint ? "Hide hint" : "Show hint"}
-              </button>
-            </div>
-
-            {/* Hint content */}
-            {showHint && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                className="p-3 bg-blue-50 rounded-lg text-blue-700 text-sm"
-              >
-                <p>{currentQuestion.hint}</p>
-              </motion.div>
-            )}
           </div>
 
           {/* Feedback */}
@@ -191,11 +176,13 @@ export default function FillInTheBlankQuiz({ data }: FillInTheBlankQuizProps) {
                       ? "Correct!"
                       : "Incorrect"}
                   </p>
-                  {!feedback.isCorrect && (
-                    <p className="text-red-700">
-                      Correct answer: {feedback.correctAnswer}
-                    </p>
-                  )}
+                  <p
+                    className={
+                      feedback.isCorrect ? "text-green-700" : "text-red-700"
+                    }
+                  >
+                    {feedback.explanation}
+                  </p>
                 </div>
               </div>
             </motion.div>

@@ -10,8 +10,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
-const subjects = ["Computer Science", "Psychology"];
-
 const avatarOptions = [
   { name: "Nemo", path: "/images/avatars/Nemo.png" },
   { name: "Otta", path: "/images/avatars/Otta.png" },
@@ -23,6 +21,7 @@ export default function OnboardingPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const totalSteps = 4;
+  const [subjects, setSubjects] = useState<{ id: string; subject_name: string }[]>([]);
 
   // Form data
   const [username, setUsername] = useState("");
@@ -32,6 +31,26 @@ export default function OnboardingPage() {
 
   // Loading state
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    async function fetchSubjects() {
+      try {
+        const { data, error } = await supabase
+          .from('subjects')
+          .select('id, subject_name');
+
+        if (error) throw error;
+
+        if (data) {
+          setSubjects(data);
+        }
+      } catch (error) {
+        console.error('Error fetching subjects:', error);
+      }
+    }
+
+    fetchSubjects();
+  }, [supabase]);
 
   useEffect(() => {
     async function checkUser() {
@@ -77,11 +96,11 @@ export default function OnboardingPage() {
     }
   };
 
-  const toggleSubject = (subject: string) => {
+  const toggleSubject = (subjectId: string) => {
     setSelectedSubjects((prev) =>
-      prev.includes(subject)
-        ? prev.filter((s) => s !== subject)
-        : [...prev, subject]
+      prev.includes(subjectId)
+        ? prev.filter((id) => id !== subjectId)
+        : [...prev, subjectId]
     );
   };
 
@@ -91,6 +110,7 @@ export default function OnboardingPage() {
     try {
       setLoading(true);
 
+      console.log('selectedSubjects', selectedSubjects);
       const updates = {
         auth_id: userId,
         name: username,
@@ -113,7 +133,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen p-4 w-full max-w-md mx-auto">
+    <div className="flex flex-col items-center justify-start h-[100dvh] p-4 w-full max-w-md mx-auto">
       {/* Progress Bar */}
       <div className="w-full mb-8 mt-4">
         <div className="w-full bg-gray-200 rounded-full h-2.5">
@@ -295,14 +315,14 @@ export default function OnboardingPage() {
               <div className="flex flex-wrap justify-center gap-2 w-full max-w-xs">
                 {subjects.map((subject) => (
                   <Badge
-                    key={subject}
+                    key={subject.id}
                     variant={
-                      selectedSubjects.includes(subject) ? "default" : "outline"
+                      selectedSubjects.includes(subject.id) ? "default" : "outline"
                     }
                     className="cursor-pointer hover:opacity-80 transition-all px-3 py-2 text-sm"
-                    onClick={() => toggleSubject(subject)}
+                    onClick={() => toggleSubject(subject.id)}
                   >
-                    {subject}
+                    {subject.subject_name}
                   </Badge>
                 ))}
               </div>

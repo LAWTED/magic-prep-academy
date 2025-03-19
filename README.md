@@ -1,104 +1,123 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# Magic Prep Academy
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+# Schedule
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+- 3/18/2025:
+  * create user dashboard
+  * create user profile
+  * create user notifications
+  * create user security
 
-## Features
+## Core Functions
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Middleware
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+1. **Landing/Title Page**
 
-## Demo
+   1. Title: Magic Prep Academy
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+   - Visual Refs
 
-## Deploy to Vercel
+     Check out this website: [https://www.gameuidatabase.com/index.php?&set=1&scrn=2](https://www.gameuidatabase.com/index.php?&set=1&scrn=2)
+     It’s a website dedicated to game UI design.
 
-Vercel deployment will guide you through creating a Supabase account and project.
+  2. Mobile-first design
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+3. **Quiz/Game/Interactive Elements**
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+   1. The Game Begins: Develop a Duolingo-inspired interactive learning module focused on Psychological Sciences that transforms complex concepts into engaging, game-like interactions. Key requirements:
+   2. Core Design: Mirror Duolingo’s clean UI/UX (progress bars, streaks, celebratory feedback) but replace language content with psychology topics (e.g., cognitive biases, neuroanatomy, therapy techniques).
+   3. Interactivity First: Prioritize minimal text and maximal interaction – no static textbook excerpts please. Sample implements (Feel free to invent your own, no obligation to follow the examples below):
+      - Branching scenario quizzes (e.g., "Drag neurotransmitters to their brain regions")
+      - Visual matching games (e.g., Pair therapy techniques to case studies via icons)
+      - Interactive case simulations (e.g., Choose dialogue options for a client-therapist roleplay)
+   4. Gamification Elements: Include XP systems, "health points" for accuracy streaks, and unlockable "achievements" tied to milestones (e.g., "Mastered Behaviorism Lv.3").
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+4. **Grad School Application Journey Visualization**
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+   1. Timeline/Calendar View: Visualize the entire grad school application process (e.g., deadlines, milestones, in a Duolingo/game-like roadmap style)
 
-## Clone and run locally
+      - Visual Refs
 
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
+        ![IMG_3714.JPG](RA%20Recruitment%20Task%201b740dab55c58056a9d8ddea43261493/IMG_3714.jpg)
 
-2. Create a Next.js app using the Supabase Starter template npx command
+        ![IMG_3715.JPG](RA%20Recruitment%20Task%201b740dab55c58056a9d8ddea43261493/IMG_3715.jpg)
 
-   ```bash
-   npx create-next-app --example with-supabase with-supabase-app
-   ```
+   2. Progress Tracker: Allow players to track their progress when completed application tasks
 
-   ```bash
-   yarn create next-app --example with-supabase with-supabase-app
-   ```
+5. **University "Bucket" System**
 
-   ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
-   ```
+   1. University Hub: Allow players to filter universities by major/field (e.g., "Computer Science," "Psychology") and geographic location
+   2. Save to Bucket: Let users save universities to a personalized list ("My Target Schools")
+   3. Deadline Tracking Automation: Auto-populate application deadlines for saved universities & update them on the timeline/calendar view mentioned above
 
-3. Use `cd` to change into the app's directory
+6. **Magical Tools Inventory**
 
-   ```bash
-   cd with-supabase-app
-   ```
+   1. Letters of Recommendation (LoR)
+      1. Recommender Dashboard: Allow players to input professor/employer details and track letter status (e.g., "Requested," "In Progress," "Submitted")
+      2. "Ask a PhD Mentor" Chat: ****Players click "Help" in the LoR tab → opens a chat window, then, a PhD mentor can message them and does Q&As; An LLM is linked here, it serves as the PhD mentor and gives human-like, real-time feedback and encouragement to the player
+      3. Letter Revision: Interactive templates for emailing recommenders, with auto-fill fields like deadlines, program name
+   2. CV/Resume
+      1. Upload: Allow players to upload current CV (PDF/DOCX)
+      2. Auto-formatting: Auto-restructure CV to field-specific academic templates (in the case of Psychological Science, use the APA format)
+      3. Initial evaluation score: Metrics might include Completeness, Academic Jargon Use, Structure, Relevance to Target Program. Example: “Your CV scores 72/100. Boost relevance by adding RA experience!” Use AI to mark red flags: Highlight missing sections (e.g., “Publications,” “Conferences”)
+      4. "Ask a PhD Mentor" Chat
+      5. Version Control:
+         - Save multiple CV versions (e.g., “PhD Applications,” “Master Applications”); Track changes with AI commentary: “Version 3 added 2 publications (+15% completeness).” Export as PDF, LaTeX, or DOCX
+   3. Statement of Purpose (SoP)
+      1. Upload: Allow players to upload current SoP (PDF/DOCX)
+      2. Initial Evaluation Score
+      3. Auto-formatting: Auto-tailor to each program’s specific font, page limit etc.
+      4. "Ask a PhD Mentor" Chat
+      5. Version Control:
+         - Save multiple SoP versions (e.g., for different universities and programs). Export as PDF, LaTeX, or DOCX
+   4. Personal History Statement
+      1. Upload: Allow players to upload current PHS (PDF/DOCX)
+      2. Initial Evaluation Score
+      3. Auto-formatting: Auto-tailor to each program’s specific font, page limit etc.
+      4. "Ask a PhD Mentor" Chat
+   5. TOEFL/IELTS
+      1. Quick Check: "Do I Need the Test?” Players answer simple questions, the system outputs whether they need to take any English language test or not
+   6. GPA
+      1. WES Quick Check: Players answer simple questions, the system outputs whether they need to get their Official Transcript evaluated by WES
 
-4. Rename `.env.example` to `.env.local` and update the following:
+7. PhD Mentor Dashboard (A Separate Desktop Version)
 
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=[INSERT SUPABASE PROJECT API ANON KEY]
-   ```
+   1. Log in: Allow mentors to access data of their paired mentees
+   2. Document Review: In a Grammarly-like style, hover over an AI suggestion → Click “✓” to accept (logged as mentor’s edit) or “✕” to reject; Example: AI suggests changing “did research” → “designed experiments.” Mentor clicks “✓” → Edit is attributed to them
+   3. Manual Edit Tools: Mentors type directly into the document → Changes are highlighted in blue with their name/avatar
+   4. Tag: All edits (AI-accepted or manual) are tagged with the mentor’s user name for accountability
+   5. Send Back Workflow: Mentor clicks “Send Feedback” → Document locks for further edits. Revised document appears in the student’s chat with a notification. System auto-generates a summary: “Dr. Jane Smith revised your CV: 12 edits accepted, 3 comments added.”
+   6. Game Design: Mentors can upload textbooks, blogs, or academic journal articles, and they are automatically “translated” into new mini-game modules, and instantly added to the mentee’s game tab (mentioned in 2a). In a Duolingo-like metaphor, this means: Instead of Duolingo already has all the quizes, in this game, you will have a mentor, they assign you new games/tasks everyday based on ever-newer scientific advances, the guru’s most recent Tweets, or newly published articles on *Nature* or *Science*.
 
-   Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` can be found in [your Supabase project's API settings](https://app.supabase.com/project/_/settings/api)
+8. Domain Transfer (IMPORTANT!)
 
-5. You can now run the Next.js local development server:
+   1. Since this project is not the ACTUAL RESEARCH PROJECT, we want you to pay attention to the codebase’s adaptability for future projects. We will evaluate **domain transferability** by analyzing how easily your core function systems (e.g., gamification mechanics, progress tracking, AI-driven content generation) could be repurposed for other games (such as a K12 space physics learning game). To guide your design, we have come up with the following questions for you to THINK HARD before designing the system:
+   2. Modularity of systems: Are psychology-specific logic and content decoupled from reusable components (e.g., quiz engines, XP systems)?
+   3. Configurability: Can asset pipelines, LLM prompts, and UI templates be swapped via configuration files rather than code rewrites?
+   4. Documentation clarity: Do API endpoints and database schemas include domain-agnostic descriptions? Please give an estimate of the additional hours required to adapt the codebase (e.g., 20+ hours for tightly coupled systems vs. <5 hours for modular architectures) and propose optimizations to improve cross-domain reusability for future research.
 
-   ```bash
-   npm run dev
-   ```
+# Evaluation (Score 0 to 40)
 
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
+| **Metric**                   | **Evaluation Focus**                                         | **Score (1-5)** |
+| ---------------------------- | ------------------------------------------------------------ | --------------- |
+| **System Architecture**      | Backend scalability (from 0 to 100k users), database design, API efficiency |                 |
+| **~~UI/UX Implementation~~** | ~~Visual appeal, playability, a sense of wonder for players~~ |                 |
+| **AI Integration**           | LLM performance (in the mentor chat), auto-formatting accuracy, dynamic content generation |                 |
+| **Gamification & Flow**      | XP/Game system functionality, interactive elements, progress synchronization |                 |
+| **Data Automation**          | Deadline tracking, document version control, filtering systems |                 |
+| **Collaboration Tools**      | Mentor dashboard functionality, document locking/attribution |                 |
+| **Error Handling**           | Failure recovery, user-friendly errors, API fallbacks        |                 |
+| **Deployment**               | CI/CD implementation, load testing, monitoring systems       |                 |
+| **Domain Transferability**   | Code modularity, content-config separation, documentation for domain adaptation |                 |
 
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
+**Scoring Guide**:
 
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
+- **1** = Critical flaws
+- **3** = Functional but needs improvement
+- **5** = Production-ready excellence
 
-## Feedback and issues
+**Specifically For “Domain Transferability” Scoring**:
 
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
+- **1** = Hard-coded psychology content (needs full rebuild)
+- **3** = Core game engine reusable but content layers require recoding (~40hrs)
+- **5** = Plug-and-play content system (swap psychology → space physics via config files <20hrs)
 
-## More Supabase examples
-
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)

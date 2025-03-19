@@ -1,7 +1,7 @@
 "use client";
 
 import { createClient } from "@/utils/supabase/client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import MultipleChoiceQuiz from "@/app/session/[id]/components/quizzes/MultipleChoiceQuiz";
 import FillInTheBlankQuiz from "@/app/session/[id]/components/quizzes/FillInTheBlankQuiz";
@@ -18,7 +18,8 @@ interface Session {
   };
 }
 
-export default function SessionPage({ params }: { params: { id: string } }) {
+export default function SessionPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const supabase = createClient();
   const [session, setSession] = useState<Session | null>(null);
@@ -50,7 +51,7 @@ export default function SessionPage({ params }: { params: { id: string } }) {
         const { data: sessionData } = await supabase
           .from("sessions")
           .select("*")
-          .eq("id", params.id)
+          .eq("id", id)
           .single();
 
         if (sessionData) {
@@ -64,7 +65,7 @@ export default function SessionPage({ params }: { params: { id: string } }) {
     }
 
     fetchSessionAndUser();
-  }, [params.id, supabase, router]);
+  }, [id, supabase, router]);
 
   const handleQuizComplete = async () => {
     if (!userId || !session) return;

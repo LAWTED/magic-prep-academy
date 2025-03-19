@@ -1,7 +1,7 @@
 "use client";
 
 import { createClient } from "@/utils/supabase/client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Star, Check } from "lucide-react";
 import { motion } from "framer-motion";
@@ -29,7 +29,8 @@ interface Module {
   description: string;
 }
 
-export default function ModulePage({ params }: { params: { id: string } }) {
+export default function ModulePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const supabase = createClient();
   const [module, setModule] = useState<Module | null>(null);
@@ -102,7 +103,7 @@ export default function ModulePage({ params }: { params: { id: string } }) {
           const { data: moduleData } = await supabase
             .from("modules")
             .select("*")
-            .eq("id", params.id)
+            .eq("id", id)
             .single();
 
           if (moduleData) {
@@ -112,7 +113,7 @@ export default function ModulePage({ params }: { params: { id: string } }) {
             const { data: sessionsData } = await supabase
               .from("sessions")
               .select("*")
-              .eq("module_id", params.id);
+              .eq("module_id", id);
 
             if (sessionsData) {
               setSessions(sessionsData);
@@ -142,7 +143,7 @@ export default function ModulePage({ params }: { params: { id: string } }) {
     }
 
     fetchModuleAndSessions();
-  }, [params.id, supabase, router]);
+  }, [id, supabase, router]);
 
   if (loading) {
     return (

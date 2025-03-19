@@ -87,13 +87,12 @@ export default function DialogueQuiz({ data, onComplete }: DialogueQuizProps) {
     <div className="p-4 max-w-xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <Link
-          href="/homepage"
+        <button
+          onClick={() => window.history.back()}
           className="inline-flex items-center text-primary mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          <span>Back to Learning Map</span>
-        </Link>
+        </button>
         <h1 className="text-2xl font-bold">{data.title}</h1>
         <p className="text-gray-600 mt-2">{data.instruction}</p>
       </div>

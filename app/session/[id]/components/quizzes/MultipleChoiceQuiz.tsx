@@ -23,7 +23,10 @@ interface MultipleChoiceQuizProps {
   onComplete: () => void;
 }
 
-export default function MultipleChoiceQuiz({ data, onComplete }: MultipleChoiceQuizProps) {
+export default function MultipleChoiceQuiz({
+  data,
+  onComplete,
+}: MultipleChoiceQuizProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isChecking, setIsChecking] = useState(false);
@@ -46,7 +49,8 @@ export default function MultipleChoiceQuiz({ data, onComplete }: MultipleChoiceQ
 
   const checkAnswer = () => {
     setIsChecking(true);
-    const isCorrect = answers[currentQuestion.id] === currentQuestion.correctAnswer;
+    const isCorrect =
+      answers[currentQuestion.id] === currentQuestion.correctAnswer;
 
     setFeedback({
       isCorrect,
@@ -72,10 +76,12 @@ export default function MultipleChoiceQuiz({ data, onComplete }: MultipleChoiceQ
     <div className="p-4 max-w-xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <Link href="/homepage" className="inline-flex items-center text-primary mb-4">
+        <button
+          onClick={() => window.history.back()}
+          className="inline-flex items-center text-primary mb-4"
+        >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          <span>Back to Learning Map</span>
-        </Link>
+        </button>
         <h1 className="text-2xl font-bold">{data.title}</h1>
         <p className="text-gray-600 mt-2">{data.instruction}</p>
       </div>
@@ -102,7 +108,9 @@ export default function MultipleChoiceQuiz({ data, onComplete }: MultipleChoiceQ
             </div>
           </motion.div>
           <h2 className="text-xl font-bold mb-2">Congratulations!</h2>
-          <p className="text-gray-600 mb-6">You've completed this quiz section.</p>
+          <p className="text-gray-600 mb-6">
+            You've completed this quiz section.
+          </p>
           <button
             onClick={onComplete}
             className="px-6 py-3 rounded-xl bg-primary text-white font-medium"
@@ -114,7 +122,9 @@ export default function MultipleChoiceQuiz({ data, onComplete }: MultipleChoiceQ
         <>
           {/* Question */}
           <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <h3 className="font-semibold text-lg mb-4">{currentQuestion.text}</h3>
+            <h3 className="font-semibold text-lg mb-4">
+              {currentQuestion.text}
+            </h3>
             <div className="space-y-3">
               {currentQuestion.options.map((option) => (
                 <motion.button
@@ -126,14 +136,13 @@ export default function MultipleChoiceQuiz({ data, onComplete }: MultipleChoiceQ
                       ? "border-primary bg-primary/10"
                       : "border-gray-200"
                   } ${
-                    feedback &&
-                    option.id === currentQuestion.correctAnswer
+                    feedback && option.id === currentQuestion.correctAnswer
                       ? "border-green-500 bg-green-50"
                       : feedback &&
-                        answers[currentQuestion.id] === option.id &&
-                        option.id !== currentQuestion.correctAnswer
-                      ? "border-red-500 bg-red-50"
-                      : ""
+                          answers[currentQuestion.id] === option.id &&
+                          option.id !== currentQuestion.correctAnswer
+                        ? "border-red-500 bg-red-50"
+                        : ""
                   }`}
                   disabled={!!feedback}
                 >
@@ -172,9 +181,7 @@ export default function MultipleChoiceQuiz({ data, onComplete }: MultipleChoiceQ
                       feedback.isCorrect ? "text-green-700" : "text-red-700"
                     }`}
                   >
-                    {feedback.isCorrect
-                      ? "Correct!"
-                      : "Incorrect"}
+                    {feedback.isCorrect ? "Correct!" : "Incorrect"}
                   </p>
                   <p
                     className={

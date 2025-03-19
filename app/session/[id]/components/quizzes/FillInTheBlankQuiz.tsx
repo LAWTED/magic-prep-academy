@@ -19,7 +19,10 @@ interface FillInTheBlankQuizProps {
   onComplete: () => void;
 }
 
-export default function FillInTheBlankQuiz({ data, onComplete }: FillInTheBlankQuizProps) {
+export default function FillInTheBlankQuiz({
+  data,
+  onComplete,
+}: FillInTheBlankQuizProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showHint, setShowHint] = useState(false);
@@ -77,10 +80,12 @@ export default function FillInTheBlankQuiz({ data, onComplete }: FillInTheBlankQ
     <div className="p-4 max-w-xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <Link href="/homepage" className="inline-flex items-center text-primary mb-4">
+        <button
+          onClick={() => window.history.back()}
+          className="inline-flex items-center text-primary mb-4"
+        >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          <span>Back to Learning Map</span>
-        </Link>
+        </button>
         <h1 className="text-2xl font-bold">{data.title}</h1>
         <p className="text-gray-600 mt-2">{data.instruction}</p>
       </div>
@@ -107,7 +112,9 @@ export default function FillInTheBlankQuiz({ data, onComplete }: FillInTheBlankQ
             </div>
           </motion.div>
           <h2 className="text-xl font-bold mb-2">Congratulations!</h2>
-          <p className="text-gray-600 mb-6">You've completed this quiz section.</p>
+          <p className="text-gray-600 mb-6">
+            You've completed this quiz section.
+          </p>
           <button
             onClick={onComplete}
             className="px-6 py-3 rounded-xl bg-primary text-white font-medium"
@@ -189,9 +196,7 @@ export default function FillInTheBlankQuiz({ data, onComplete }: FillInTheBlankQ
                       feedback.isCorrect ? "text-green-700" : "text-red-700"
                     }`}
                   >
-                    {feedback.isCorrect
-                      ? "Correct!"
-                      : "Incorrect"}
+                    {feedback.isCorrect ? "Correct!" : "Incorrect"}
                   </p>
                   {!feedback.isCorrect && (
                     <p className="text-red-700">

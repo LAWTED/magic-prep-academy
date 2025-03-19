@@ -29,7 +29,10 @@ export default function MatchingQuiz({ data, onComplete }: MatchingQuizProps) {
   const [selections, setSelections] = useState<Record<string, string>>({});
   const [matchedConcepts, setMatchedConcepts] = useState<string[]>([]);
   const [showHint, setShowHint] = useState(false);
-  const [feedback, setFeedback] = useState<{ type: "success" | "error" | null; message: string }>({
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error" | null;
+    message: string;
+  }>({
     type: null,
     message: "",
   });
@@ -42,7 +45,7 @@ export default function MatchingQuiz({ data, onComplete }: MatchingQuizProps) {
     // Find the first concept that isn't matched yet
     for (const concept of data.concepts) {
       if (!matchedConcepts.includes(concept.name)) {
-        Object.keys(concept.matches).forEach(rowId => {
+        Object.keys(concept.matches).forEach((rowId) => {
           allRows.add(rowId);
         });
         break;
@@ -67,10 +70,10 @@ export default function MatchingQuiz({ data, onComplete }: MatchingQuizProps) {
       const conceptRows = Object.keys(conceptMatches);
 
       // We need selections for all rows in this concept
-      if (conceptRows.every(row => selectedRows.includes(row))) {
+      if (conceptRows.every((row) => selectedRows.includes(row))) {
         // Check if all selections match the expected values
-        const isConceptMatch = conceptRows.every(row =>
-          selections[row] === conceptMatches[row]
+        const isConceptMatch = conceptRows.every(
+          (row) => selections[row] === conceptMatches[row]
         );
 
         if (isConceptMatch) {
@@ -88,7 +91,10 @@ export default function MatchingQuiz({ data, onComplete }: MatchingQuizProps) {
     const selectedRows = Object.keys(selections);
 
     // Check if user has selected one option from each required row
-    if (requiredRows.length > 0 && requiredRows.every(row => selectedRows.includes(row))) {
+    if (
+      requiredRows.length > 0 &&
+      requiredRows.every((row) => selectedRows.includes(row))
+    ) {
       handleCheckMatch();
     }
   }, [selections]);
@@ -98,7 +104,7 @@ export default function MatchingQuiz({ data, onComplete }: MatchingQuizProps) {
     if (completed) return;
 
     // Toggle selection for this row
-    setSelections(prev => {
+    setSelections((prev) => {
       const newSelections = { ...prev };
 
       // If this option is already selected, remove it
@@ -120,12 +126,12 @@ export default function MatchingQuiz({ data, onComplete }: MatchingQuizProps) {
 
     if (matchedConcept) {
       // Add this concept to matched concepts
-      setMatchedConcepts(prev => [...prev, matchedConcept.name]);
+      setMatchedConcepts((prev) => [...prev, matchedConcept.name]);
 
       // Show success feedback
       setFeedback({
         type: "success",
-        message: "Correct match!"
+        message: "Correct match!",
       });
 
       // Clear selections
@@ -144,7 +150,7 @@ export default function MatchingQuiz({ data, onComplete }: MatchingQuizProps) {
       // Show error feedback
       setFeedback({
         type: "error",
-        message: "Not a match. Try again!"
+        message: "Not a match. Try again!",
       });
 
       // Clear selections after error
@@ -171,9 +177,9 @@ export default function MatchingQuiz({ data, onComplete }: MatchingQuizProps) {
     const matchedOptions: string[] = [];
 
     for (const conceptName of matchedConcepts) {
-      const concept = data.concepts.find(c => c.name === conceptName);
+      const concept = data.concepts.find((c) => c.name === conceptName);
       if (concept) {
-        Object.values(concept.matches).forEach(optionId => {
+        Object.values(concept.matches).forEach((optionId) => {
           matchedOptions.push(optionId);
         });
       }
@@ -187,10 +193,14 @@ export default function MatchingQuiz({ data, onComplete }: MatchingQuizProps) {
     const matchedOptions = getMatchedOptionIds();
 
     // We need to show all rows, but filter out matched options
-    return data.rows.map(row => ({
-      ...row,
-      filteredOptions: row.options.filter(option => !matchedOptions.includes(option.id))
-    })).filter(row => row.filteredOptions.length > 0); // Only show rows with remaining options
+    return data.rows
+      .map((row) => ({
+        ...row,
+        filteredOptions: row.options.filter(
+          (option) => !matchedOptions.includes(option.id)
+        ),
+      }))
+      .filter((row) => row.filteredOptions.length > 0); // Only show rows with remaining options
   };
 
   const remainingRowsWithOptions = getRemainingRowsWithOptions();
@@ -199,10 +209,13 @@ export default function MatchingQuiz({ data, onComplete }: MatchingQuizProps) {
     <div className="p-4 max-w-xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <Link href="/homepage" className="inline-flex items-center text-primary mb-4">
+        <button
+          onClick={() => window.history.back()}
+          className="inline-flex items-center text-primary mb-4"
+        >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          <span>Back to Learning Map</span>
-        </Link>
+        </button>
+
         <h1 className="text-2xl font-bold">{data.title}</h1>
         <p className="text-gray-600 mt-2">{data.instruction}</p>
       </div>
@@ -213,7 +226,7 @@ export default function MatchingQuiz({ data, onComplete }: MatchingQuizProps) {
           <div
             className="bg-primary h-2.5 rounded-full transition-all"
             style={{
-              width: `${Math.floor((matchedConcepts.length / data.concepts.length) * 100)}%`
+              width: `${Math.floor((matchedConcepts.length / data.concepts.length) * 100)}%`,
             }}
           />
         </div>
@@ -267,7 +280,9 @@ export default function MatchingQuiz({ data, onComplete }: MatchingQuizProps) {
             </div>
           </motion.div>
           <h2 className="text-xl font-bold mb-2">Congratulations!</h2>
-          <p className="text-gray-600 mb-6">You've completed this matching exercise.</p>
+          <p className="text-gray-600 mb-6">
+            You've completed this matching exercise.
+          </p>
           <button
             onClick={onComplete}
             className="px-6 py-3 rounded-xl bg-primary text-white font-medium"
@@ -280,13 +295,18 @@ export default function MatchingQuiz({ data, onComplete }: MatchingQuizProps) {
       {/* Selected options indicator */}
       {Object.keys(selections).length > 0 && (
         <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-          <h3 className="text-sm font-medium text-blue-700 mb-2">Your selections:</h3>
+          <h3 className="text-sm font-medium text-blue-700 mb-2">
+            Your selections:
+          </h3>
           <div className="flex flex-wrap gap-2">
             {Object.entries(selections).map(([rowId, optionId]) => {
-              const row = data.rows.find(r => r.id === rowId);
-              const option = row?.options.find(o => o.id === optionId);
+              const row = data.rows.find((r) => r.id === rowId);
+              const option = row?.options.find((o) => o.id === optionId);
               return (
-                <div key={rowId} className="px-2 py-1 bg-white rounded border border-blue-200 text-xs">
+                <div
+                  key={rowId}
+                  className="px-2 py-1 bg-white rounded border border-blue-200 text-xs"
+                >
                   {row?.text}: {option?.text}
                 </div>
               );
@@ -310,7 +330,11 @@ export default function MatchingQuiz({ data, onComplete }: MatchingQuizProps) {
             ) : (
               <X className="w-5 h-5 text-red-600 mr-2" />
             )}
-            <p className={feedback.type === "success" ? "text-green-700" : "text-red-700"}>
+            <p
+              className={
+                feedback.type === "success" ? "text-green-700" : "text-red-700"
+              }
+            >
               {feedback.message}
             </p>
           </div>
@@ -332,7 +356,10 @@ export default function MatchingQuiz({ data, onComplete }: MatchingQuizProps) {
             animate={{ opacity: 1, height: "auto" }}
             className="mt-2 p-3 bg-blue-50 rounded-lg text-blue-700"
           >
-            <p>Select one option from each category. If your combination is correct, the options will disappear.</p>
+            <p>
+              Select one option from each category. If your combination is
+              correct, the options will disappear.
+            </p>
           </motion.div>
         )}
       </div>

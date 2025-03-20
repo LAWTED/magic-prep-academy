@@ -1,7 +1,6 @@
 "use client";
 
 import { createClient } from "@/utils/supabase/client";
-import { redirect } from "next/navigation";
 import Image from "next/image";
 import { Cog, Star, ChevronRight, Check } from "lucide-react";
 import { useEffect, useState } from "react";

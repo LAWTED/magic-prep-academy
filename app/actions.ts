@@ -39,6 +39,23 @@ export const signUpAction = async (formData: FormData) => {
   }
 };
 
+export const mentorSignInAction = async (formData: FormData) => {
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  const supabase = await createClient();
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    return encodedRedirect("error", "/mentor/sign-in", error.message);
+  }
+
+  return redirect("/mentor/dashboard");
+};
+
 export const signInAction = async (formData: FormData) => {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;

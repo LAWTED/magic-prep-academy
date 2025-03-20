@@ -3,10 +3,10 @@
 import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
-import MultipleChoiceQuiz from "@/app/session/[id]/components/quizzes/MultipleChoiceQuiz";
-import FillInTheBlankQuiz from "@/app/session/[id]/components/quizzes/FillInTheBlankQuiz";
-import MatchingQuiz from "@/app/session/[id]/components/quizzes/MatchingQuiz";
-import DialogueQuiz from "@/app/session/[id]/components/quizzes/DialogueQuiz";
+import MultipleChoiceQuiz from "@/app/(students)/session/[id]/components/quizzes/MultipleChoiceQuiz";
+import FillInTheBlankQuiz from "@/app/(students)/session/[id]/components/quizzes/FillInTheBlankQuiz";
+import MatchingQuiz from "@/app/(students)/session/[id]/components/quizzes/MatchingQuiz";
+import DialogueQuiz from "@/app/(students)/session/[id]/components/quizzes/DialogueQuiz";
 
 interface Session {
   id: string;

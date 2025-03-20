@@ -1,36 +1,21 @@
-import { ArrowLeft, BookOpen, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  BookOpen,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import Image from "next/image";
+import { Module, Subject } from "@/app/types";
 
-interface Subject {
-  id: string;
-  subject_name: string;
-}
-
-interface Module {
-  id: string;
-  subject_id: string;
-  module_name: string;
-  order_index: number;
-  description: string;
-  created_at: string;
-  updated_at: string;
-  vector_store_id: string;
-}
-
-interface ModuleWithProgress extends Module {
-  progress: string;
-  score: number;
-}
-
-interface SubjectWithProgress extends Subject {
-  modules: ModuleWithProgress[];
-  completionPercentage: number;
-}
-
-export default async function StudentProgress({ params }: { params: { id: string } }) {
+export default async function StudentProgress({
+  params,
+}: {
+  params: { id: string };
+}) {
   const studentId = params.id;
   const supabase = await createClient();
 
@@ -88,32 +73,39 @@ export default async function StudentProgress({ params }: { params: { id: string
     .from("module_progress")
     .select("*")
     .eq("user_id", studentId)
-    .in("module_id", modules?.map(m => m.id) || []);
+    .in("module_id", modules?.map((m) => m.id) || []);
 
   // Organize data by subject for display
-  const subjectsWithProgress = subjects?.map((subject: Subject) => {
-    const subjectModules = modules?.filter(m => m.subject_id === subject.id) || [];
+  const subjectsWithProgress =
+    subjects?.map((subject: Subject) => {
+      const subjectModules =
+        modules?.filter((m) => m.subject_id === subject.id) || [];
 
-    const modulesWithProgress = subjectModules.map((module: Module) => {
-      const progress = moduleProgress?.find(p => p.module_id === module.id);
+      const modulesWithProgress = subjectModules.map((module: Module) => {
+        const progress = moduleProgress?.find((p) => p.module_id === module.id);
+        return {
+          ...module,
+          progress: progress?.progress || "not_started",
+          score: progress?.score || 0,
+        };
+      });
+
+      // Calculate subject completion percentage
+      const completedModules = modulesWithProgress.filter(
+        (m) => m.progress === "completed"
+      ).length;
+      const totalModules = modulesWithProgress.length;
+      const completionPercentage =
+        totalModules > 0
+          ? Math.round((completedModules / totalModules) * 100)
+          : 0;
+
       return {
-        ...module,
-        progress: progress?.progress || "not_started",
-        score: progress?.score || 0
+        ...subject,
+        modules: modulesWithProgress,
+        completionPercentage,
       };
-    });
-
-    // Calculate subject completion percentage
-    const completedModules = modulesWithProgress.filter(m => m.progress === "completed").length;
-    const totalModules = modulesWithProgress.length;
-    const completionPercentage = totalModules > 0 ? Math.round((completedModules / totalModules) * 100) : 0;
-
-    return {
-      ...subject,
-      modules: modulesWithProgress,
-      completionPercentage
-    };
-  }) || [];
+    }) || [];
 
   // Get avatar path
   const avatarPath = `/images/avatars/${student.avatar_name}.png`;
@@ -159,8 +151,11 @@ export default async function StudentProgress({ params }: { params: { id: string
               {subjectsWithProgress.map((subject) => (
                 <div key={subject.id} className="space-y-3">
                   {/* Module list */}
-                  {subject.modules.map((module: ModuleWithProgress) => (
-                    <div key={module.id} className="flex items-center gap-3 p-4 rounded-lg bg-card border shadow-sm">
+                  {subject.modules.map((module) => (
+                    <div
+                      key={module.id}
+                      className="flex items-center gap-3 p-4 rounded-lg bg-card border shadow-sm"
+                    >
                       {module.progress === "completed" ? (
                         <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
                       ) : module.progress === "in_progress" ? (
@@ -177,9 +172,9 @@ export default async function StudentProgress({ params }: { params: { id: string
                         </div>
                         <p className="text-sm text-muted-foreground capitalize">
                           {module.progress.replace("_", " ")}
-                          {module.progress === "completed" && module.score > 0 &&
-                            ` • Score: ${module.score}`
-                          }
+                          {module.progress === "completed" &&
+                            module.score > 0 &&
+                            ` • Score: ${module.score}`}
                         </p>
                       </div>
                     </div>

@@ -1,5 +1,12 @@
 import Image from "next/image";
-import { Cog, BookOpen, ChevronRight, Users, Upload, BookMarked } from "lucide-react";
+import {
+  Cog,
+  BookOpen,
+  ChevronRight,
+  Users,
+  Upload,
+  BookMarked,
+} from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
@@ -64,14 +71,14 @@ export default async function MentorDashboard() {
     const students = studentsData || [];
 
     // Group students by subject
-    subjectsWithStudents = subjects.map(subject => {
-      const subjectStudents = students.filter(student =>
+    subjectsWithStudents = subjects.map((subject) => {
+      const subjectStudents = students.filter((student) =>
         student.subjects.includes(subject.id)
       );
 
       return {
         ...subject,
-        students: subjectStudents
+        students: subjectStudents,
       };
     });
   }
@@ -119,7 +126,8 @@ export default async function MentorDashboard() {
               <div className="space-y-2">
                 <h3 className="text-lg font-medium">Upload New Materials</h3>
                 <p className="text-sm text-muted-foreground">
-                  Upload textbooks, blogs, or academic articles to create interactive learning modules
+                  Upload textbooks, blogs, or academic articles to create
+                  interactive learning modules
                 </p>
               </div>
               <BookMarked className="w-8 h-8 text-primary" />
@@ -180,7 +188,7 @@ export default async function MentorDashboard() {
               ))}
 
               {/* Flatten the students array to check if there are any students */}
-              {subjectsWithStudents.flatMap(s => s.students).length === 0 && (
+              {subjectsWithStudents.flatMap((s) => s.students).length === 0 && (
                 <p className="text-center text-muted-foreground py-8">
                   No students enrolled yet
                 </p>

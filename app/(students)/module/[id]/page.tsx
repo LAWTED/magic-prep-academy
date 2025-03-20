@@ -3,8 +3,10 @@
 import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Star, Check } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
 import { motion } from "framer-motion";
+import { themeConfig } from "../../../config/themeConfig";
+import { UserXP, UserHearts } from "@/app/types/index";
 
 interface Session {
   id: string;
@@ -43,6 +45,8 @@ export default function ModulePage({
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [isModuleCompleted, setIsModuleCompleted] = useState(false);
+  const [userXP, setUserXP] = useState<UserXP | null>(null);
+  const [userHearts, setUserHearts] = useState<UserHearts | null>(null);
 
   // Fetch all data in a single effect
   useEffect(() => {
@@ -83,6 +87,28 @@ export default function ModulePage({
         setModule(moduleData);
         setSessions(sessionsData);
 
+        // Fetch user XP and hearts data
+        const [xpResponse, heartsResponse] = await Promise.all([
+          supabase
+            .from("user_xp")
+            .select("*")
+            .eq("user_id", userData.id)
+            .single(),
+          supabase
+            .from("user_hearts")
+            .select("*")
+            .eq("user_id", userData.id)
+            .single()
+        ]);
+
+        if (xpResponse.data) {
+          setUserXP(xpResponse.data);
+        }
+
+        if (heartsResponse.data) {
+          setUserHearts(heartsResponse.data);
+        }
+
         if (sessionsData.length > 0) {
           // Fetch session progress and module progress in parallel
           const [sessionProgressResponse, moduleProgressResponse] = await Promise.all([
@@ -108,7 +134,7 @@ export default function ModulePage({
             setProgress(progressMap);
 
             // Check if all sessions are completed
-            const allCompleted = sessionsData.every(session => progressMap[session.id]);
+            const allCompleted = sessionsData.every(session => progressMap[session.id] && progressMap[session.id].progress === "completed");
 
             // If we have module progress data, use it
             if (!moduleProgressResponse.error && moduleProgressResponse.data) {
@@ -116,12 +142,20 @@ export default function ModulePage({
             } else if (allCompleted) {
               // If all sessions completed but no module progress, update it
               setIsModuleCompleted(true);
-              await supabase.from("module_progress").upsert({
-                user_id: userData.id,
-                module_id: id,
-                progress: "completed",
-                score: 0
-              });
+
+              // Add module completion XP reward
+              await Promise.all([
+                // Update module progress
+                supabase.from("module_progress").upsert({
+                  user_id: userData.id,
+                  module_id: id,
+                  progress: "completed",
+                  score: 0
+                }),
+
+                // Award 100 XP for first-time completion
+                awardModuleCompletionXP(userData.id, xpResponse.data)
+              ]);
             }
           }
         }
@@ -134,6 +168,85 @@ export default function ModulePage({
 
     fetchData();
   }, [id, supabase, router]);
+
+  // Award XP for completing a module
+  const awardModuleCompletionXP = async (userId: string, currentXP: UserXP | null) => {
+    if (!currentXP) return;
+
+    try {
+      const XP_REWARD = 100;
+
+      // Calculate new XP value
+      const newTotalXP = currentXP.total_xp + XP_REWARD;
+
+      // Update user XP in database
+      const { error } = await supabase
+        .from("user_xp")
+        .update({
+          total_xp: newTotalXP
+        })
+        .eq("user_id", userId);
+
+      if (error) {
+        console.error("Error awarding XP:", error);
+        return;
+      }
+
+      // Update local state
+      setUserXP({
+        ...currentXP,
+        total_xp: newTotalXP
+      });
+
+      // Show success message
+      alert(`Congratulations! You earned ¥${XP_REWARD} for completing the module!`);
+
+    } catch (error) {
+      console.error("Error awarding module completion XP:", error);
+    }
+  };
+
+  const handleStartSession = async (sessionId: string) => {
+    if (!userId) return;
+
+    // If session is already completed, don't use hearts
+    if (progress[sessionId]) {
+      router.push(`/session/${sessionId}`);
+      return;
+    }
+
+    // Check if user has hearts
+    if (!userHearts || userHearts.current_hearts <= 0) {
+      alert("You don't have enough hearts to start this session!");
+      return;
+    }
+
+    try {
+      // Deduct one heart
+      const newHeartCount = userHearts.current_hearts - 1;
+
+      const { error } = await supabase
+        .from("user_hearts")
+        .update({ current_hearts: newHeartCount })
+        .eq("user_id", userId);
+
+      if (error) {
+        console.error("Error updating hearts:", error);
+        return;
+      }
+
+      // Update local state
+      setUserHearts({
+        ...userHearts,
+        current_hearts: newHeartCount
+      });
+
+      // Navigate to session
+      router.push(`/session/${sessionId}`);
+    } catch (error) {
+      console.error("Error starting session:", error);
+    }
+  };
 
   if (loading) {
     return (
@@ -165,8 +278,7 @@ export default function ModulePage({
           <h1 className="font-bold text-lg">{module.module_name}</h1>
         </div>
         <div className="flex items-center gap-2 bg-white/90 px-3 py-1.5 rounded-xl border">
-          <Star className="w-4 h-4 text-yellow-500" />
-          <span className="font-medium text-sm">5</span>
+          {themeConfig.hearts(userHearts?.current_hearts || 0)}
         </div>
       </header>
 
@@ -182,7 +294,7 @@ export default function ModulePage({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              onClick={() => router.push(`/session/${session.id}`)}
+              onClick={() => handleStartSession(session.id)}
               className="w-full p-4 bg-white rounded-xl shadow-sm flex items-center gap-4 hover:bg-gray-50 transition-colors active:scale-[0.98] touch-action-manipulation text-left relative overflow-hidden"
             >
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">

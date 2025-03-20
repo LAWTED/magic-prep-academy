@@ -1,17 +1,17 @@
-export interface User {
+export interface UserXP {
   id: string;
-  auth_id: string;
-  name: string;
-  region: string;
-  subjects: string[];
-  avatar_name: string;
+  user_id: string;
+  total_xp: number;
+  streak_days: number;
   created_at: string;
   updated_at: string;
 }
 
-export interface Subject {
+export interface UserHearts {
   id: string;
-  subject_name: string;
+  user_id: string;
+  current_hearts: number;
+  max_hearts: number;
   created_at: string;
   updated_at: string;
 }
@@ -22,20 +22,35 @@ export interface Module {
   module_name: string;
   order_index: number;
   description: string;
-  created_at: string;
-  updated_at: string;
 }
 
-export interface Session {
+export interface Subject {
   id: string;
-  module_id: string;
-  session_name: string;
-  content: {
-    type: string;
-    content: any;
-  };
-  created_at: string;
-  updated_at: string;
+  subject_name: string;
 }
 
-export type { Quiz, QUIZ_TYPES } from '../config/const';
+export interface ModuleProgress {
+  module_id: string;
+  progress: string;
+  score: number;
+}
+
+export interface ModuleWithSubject extends Module {
+  subject_name: string;
+}
+
+export interface Award {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  image_path: string;
+  is_purchasable: boolean;
+};
+
+export interface UserAward {
+  id: string;
+  user_id: string;
+  award_id: string;
+  acquired_at: string;
+};

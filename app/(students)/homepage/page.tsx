@@ -2,32 +2,18 @@
 
 import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
-import { Cog, Star, ChevronRight, Check } from "lucide-react";
+import { Cog, ChevronRight, Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
-interface Module {
-  id: string;
-  subject_id: string;
-  module_name: string;
-  order_index: number;
-  description: string;
-}
-
-interface Subject {
-  id: string;
-  subject_name: string;
-}
-
-interface ModuleProgress {
-  module_id: string;
-  progress: string;
-  score: number;
-}
-
-interface ModuleWithSubject extends Module {
-  subject_name: string;
-}
+import {
+  UserXP,
+  UserHearts,
+  Module,
+  Subject,
+  ModuleProgress,
+  ModuleWithSubject,
+} from "@/app/types/index";
+import { themeConfig } from "@/app/config/themeConfig";
 
 export default function ProtectedPage() {
   const router = useRouter();
@@ -35,7 +21,11 @@ export default function ProtectedPage() {
   const [profile, setProfile] = useState<any>(null);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [allModules, setAllModules] = useState<ModuleWithSubject[]>([]);
-  const [moduleProgress, setModuleProgress] = useState<Record<string, ModuleProgress>>({});
+  const [moduleProgress, setModuleProgress] = useState<
+    Record<string, ModuleProgress>
+  >({});
+  const [userXP, setUserXP] = useState<UserXP | null>(null);
+  const [userHearts, setUserHearts] = useState<UserHearts | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -65,6 +55,29 @@ export default function ProtectedPage() {
 
         setProfile(userData);
 
+        // Fetch XP and Hearts data
+        const [xpResponse, heartsResponse] = await Promise.all([
+          supabase
+            .from("user_xp")
+            .select("*")
+            .eq("user_id", userData.id)
+            .single(),
+
+          supabase
+            .from("user_hearts")
+            .select("*")
+            .eq("user_id", userData.id)
+            .single(),
+        ]);
+
+        if (xpResponse.data) {
+          setUserXP(xpResponse.data);
+        }
+
+        if (heartsResponse.data) {
+          setUserHearts(heartsResponse.data);
+        }
+
         // If no subjects, nothing else to fetch
         if (!userData.subjects || userData.subjects.length === 0) {
           setLoading(false);
@@ -81,7 +94,7 @@ export default function ProtectedPage() {
             .from("modules")
             .select("*")
             .in("subject_id", userData.subjects)
-            .order("order_index")
+            .order("order_index"),
         ]);
 
         // Process subjects
@@ -98,14 +111,14 @@ export default function ProtectedPage() {
         const modulesData = modulesResponse.data || [];
         const modulesWithSubjectInfo = modulesData.map((module: Module) => ({
           ...module,
-          subject_name: subjectMap[module.subject_id] || "Unknown Subject"
+          subject_name: subjectMap[module.subject_id] || "Unknown Subject",
         }));
 
         setAllModules(modulesWithSubjectInfo);
 
         // If we have modules, fetch their progress
         if (modulesData.length > 0) {
-          const moduleIds = modulesData.map(m => m.id);
+          const moduleIds = modulesData.map((m) => m.id);
 
           const { data: progressData } = await supabase
             .from("module_progress")
@@ -147,7 +160,7 @@ export default function ProtectedPage() {
     <div className="w-full h-full flex flex-col">
       {/* Header */}
       <header className="w-full p-4 flex items-center justify-between border-b">
-        {/* Avatar and Stars */}
+        {/* Avatar and Stats */}
         <div className="flex items-center gap-3">
           {/* Avatar */}
           <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-primary">
@@ -160,10 +173,13 @@ export default function ProtectedPage() {
           </div>
           {/* Name */}
           <p className="text-lg font-bold">{profile.name}</p>
-          {/* Daily Stars */}
+          {/* XP as money */}
           <div className="flex items-center gap-2 bg-white/90 px-3 py-1.5 rounded-xl">
-            <Star className="w-4 h-4 text-yellow-500" />
-            <span className="font-medium text-sm">5</span>
+            {themeConfig.xpReward(userXP?.total_xp || 0)}
+          </div>
+          {/* Hearts */}
+          <div className="flex items-center gap-2 bg-white/90 px-3 py-1.5 rounded-xl">
+            {themeConfig.hearts(userHearts?.current_hearts || 0)}
           </div>
         </div>
 
@@ -191,11 +207,8 @@ export default function ProtectedPage() {
                     {module.subject_name}
                   </span>
                   <p className="text-xs text-gray-500 text-left">
-                    {moduleProgress[module.id]?.progress === "completed"
-                      ? "Completed"
-                      : moduleProgress[module.id]?.progress === "in_progress"
-                        ? "In progress"
-                        : "Not started"}
+                    {moduleProgress[module.id]?.progress === "completed" &&
+                      "Completed"}
                   </p>
                 </div>
               </div>

@@ -2,7 +2,6 @@
 
 import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
-import { Cog } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { UserXP, UserHearts, Award } from "@/app/types/index";
@@ -159,156 +158,124 @@ export default function AwardsPage() {
 
   if (loading || !profile) {
     return (
-      <div className="flex items-center justify-center h-[100dvh]">
-        <p>Loading...</p>
+      <div className="p-4 space-y-6 overflow-auto">
+        <div className="flex items-center justify-center h-[calc(100vh-180px)]">
+          <p>Loading...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full flex flex-col">
-      {/* Header */}
-      <header className="w-full p-4 flex items-center justify-between border-b">
-        {/* Avatar and Stats */}
-        <div className="flex items-center gap-3">
-          {/* Avatar */}
-          <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-primary">
-            <Image
-              src={avatarPath}
-              alt={profile.name}
-              fill
-              className="object-cover"
-            />
-          </div>
-          {/* Name */}
-          <p className="text-lg font-bold">{profile.name}</p>
-          {/* XP as money */}
-          <div className="flex items-center gap-2 bg-white/90 px-3 py-1.5 rounded-xl">
-            {themeConfig.xpReward(userXP?.total_xp || 0)}
-          </div>
-          {/* Hearts */}
-          <div className="flex items-center gap-2 bg-white/90 px-3 py-1.5 rounded-xl">
-            {themeConfig.hearts(userHearts?.current_hearts || 0)}
-          </div>
-        </div>
+    <div className="p-4 space-y-6 overflow-auto">
+      <h2 className="text-xl font-medium">Magic Awards</h2>
+      <p className="text-sm text-muted-foreground">
+        Spend your XP to unlock magical badges and items!
+      </p>
 
-        {/* Settings (disabled) */}
-        <button className="text-gray-400 cursor-not-allowed" disabled>
-          <Cog size={22} />
-        </button>
-      </header>
+      <div className="grid grid-cols-2 gap-4">
+        {awards
+          .filter((award) => award.is_purchasable)
+          .map((award) => {
+            const isPurchased = purchasedAwards.includes(award.id);
+            const canAfford = (userXP?.total_xp || 0) >= award.price;
+            const isProcessing = purchaseInProgress === award.id;
 
-      {/* Main Content */}
-      <div className="grow p-4 space-y-6 overflow-auto">
-        <h2 className="text-xl font-medium">Magic Awards</h2>
-        <p className="text-sm text-muted-foreground">
-          Spend your XP to unlock magical badges and items!
-        </p>
+            return (
+              <motion.div
+                key={award.id}
+                className="bg-white rounded-xl shadow-sm overflow-hidden border"
+                whileTap={{ scale: 0.98 }}
+              >
+                <div className="aspect-square relative">
+                  <Image
+                    src={award.image_path}
+                    alt={award.name}
+                    fill
+                    className="object-contain p-4"
+                  />
+                </div>
+                <div className="p-3 space-y-2">
+                  <h3 className="font-medium text-sm">{award.name}</h3>
+                  <p className="text-xs text-muted-foreground line-clamp-2">
+                    {award.description || "A magical award!"}
+                  </p>
 
-        <div className="grid grid-cols-2 gap-4">
-          {awards
-            .filter((award) => award.is_purchasable)
-            .map((award) => {
-              const isPurchased = purchasedAwards.includes(award.id);
-              const canAfford = (userXP?.total_xp || 0) >= award.price;
-              const isProcessing = purchaseInProgress === award.id;
-
-              return (
-                <motion.div
-                  key={award.id}
-                  className="bg-white rounded-xl shadow-sm overflow-hidden border"
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div className="aspect-square relative">
-                    <Image
-                      src={award.image_path}
-                      alt={award.name}
-                      fill
-                      className="object-contain p-4"
-                    />
-                  </div>
-                  <div className="p-3 space-y-2">
-                    <h3 className="font-medium text-sm">{award.name}</h3>
-                    <p className="text-xs text-muted-foreground line-clamp-2">
-                      {award.description || "A magical award!"}
-                    </p>
-
-                    {isPurchased ? (
-                      <div className="flex items-center justify-center w-full bg-green-100 text-green-700 py-2 rounded-md text-sm mt-2">
-                        Earned
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => purchaseAward(award.id, award.price)}
-                        disabled={!canAfford || isProcessing}
-                        className={`flex items-center justify-center w-full py-2 rounded-md text-sm mt-2 ${
-                          canAfford
-                            ? "bg-primary text-white active:scale-[0.98]"
-                            : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        }`}
-                      >
-                        {isProcessing ? (
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                          <>{themeConfig.xpReward(award.price)}</>
-                        )}
-                      </button>
-                    )}
-                  </div>
-                </motion.div>
-              );
-            })}
-        </div>
-
-        {awards.filter((award) => !award.is_purchasable).length > 0 && (
-          <>
-            <h2 className="text-xl font-medium mt-8">Achievement Awards</h2>
-            <p className="text-sm text-muted-foreground">
-              Special awards earned through gameplay achievements!
-            </p>
-
-            <div className="grid grid-cols-2 gap-4">
-              {awards
-                .filter((award) => !award.is_purchasable)
-                .map((award) => {
-                  const isPurchased = purchasedAwards.includes(award.id);
-
-                  return (
-                    <div
-                      key={award.id}
-                      className={`bg-white rounded-xl shadow-sm overflow-hidden border ${!isPurchased ? "opacity-50" : ""}`}
-                    >
-                      <div className="aspect-square relative">
-                        <Image
-                          src={award.image_path}
-                          alt={award.name}
-                          fill
-                          className="object-contain p-4"
-                        />
-                      </div>
-                      <div className="p-3 space-y-2">
-                        <h3 className="font-medium text-sm">{award.name}</h3>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {award.description || "A special achievement!"}
-                        </p>
-
-                        {isPurchased ? (
-                          <div className="flex items-center justify-center w-full bg-green-100 text-green-700 py-2 rounded-md text-sm mt-2">
-                            Earned
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-center w-full bg-gray-100 text-gray-500 py-2 rounded-md text-sm mt-2">
-                            Locked
-                          </div>
-                        )}
-                      </div>
+                  {isPurchased ? (
+                    <div className="flex items-center justify-center w-full bg-green-100 text-green-700 py-2 rounded-md text-sm mt-2">
+                      Earned
                     </div>
-                  );
-                })}
-            </div>
-          </>
-        )}
+                  ) : (
+                    <button
+                      onClick={() => purchaseAward(award.id, award.price)}
+                      disabled={!canAfford || isProcessing}
+                      className={`flex items-center justify-center w-full py-2 rounded-md text-sm mt-2 ${
+                        canAfford
+                          ? "bg-primary text-white active:scale-[0.98]"
+                          : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      }`}
+                    >
+                      {isProcessing ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <>{themeConfig.xpReward(award.price)}</>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
       </div>
+
+      {awards.filter((award) => !award.is_purchasable).length > 0 && (
+        <>
+          <h2 className="text-xl font-medium mt-8">Achievement Awards</h2>
+          <p className="text-sm text-muted-foreground">
+            Special awards earned through gameplay achievements!
+          </p>
+
+          <div className="grid grid-cols-2 gap-4">
+            {awards
+              .filter((award) => !award.is_purchasable)
+              .map((award) => {
+                const isPurchased = purchasedAwards.includes(award.id);
+
+                return (
+                  <div
+                    key={award.id}
+                    className={`bg-white rounded-xl shadow-sm overflow-hidden border ${!isPurchased ? "opacity-50" : ""}`}
+                  >
+                    <div className="aspect-square relative">
+                      <Image
+                        src={award.image_path}
+                        alt={award.name}
+                        fill
+                        className="object-contain p-4"
+                      />
+                    </div>
+                    <div className="p-3 space-y-2">
+                      <h3 className="font-medium text-sm">{award.name}</h3>
+                      <p className="text-xs text-muted-foreground line-clamp-2">
+                        {award.description || "A special achievement!"}
+                      </p>
+
+                      {isPurchased ? (
+                        <div className="flex items-center justify-center w-full bg-green-100 text-green-700 py-2 rounded-md text-sm mt-2">
+                          Earned
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center w-full bg-gray-100 text-gray-500 py-2 rounded-md text-sm mt-2">
+                          Locked
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -1,8 +1,7 @@
 "use client";
 
 import { createClient } from "@/utils/supabase/client";
-import Image from "next/image";
-import { Cog, ChevronRight, Check } from "lucide-react";
+import { ChevronRight, Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -147,88 +146,53 @@ export default function ProtectedPage() {
 
   if (loading || !profile) {
     return (
-      <div className="flex items-center justify-center h-[100dvh]">
-        <p>Loading...</p>
+      <div className="p-4 space-y-6">
+        <div className="flex items-center justify-center h-[calc(100vh-180px)]">
+          <p>Loading...</p>
+        </div>
       </div>
     );
   }
 
-  // Get avatar path based on profile's avatar_name
-  const avatarPath = `/images/avatars/${profile.avatar_name}.png`;
-
   return (
-    <div className="w-full h-full flex flex-col">
-      {/* Header */}
-      <header className="w-full p-4 flex items-center justify-between border-b">
-        {/* Avatar and Stats */}
-        <div className="flex items-center gap-3">
-          {/* Avatar */}
-          <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-primary">
-            <Image
-              src={avatarPath}
-              alt={profile.name}
-              fill
-              className="object-cover"
-            />
-          </div>
-          {/* Name */}
-          <p className="text-lg font-bold">{profile.name}</p>
-          {/* XP as money */}
-          <div className="flex items-center gap-2 bg-white/90 px-3 py-1.5 rounded-xl">
-            {themeConfig.xpReward(userXP?.total_xp || 0)}
-          </div>
-          {/* Hearts */}
-          <div className="flex items-center gap-2 bg-white/90 px-3 py-1.5 rounded-xl">
-            {themeConfig.hearts(userHearts?.current_hearts || 0)}
-          </div>
-        </div>
-
-        {/* Settings (disabled) */}
-        <button className="text-gray-400 cursor-not-allowed" disabled>
-          <Cog size={22} />
-        </button>
-      </header>
-
-      {/* Main Content */}
-      <div className="grow p-4 space-y-6">
-        {/* Learning Modules */}
-        <h2 className="text-lg font-medium">Learning Modules</h2>
-        <div className="space-y-3">
-          {allModules.map((module) => (
-            <button
-              key={module.id}
-              onClick={() => router.push(`/module/${module.id}`)}
-              className="w-full p-4 bg-white rounded-xl shadow-sm flex items-center justify-between hover:bg-gray-50 transition-colors active:scale-[0.98] touch-action-manipulation"
-            >
-              <div className="flex-1">
-                <p className="font-medium text-left">{module.module_name}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                    {module.subject_name}
-                  </span>
-                  <p className="text-xs text-gray-500 text-left">
-                    {moduleProgress[module.id]?.progress === "completed" &&
-                      "Completed"}
-                  </p>
+    <div className="p-4 space-y-6">
+      {/* Learning Modules */}
+      <h2 className="text-lg font-medium">Learning Modules</h2>
+      <div className="space-y-3">
+        {allModules.map((module) => (
+          <button
+            key={module.id}
+            onClick={() => router.push(`/module/${module.id}`)}
+            className="w-full p-4 bg-white rounded-xl shadow-sm flex items-center justify-between hover:bg-gray-50 transition-colors active:scale-[0.98] touch-action-manipulation"
+          >
+            <div className="flex-1">
+              <p className="font-medium text-left">{module.module_name}</p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                  {module.subject_name}
+                </span>
+                <p className="text-xs text-gray-500 text-left">
+                  {moduleProgress[module.id]?.progress === "completed" &&
+                    "Completed"}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              {moduleProgress[module.id]?.progress === "completed" && (
+                <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-green-600" />
                 </div>
-              </div>
-              <div className="flex items-center gap-3">
-                {moduleProgress[module.id]?.progress === "completed" && (
-                  <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                    <Check className="w-4 h-4 text-green-600" />
-                  </div>
-                )}
-                <ChevronRight className="w-5 h-5 text-gray-400" />
-              </div>
-            </button>
-          ))}
+              )}
+              <ChevronRight className="w-5 h-5 text-gray-400" />
+            </div>
+          </button>
+        ))}
 
-          {allModules.length === 0 && (
-            <p className="text-center text-gray-500 py-8">
-              No learning modules available
-            </p>
-          )}
-        </div>
+        {allModules.length === 0 && (
+          <p className="text-center text-gray-500 py-8">
+            No learning modules available
+          </p>
+        )}
       </div>
     </div>
   );

@@ -39,8 +39,9 @@ export default function ProtectedPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function checkUser() {
+    async function fetchData() {
       try {
+        // Get current user
         const {
           data: { user },
         } = await supabase.auth.getUser();
@@ -51,86 +52,84 @@ export default function ProtectedPage() {
         }
 
         // Check if user has a profile
-        const { data: userData } = await supabase
+        const { data: userData, error: userError } = await supabase
           .from("users")
           .select("*")
           .eq("auth_id", user.id)
           .single();
 
-        if (!userData || !userData.name) {
+        if (userError || !userData || !userData.name) {
           router.push("/onboarding");
           return;
         }
 
         setProfile(userData);
 
-        // Fetch subjects data
-        if (userData.subjects && userData.subjects.length > 0) {
-          const { data: subjectsData } = await supabase
-            .from("subjects")
+        // If no subjects, nothing else to fetch
+        if (!userData.subjects || userData.subjects.length === 0) {
+          setLoading(false);
+          return;
+        }
+
+        // Fetch subjects and all modules in parallel
+        const [subjectsResponse, modulesResponse] = await Promise.all([
+          // Get all subjects
+          supabase.from("subjects").select("*").in("id", userData.subjects),
+
+          // Get all modules for all subjects at once
+          supabase
+            .from("modules")
             .select("*")
-            .in("id", userData.subjects);
+            .in("subject_id", userData.subjects)
+            .order("order_index")
+        ]);
 
-          setSubjects(subjectsData || []);
+        // Process subjects
+        const subjectsData = subjectsResponse.data || [];
+        setSubjects(subjectsData);
 
-          // Create a subject id to name mapping
-          const subjectMap: Record<string, string> = {};
-          if (subjectsData) {
-            subjectsData.forEach((subject: Subject) => {
-              subjectMap[subject.id] = subject.subject_name;
+        // Create a subject id to name mapping
+        const subjectMap: Record<string, string> = {};
+        subjectsData.forEach((subject: Subject) => {
+          subjectMap[subject.id] = subject.subject_name;
+        });
+
+        // Process modules
+        const modulesData = modulesResponse.data || [];
+        const modulesWithSubjectInfo = modulesData.map((module: Module) => ({
+          ...module,
+          subject_name: subjectMap[module.subject_id] || "Unknown Subject"
+        }));
+
+        setAllModules(modulesWithSubjectInfo);
+
+        // If we have modules, fetch their progress
+        if (modulesData.length > 0) {
+          const moduleIds = modulesData.map(m => m.id);
+
+          const { data: progressData } = await supabase
+            .from("module_progress")
+            .select("*")
+            .eq("user_id", userData.id)
+            .in("module_id", moduleIds);
+
+          if (progressData) {
+            const progressMap: Record<string, ModuleProgress> = {};
+            progressData.forEach((p: ModuleProgress) => {
+              progressMap[p.module_id] = p;
             });
-          }
-
-          // Fetch modules for each subject
-          const modulesWithSubjectInfo: ModuleWithSubject[] = [];
-          const allModuleIds: string[] = [];
-
-          for (const subject of userData.subjects) {
-            const { data: subjectModules } = await supabase
-              .from("modules")
-              .select("*")
-              .eq("subject_id", subject)
-              .order("order_index");
-
-            if (subjectModules) {
-              // Add subject name to each module
-              const modulesWithSubject = subjectModules.map((module: Module) => ({
-                ...module,
-                subject_name: subjectMap[subject] || "Unknown Subject"
-              }));
-
-              modulesWithSubjectInfo.push(...modulesWithSubject);
-              allModuleIds.push(...subjectModules.map(m => m.id));
-            }
-          }
-          setAllModules(modulesWithSubjectInfo);
-
-          // Fetch progress for all modules
-          if (allModuleIds.length > 0) {
-            const { data: progressData } = await supabase
-              .from("module_progress")
-              .select("*")
-              .eq("user_id", userData.id)
-              .in("module_id", allModuleIds);
-
-            if (progressData) {
-              const progressMap: Record<string, ModuleProgress> = {};
-              progressData.forEach((p: ModuleProgress) => {
-                progressMap[p.module_id] = p;
-              });
-              setModuleProgress(progressMap);
-            }
+            setModuleProgress(progressMap);
           }
         }
       } catch (error) {
-        console.error("Error checking user:", error);
+        console.error("Error loading homepage data:", error);
         router.push("/sign-in");
       } finally {
         setLoading(false);
       }
     }
 
-    checkUser();
+    fetchData();
   }, [router, supabase]);
 
   if (loading || !profile) {

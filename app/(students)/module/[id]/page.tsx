@@ -42,49 +42,12 @@ export default function ModulePage({
   const [progress, setProgress] = useState<Record<string, SessionProgress>>({});
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isModuleCompleted, setIsModuleCompleted] = useState(false);
 
-  // Check and update module progress
+  // Fetch all data in a single effect
   useEffect(() => {
-    async function updateModuleProgress() {
-      if (!userId || !module || !sessions.length) return;
-
-      // Check if all sessions are completed
-      const allSessionsCompleted = sessions.every(
-        (session) => progress[session.id]
-      );
-
-      if (allSessionsCompleted) {
-        try {
-          // Check if module progress already exists
-          const { data: existingProgress } = await supabase
-            .from("module_progress")
-            .select("*")
-            .eq("user_id", userId)
-            .eq("module_id", module.id)
-            .single();
-
-          if (!existingProgress) {
-            // Create new module progress entry
-            const { error } = await supabase.from("module_progress").insert({
-              user_id: userId,
-              module_id: module.id,
-              progress: "completed",
-              score: 0, // As requested, setting score to 0 for now
-            });
-
-            if (error) throw error;
-          }
-        } catch (error) {
-          console.error("Error updating module progress:", error);
-        }
-      }
-    }
-
-    updateModuleProgress();
-  }, [userId, module, sessions, progress]);
-
-  useEffect(() => {
-    async function fetchModuleAndSessions() {
+    console.log("Module ID:", id);
+    async function fetchData() {
       try {
         // Get current user
         const {
@@ -95,63 +58,81 @@ export default function ModulePage({
           return;
         }
 
-        // Get user's profile
-        const { data: userData } = await supabase
-          .from("users")
-          .select("id")
-          .eq("auth_id", user.id)
-          .single();
+        // Get user's profile, module details, and sessions in parallel
+        const [userResponse, moduleResponse, sessionsResponse] = await Promise.all([
+          supabase.from("users").select("id").eq("auth_id", user.id).single(),
+          supabase.from("modules").select("*").eq("id", id).single(),
+          supabase.from("sessions").select("*").eq("module_id", id)
+        ]);
 
-        if (userData) {
-          setUserId(userData.id);
+        if (userResponse.error || !userResponse.data) {
+          console.error("Error fetching user data:", userResponse.error);
+          return;
+        }
 
-          // Fetch module details
-          const { data: moduleData } = await supabase
-            .from("modules")
-            .select("*")
-            .eq("id", id)
-            .single();
+        if (moduleResponse.error || !moduleResponse.data) {
+          console.error("Error fetching module data:", moduleResponse.error);
+          return;
+        }
 
-          if (moduleData) {
-            setModule(moduleData);
+        const userData = userResponse.data;
+        const moduleData = moduleResponse.data;
+        const sessionsData = sessionsResponse.data || [];
 
-            // Fetch sessions for this module
-            const { data: sessionsData } = await supabase
-              .from("sessions")
+        setUserId(userData.id);
+        setModule(moduleData);
+        setSessions(sessionsData);
+
+        if (sessionsData.length > 0) {
+          // Fetch session progress and module progress in parallel
+          const [sessionProgressResponse, moduleProgressResponse] = await Promise.all([
+            supabase
+              .from("session_progress")
               .select("*")
-              .eq("module_id", id);
+              .eq("user_id", userData.id)
+              .in("session_id", sessionsData.map(s => s.id)),
+            supabase
+              .from("module_progress")
+              .select("progress")
+              .eq("user_id", userData.id)
+              .eq("module_id", id)
+              .single()
+          ]);
 
-            if (sessionsData) {
-              setSessions(sessionsData);
+          // Process session progress
+          if (!sessionProgressResponse.error && sessionProgressResponse.data) {
+            const progressMap: Record<string, SessionProgress> = {};
+            sessionProgressResponse.data.forEach((p: SessionProgress) => {
+              progressMap[p.session_id] = p;
+            });
+            setProgress(progressMap);
 
-              // Fetch progress for all sessions
-              const { data: progressData } = await supabase
-                .from("session_progress")
-                .select("*")
-                .eq("user_id", userData.id)
-                .in(
-                  "session_id",
-                  sessionsData.map((s) => s.id)
-                );
+            // Check if all sessions are completed
+            const allCompleted = sessionsData.every(session => progressMap[session.id]);
 
-              if (progressData) {
-                const progressMap: Record<string, SessionProgress> = {};
-                progressData.forEach((p: SessionProgress) => {
-                  progressMap[p.session_id] = p;
-                });
-                setProgress(progressMap);
-              }
+            // If we have module progress data, use it
+            if (!moduleProgressResponse.error && moduleProgressResponse.data) {
+              setIsModuleCompleted(moduleProgressResponse.data.progress === "completed");
+            } else if (allCompleted) {
+              // If all sessions completed but no module progress, update it
+              setIsModuleCompleted(true);
+              await supabase.from("module_progress").upsert({
+                user_id: userData.id,
+                module_id: id,
+                progress: "completed",
+                score: 0
+              });
             }
           }
         }
       } catch (error) {
-        console.error("Error fetching module data:", error);
+        console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchModuleAndSessions();
+    fetchData();
   }, [id, supabase, router]);
 
   if (loading) {

@@ -8,7 +8,7 @@ import MultipleChoiceGenerator from "./components/MultipleChoiceGenerator";
 import MatchingGenerator from "./components/MatchingGenerator";
 import FillInTheBlankGenerator from "./components/FillInTheBlankGenerator";
 import DialogueGenerator from "./components/DialogueGenerator";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 
 // Define steps for the process flow
 const STEPS = {
@@ -16,7 +16,7 @@ const STEPS = {
   CREATE_SESSIONS: 1,
 };
 
-export default function ProcessMaterialContent() {
+function ProcessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const vectorStoreId = searchParams.get("vectorStoreId");
@@ -109,5 +109,13 @@ export default function ProcessMaterialContent() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function ProcessMaterialContent() {
+  return (
+    <Suspense fallback={<div className="p-6">Loading...</div>}>
+      <ProcessContent />
+    </Suspense>
   );
 }

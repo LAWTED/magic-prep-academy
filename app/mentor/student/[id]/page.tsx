@@ -11,11 +11,10 @@ import { redirect } from "next/navigation";
 import Image from "next/image";
 import { Module, Subject } from "@/app/types";
 
-export default async function StudentProgress({
-  params,
-}: {
-  params: { id: string };
+export default async function StudentProgress(props: {
+  params: Promise<{ id: string }>;
 }) {
+  const params = await props.params;
   const studentId = params.id;
   const supabase = await createClient();
 

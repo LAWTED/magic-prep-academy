@@ -1,6 +1,6 @@
 {
   "name": "Magic Prep Academy",
-  "short_name": "MPA",
+  "short_name": "Magic Prep",
   "description": "学习魔法的预备学院",
   "start_url": "/",
   "display": "standalone",

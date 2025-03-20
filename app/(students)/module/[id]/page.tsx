@@ -29,7 +29,11 @@ interface Module {
   description: string;
 }
 
-export default function ModulePage({ params }: { params: Promise<{ id: string }> }) {
+export default function ModulePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const router = useRouter();
   const supabase = createClient();
@@ -45,7 +49,9 @@ export default function ModulePage({ params }: { params: Promise<{ id: string }>
       if (!userId || !module || !sessions.length) return;
 
       // Check if all sessions are completed
-      const allSessionsCompleted = sessions.every(session => progress[session.id]);
+      const allSessionsCompleted = sessions.every(
+        (session) => progress[session.id]
+      );
 
       if (allSessionsCompleted) {
         try {
@@ -59,14 +65,12 @@ export default function ModulePage({ params }: { params: Promise<{ id: string }>
 
           if (!existingProgress) {
             // Create new module progress entry
-            const { error } = await supabase
-              .from("module_progress")
-              .insert({
-                user_id: userId,
-                module_id: module.id,
-                progress: "completed",
-                score: 0 // As requested, setting score to 0 for now
-              });
+            const { error } = await supabase.from("module_progress").insert({
+              user_id: userId,
+              module_id: module.id,
+              progress: "completed",
+              score: 0, // As requested, setting score to 0 for now
+            });
 
             if (error) throw error;
           }
@@ -83,7 +87,9 @@ export default function ModulePage({ params }: { params: Promise<{ id: string }>
     async function fetchModuleAndSessions() {
       try {
         // Get current user
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (!user) {
           router.push("/sign-in");
           return;
@@ -123,7 +129,10 @@ export default function ModulePage({ params }: { params: Promise<{ id: string }>
                 .from("session_progress")
                 .select("*")
                 .eq("user_id", userData.id)
-                .in("session_id", sessionsData.map(s => s.id));
+                .in(
+                  "session_id",
+                  sessionsData.map((s) => s.id)
+                );
 
               if (progressData) {
                 const progressMap: Record<string, SessionProgress> = {};
@@ -167,7 +176,7 @@ export default function ModulePage({ params }: { params: Promise<{ id: string }>
       <header className="w-full p-4 flex items-center justify-between bg-white border-b sticky top-0 z-10">
         <div className="flex items-center gap-4">
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push("/homepage")}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -206,10 +215,10 @@ export default function ModulePage({ params }: { params: Promise<{ id: string }>
                   {session.content.type === "MULTIPLE_CHOICE"
                     ? "Multiple Choice Questions"
                     : session.content.type === "FILL_IN_THE_BLANK"
-                    ? "Fill in the Blanks"
-                    : session.content.type === "MATCHING"
-                    ? "Matching Exercise"
-                    : "Dialogue Practice"}
+                      ? "Fill in the Blanks"
+                      : session.content.type === "MATCHING"
+                        ? "Matching Exercise"
+                        : "Dialogue Practice"}
                 </p>
               </div>
               {progress[session.id] && (

@@ -1,13 +1,9 @@
 import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import { openai } from '@/lib/openai';
 import { writeFile } from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import fs from 'fs';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY, // Note: Using server-side env variable
-});
 
 export async function POST(request: Request) {
   try {
@@ -63,17 +59,22 @@ export async function POST(request: Request) {
       );
     }
 
-    // TODO: Save to database
-    // const material = await db.materials.create({
-    //   data: {
-    //     title,
-    //     description,
-    //     fileId,
-    //     inputType,
-    //   },
-    // });
+    // Create a vector store
+    const vectorStore = await openai.vectorStores.create({
+      name: "knowledge_base",
+    });
+    const vectorStoreId = vectorStore.id;
 
-    return NextResponse.json({ fileId });
+    // Associate the file with the vector store
+    await openai.vectorStores.files.create(
+      vectorStoreId,
+      {
+        file_id: fileId,
+      }
+    );
+
+
+    return NextResponse.json({ fileId, vectorStoreId });
   } catch (error) {
     console.error('Error processing material:', error);
     return NextResponse.json(

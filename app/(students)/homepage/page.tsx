@@ -14,18 +14,27 @@ interface Module {
   description: string;
 }
 
+interface Subject {
+  id: string;
+  subject_name: string;
+}
+
 interface ModuleProgress {
   module_id: string;
   progress: string;
   score: number;
 }
 
+interface ModuleWithSubject extends Module {
+  subject_name: string;
+}
+
 export default function ProtectedPage() {
   const router = useRouter();
   const supabase = createClient();
   const [profile, setProfile] = useState<any>(null);
-  const [subjects, setSubjects] = useState<any[]>([]);
-  const [modules, setModules] = useState<{ [key: string]: Module[] }>({});
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [allModules, setAllModules] = useState<ModuleWithSubject[]>([]);
   const [moduleProgress, setModuleProgress] = useState<Record<string, ModuleProgress>>({});
   const [loading, setLoading] = useState(true);
 
@@ -64,8 +73,16 @@ export default function ProtectedPage() {
 
           setSubjects(subjectsData || []);
 
+          // Create a subject id to name mapping
+          const subjectMap: Record<string, string> = {};
+          if (subjectsData) {
+            subjectsData.forEach((subject: Subject) => {
+              subjectMap[subject.id] = subject.subject_name;
+            });
+          }
+
           // Fetch modules for each subject
-          const modulesData: { [key: string]: Module[] } = {};
+          const modulesWithSubjectInfo: ModuleWithSubject[] = [];
           const allModuleIds: string[] = [];
 
           for (const subject of userData.subjects) {
@@ -76,11 +93,17 @@ export default function ProtectedPage() {
               .order("order_index");
 
             if (subjectModules) {
-              modulesData[subject] = subjectModules;
+              // Add subject name to each module
+              const modulesWithSubject = subjectModules.map((module: Module) => ({
+                ...module,
+                subject_name: subjectMap[subject] || "Unknown Subject"
+              }));
+
+              modulesWithSubjectInfo.push(...modulesWithSubject);
               allModuleIds.push(...subjectModules.map(m => m.id));
             }
           }
-          setModules(modulesData);
+          setAllModules(modulesWithSubjectInfo);
 
           // Fetch progress for all modules
           if (allModuleIds.length > 0) {
@@ -136,7 +159,7 @@ export default function ProtectedPage() {
               className="object-cover"
             />
           </div>
-          {/* 名字 */}
+          {/* Name */}
           <p className="text-lg font-bold">{profile.name}</p>
           {/* Daily Stars */}
           <div className="flex items-center gap-2 bg-white/90 px-3 py-1.5 rounded-xl">
@@ -153,43 +176,45 @@ export default function ProtectedPage() {
 
       {/* Main Content */}
       <div className="grow p-4 space-y-6">
-        {/* 展示用户选择的学科 */}
-        <div className="grid gap-4">
-          {subjects.map((subject) => (
-            <div
-              key={subject.id}
-              className="p-4 bg-white rounded-xl shadow-sm"
+        {/* Learning Modules */}
+        <h2 className="text-lg font-medium">Learning Modules</h2>
+        <div className="space-y-3">
+          {allModules.map((module) => (
+            <button
+              key={module.id}
+              onClick={() => router.push(`/module/${module.id}`)}
+              className="w-full p-4 bg-white rounded-xl shadow-sm flex items-center justify-between hover:bg-gray-50 transition-colors active:scale-[0.98] touch-action-manipulation"
             >
-              <p className="font-medium text-lg mb-3">{subject.subject_name}</p>
-              <div className="space-y-2">
-                {modules[subject.id]?.map((module) => (
-                  <button
-                    key={module.id}
-                    onClick={() => router.push(`/module/${module.id}`)}
-                    className="w-full p-3 bg-gray-50 rounded-lg flex items-center justify-between hover:bg-gray-100 transition-colors active:scale-[0.98] touch-action-manipulation"
-                  >
-                    <div className="flex-1">
-                      <p className="font-medium text-left">{module.module_name}</p>
-                      <p className="text-sm text-gray-500 text-left">{module.description}</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {moduleProgress[module.id] && (
-                        <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                          <Check className="w-4 h-4 text-green-600" />
-                        </div>
-                      )}
-                      <ChevronRight className="w-5 h-5 text-gray-400" />
-                    </div>
-                  </button>
-                ))}
-                {(!modules[subject.id] || modules[subject.id].length === 0) && (
-                  <p className="text-gray-500 text-center py-2">No modules available</p>
-                )}
+              <div className="flex-1">
+                <p className="font-medium text-left">{module.module_name}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                    {module.subject_name}
+                  </span>
+                  <p className="text-xs text-gray-500 text-left">
+                    {moduleProgress[module.id]?.progress === "completed"
+                      ? "Completed"
+                      : moduleProgress[module.id]?.progress === "in_progress"
+                        ? "In progress"
+                        : "Not started"}
+                  </p>
+                </div>
               </div>
-            </div>
+              <div className="flex items-center gap-3">
+                {moduleProgress[module.id]?.progress === "completed" && (
+                  <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                    <Check className="w-4 h-4 text-green-600" />
+                  </div>
+                )}
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </div>
+            </button>
           ))}
-          {subjects.length === 0 && (
-            <p className="text-gray-500">No subjects selected</p>
+
+          {allModules.length === 0 && (
+            <p className="text-center text-gray-500 py-8">
+              No learning modules available
+            </p>
           )}
         </div>
       </div>

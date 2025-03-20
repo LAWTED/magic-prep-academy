@@ -1,12 +1,7 @@
 # Magic Prep Academy
 
-# Schedule
 
-- 3/18/2025:
-  * create user dashboard
-  * create user profile
-  * create user notifications
-  * create user security
+
 
 ## Core Functions
 

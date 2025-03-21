@@ -147,4 +147,71 @@ export const validators = {
       typeof json.summary === "string"
     );
   },
+
+  /**
+   * Validates resume analysis JSON structure for content analysis
+   */
+  resumeContentAnalysis: (json: any): boolean => {
+    return (
+      json &&
+      typeof json === "object" &&
+      json.scores &&
+      typeof json.scores === "object" &&
+      json.scores.content &&
+      typeof json.scores.content === "object" &&
+      typeof json.scores.content.score === "number" &&
+      typeof json.scores.content.feedback === "string" &&
+      json.scores.quality &&
+      typeof json.scores.quality === "object" &&
+      typeof json.scores.quality.score === "number" &&
+      typeof json.scores.quality.feedback === "string" &&
+      json.scores.impact &&
+      typeof json.scores.impact === "object" &&
+      typeof json.scores.impact.score === "number" &&
+      typeof json.scores.impact.feedback === "string" &&
+      json.scores.clarity &&
+      typeof json.scores.clarity === "object" &&
+      typeof json.scores.clarity.score === "number" &&
+      typeof json.scores.clarity.feedback === "string" &&
+      typeof json.overallScore === "number" &&
+      typeof json.overallFeedback === "string" &&
+      Array.isArray(json.actionableSteps) &&
+      json.actionableSteps.length > 0 &&
+      json.actionableSteps.every((item: any) => typeof item === "string")
+    );
+  },
+
+  /**
+   * Validates resume analysis JSON structure
+   */
+  resumeAnalysis: (json: any): boolean => {
+    return (
+      json &&
+      typeof json === "object" &&
+      json.score &&
+      typeof json.score === "object" &&
+      typeof json.score.completeness === "number" &&
+      typeof json.score.academicJargon === "number" &&
+      typeof json.score.structure === "number" &&
+      typeof json.score.relevance === "number" &&
+      typeof json.score.total === "number" &&
+      Array.isArray(json.feedback) &&
+      json.feedback.length > 0 &&
+      json.feedback.every((item: any) => typeof item === "string")
+    );
+  },
+
+  /**
+   * Validates APA formatted resume JSON structure - extremely simplified version
+   */
+  apaResume: (json: any): boolean => {
+    // Only check if json is an object with personalInfo
+    return (
+      json &&
+      typeof json === "object" &&
+      json.personalInfo &&
+      typeof json.personalInfo === "object" &&
+      typeof json.personalInfo.name === "string"
+    );
+  },
 };

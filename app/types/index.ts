@@ -129,3 +129,27 @@ export interface UserAcademic {
   created_at: string;
   updated_at: string;
 }
+
+export interface ResumeAnalysisData {
+  scores: {
+    content: {
+      score: number;
+      feedback: string;
+    };
+    quality: {
+      score: number;
+      feedback: string;
+    };
+    impact: {
+      score: number;
+      feedback: string;
+    };
+    clarity: {
+      score: number;
+      feedback: string;
+    };
+  };
+  overallScore: number;
+  overallFeedback: string;
+  actionableSteps: string[];
+}

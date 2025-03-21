@@ -320,7 +320,55 @@ export default function ProgramDetailPage({
         </div>
       ) : programSummary ? (
         <div className="prose prose-sm max-w-none mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100">
-          <ReactMarkdown>{programSummary}</ReactMarkdown>
+          <ReactMarkdown
+            components={{
+              h1: ({ node, ...props }) => (
+                <h1 className="text-2xl font-bold mb-4 mt-6" {...props} />
+              ),
+              h2: ({ node, ...props }) => (
+                <h2 className="text-xl font-bold mb-3 mt-5" {...props} />
+              ),
+              h3: ({ node, ...props }) => (
+                <h3 className="text-lg font-bold mb-2 mt-4" {...props} />
+              ),
+              p: ({ node, ...props }) => (
+                <p className="mb-4 text-gray-700" {...props} />
+              ),
+              ul: ({ node, ...props }) => (
+                <ul className="list-disc pl-5 mb-4" {...props} />
+              ),
+              ol: ({ node, ...props }) => (
+                <ol className="list-decimal pl-5 mb-4" {...props} />
+              ),
+              li: ({ node, ...props }) => <li className="mb-1" {...props} />,
+              a: ({ node, ...props }) => (
+                <a className="text-blue-600 hover:underline" {...props} />
+              ),
+              blockquote: ({ node, ...props }) => (
+                <blockquote
+                  className="border-l-4 border-gray-200 pl-4 italic my-4"
+                  {...props}
+                />
+              ),
+              code: ({ node, ...props }) => (
+                <code
+                  className="bg-gray-100 rounded px-1 py-0.5 font-mono text-sm"
+                  {...props}
+                />
+              ),
+              pre: ({ node, ...props }) => (
+                <pre
+                  className="bg-gray-100 rounded p-4 overflow-x-auto my-4 font-mono text-sm"
+                  {...props}
+                />
+              ),
+              hr: ({ node, ...props }) => (
+                <hr className="my-6 border-t border-gray-200" {...props} />
+              ),
+            }}
+          >
+            {programSummary}
+          </ReactMarkdown>
         </div>
       ) : null}
 

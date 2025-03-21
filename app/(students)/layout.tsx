@@ -5,6 +5,7 @@ import StudentHeader from "@/app/components/StudentHeader";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { UserProvider } from "@/components/UserProvider";
+import { Toaster } from "sonner";
 
 export default function StudentsLayout({
   children,
@@ -18,13 +19,16 @@ export default function StudentsLayout({
     pathname === "/homepage" ||
     pathname === "/awards" ||
     pathname === "/school" ||
-    pathname.startsWith("/school/");
+    pathname.startsWith("/school/") ||
+    pathname === "/tools" ||
+    pathname.startsWith("/tools/");
 
   // Check if the current path should have the header
   const shouldShowHeader =
     pathname === "/homepage" ||
     pathname === "/awards" ||
-    pathname === "/school";
+    pathname === "/school" ||
+    pathname === "/tools";
 
   const isProfilePage =
     pathname === "/profile" || pathname.startsWith("/profile/");
@@ -43,6 +47,7 @@ export default function StudentsLayout({
           {children}
         </main>
         {shouldShowNavigation && <BottomNavigation />}
+        <Toaster position="top-center" richColors />
       </div>
     </UserProvider>
   );

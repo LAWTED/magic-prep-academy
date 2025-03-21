@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Award, BookOpen, User, BookCheck, School } from "lucide-react";
+import { Home, Award, BookOpen, User, BookCheck, School, Wrench } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function BottomNavigation() {
@@ -18,6 +18,11 @@ export default function BottomNavigation() {
       name: "School",
       href: "/school",
       icon: School,
+    },
+    {
+      name: "Tools",
+      href: "/tools",
+      icon: Wrench,
     },
     {
       name: "Awards",
@@ -39,7 +44,7 @@ export default function BottomNavigation() {
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-1 safe-bottom flex justify-around items-center">
       {navItems.map((item) => {
-        const isActive = pathname === item.href;
+        const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
         return (
           <Link

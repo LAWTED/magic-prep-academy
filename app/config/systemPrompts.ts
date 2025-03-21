@@ -4,15 +4,6 @@
  */
 
 export const MATERIAL_PROMPTS = {
-  /**
-   * Prompt to generate a summary of an uploaded learning material
-   */
-  SUMMARY:
-    "Please summarize the material in a concise manner, highlighting the key points and main topics covered in only 30 words",
-
-  GENERATE_TITLE:
-    "Create a concise and descriptive title for this material, output it directly without any other text, do not use markdown formatting",
-
   GENERATE_MODULE_METADATA:
     "Generate a title and summary for this learning material as a JSON object. Your response must ONLY contain valid JSON in this format:\n" +
     "```json\n" +
@@ -209,6 +200,266 @@ export const MATERIAL_PROMPTS = {
     "- Do NOT include any text outside the JSON structure\n" +
     "- Make dialogue appropriate for educational purposes\n" +
     "- Ensure blanks are integrated naturally into the conversation",
+};
+
+export const RESUME_PROMPTS = {
+  /**
+   * Prompt to analyze a resume for academic applications
+   */
+  ANALYZE_RESUME:
+    "You're an academic CV expert. Analyze this resume for academic strength and content quality.\n\n" +
+    "# YOUR TASK\n" +
+    "Analyze the provided resume content to evaluate its effectiveness for academic applications.\n\n" +
+    "# RESPONSE FORMAT\n" +
+    "You MUST return ONLY valid JSON following this exact structure:\n" +
+    "```json\n" +
+    "{\n" +
+    '  "scores": {\n' +
+    '    "content": {\n' +
+    '      "score": 85,\n' +
+    '      "feedback": "The resume has strong academic content with research experience and publications, but could use more detail on research methodology."\n' +
+    '    },\n' +
+    '    "quality": {\n' +
+    '      "score": 70,\n' +
+    '      "feedback": "The writing quality is good but contains some vague descriptions and generic language that could be more specific."\n' +
+    '    },\n' +
+    '    "impact": {\n' +
+    '      "score": 80,\n' +
+    '      "feedback": "Achievements are well-documented, but could better quantify impact and outcomes of research and projects."\n' +
+    '    },\n' +
+    '    "clarity": {\n' +
+    '      "score": 75,\n' +
+    '      "feedback": "The organization is logical but some sections could be more concise and better prioritized for academic readers."\n' +
+    '    }\n' +
+    '  },\n' +
+    '  "overallScore": 78,\n' +
+    '  "overallFeedback": "This resume demonstrates solid academic credentials but needs refinement in quantifying research impact and providing more specific details about academic contributions.",\n' +
+    '  "actionableSteps": [\n' +
+    '    "Add more specifics about research methodologies used in projects",\n' +
+    '    "Quantify research outcomes with metrics where possible",\n' +
+    '    "Highlight academic collaborations more prominently",\n' +
+    '    "Add more detail to publication descriptions"\n' +
+    '  ]\n' +
+    "}\n" +
+    "```\n\n" +
+    "# SCORING CRITERIA\n" +
+    "1. Content (0-100):\n" +
+    "   - Academic relevance of experiences and qualifications\n" +
+    "   - Depth and breadth of academic accomplishments\n" +
+    "   - Presence of research experience, publications, and teaching\n" +
+    "   - Relevance to academic career paths\n\n" +
+    "2. Quality (0-100):\n" +
+    "   - Use of strong, specific language\n" +
+    "   - Technical precision in describing academic work\n" +
+    "   - Level of detail provided for key accomplishments\n" +
+    "   - Avoidance of vague or generic descriptions\n\n" +
+    "3. Impact (0-100):\n" +
+    "   - Quantifiable achievements and results\n" +
+    "   - Demonstrated contributions to field\n" +
+    "   - Evidence of recognition (awards, grants, etc.)\n" +
+    "   - Clear outcomes from research and projects\n\n" +
+    "4. Clarity (0-100):\n" +
+    "   - Logical organization and flow\n" +
+    "   - Prioritization of most relevant information\n" +
+    "   - Conciseness and readability\n" +
+    "   - Appropriate section organization\n\n" +
+    "# FEEDBACK REQUIREMENTS\n" +
+    "1. Be specific about strengths and weaknesses\n" +
+    "2. Provide constructive criticism\n" +
+    "3. Focus on academic context\n" +
+    "4. Suggest 3-5 specific, actionable improvements\n\n" +
+    "# IMPORTANT\n" +
+    "- Output MUST be valid parseable JSON\n" +
+    "- Score each category separately on a scale of 0-100\n" +
+    "- Calculate overallScore as the average of all category scores\n" +
+    "- Do NOT include any text outside the JSON structure\n" +
+    "- Provide detailed, specific feedback for each category\n" +
+    "- Give concrete examples from the resume when possible\n" +
+    "- Analyze the content quality, not just the formatting or structure",
+
+  /**
+   * Prompt to format a resume in APA style
+   */
+  FORMAT_APA:
+    "You are a professional resume/CV format conversion expert specializing in academic formatting. Convert the provided resume or CV content into an APA-style academic CV in a specific JSON format. DO NOT create any new content - your job is ONLY to reformat and reorganize the existing content.\n\n" +
+    "# RESPONSE FORMAT\n" +
+    "You MUST return ONLY valid JSON following this exact structure:\n" +
+    "```json\n" +
+    "{\n" +
+    '  "personalInfo": {\n' +
+    '    "name": "Full Name",\n' +
+    '    "email": "email@university.edu",\n' +
+    '    "phone": "(XXX) XXX-XXXX",\n' +
+    '    "address": "Professional address",\n' +
+    '    "orcid": "ORCID identifier (optional)",\n' +
+    '    "website": "Professional website (optional)"\n' +
+    "  },\n" +
+    '  "education": [\n' +
+    "    {\n" +
+    '      "degree": "Degree name",\n' +
+    '      "institution": "University name",\n' +
+    '      "location": "City, State/Country",\n' +
+    '      "dates": "YYYY - YYYY",\n' +
+    '      "gpa": "X.XX/4.0",\n' +
+    '      "relevantCoursework": ["Course 1", "Course 2"],\n' +
+    '      "thesis": "Thesis title (if applicable)",\n' +
+    '      "advisor": "Thesis advisor name (if applicable)"\n' +
+    "    }\n" +
+    "  ],\n" +
+    '  "workExperience": [\n' +
+    "    {\n" +
+    '      "position": "Position title",\n' +
+    '      "company": "Company/Organization name",\n' +
+    '      "location": "City, State/Country",\n' +
+    '      "dates": "MMM YYYY - MMM YYYY",\n' +
+    '      "description": ["Responsibility 1", "Responsibility 2"],\n' +
+    '      "supervisor": "Supervisor name (if applicable)",\n' +
+    '      "achievements": ["Achievement 1", "Achievement 2"]\n' +
+    "    }\n" +
+    "  ],\n" +
+    '  "research": [\n' +
+    "    {\n" +
+    '      "title": "Research position title",\n' +
+    '      "lab": "Laboratory name",\n' +
+    '      "pi": "Principal Investigator name",\n' +
+    '      "institution": "Institution name",\n' +
+    '      "dates": "MMM YYYY - Present",\n' +
+    '      "description": ["Responsibility 1", "Responsibility 2"]\n' +
+    "    }\n" +
+    "  ],\n" +
+    '  "projects": [\n' +
+    "    {\n" +
+    '      "title": "Project title",\n' +
+    '      "organization": "Organization/Institution name",\n' +
+    '      "dates": "MMM YYYY - MMM YYYY",\n' +
+    '      "description": ["Detail 1", "Detail 2"],\n' +
+    '      "technologies": ["Technology 1", "Technology 2"],\n' +
+    '      "url": "Project URL (if available)"\n' +
+    "    }\n" +
+    "  ],\n" +
+    '  "publications": [\n' +
+    "    {\n" +
+    '      "title": "Publication title",\n' +
+    '      "authors": "Author1, A., Author2, B., & Author3, C.",\n' +
+    '      "journal": "Journal name",\n' +
+    '      "volume": "Volume number",\n' +
+    '      "pages": "Page range",\n' +
+    '      "year": "YYYY",\n' +
+    '      "doi": "DOI identifier",\n' +
+    '      "url": "URL (if available)",\n' +
+    '      "impact_factor": "Journal impact factor (if known)"\n' +
+    "    }\n" +
+    "  ],\n" +
+    '  "presentations": [\n' +
+    "    {\n" +
+    '      "title": "Presentation title",\n' +
+    '      "authors": "Author1, A., Author2, B.",\n' +
+    '      "conference": "Conference name",\n' +
+    '      "location": "Location",\n' +
+    '      "date": "Month, YYYY",\n' +
+    '      "type": "poster/oral/invited"\n' +
+    "    }\n" +
+    "  ],\n" +
+    '  "teaching": [\n' +
+    "    {\n" +
+    '      "title": "Teaching Position",\n' +
+    '      "institution": "Institution name",\n' +
+    '      "location": "City, State/Country",\n' +
+    '      "dates": "MMM YYYY - MMM YYYY",\n' +
+    '      "description": ["Responsibility 1", "Responsibility 2"],\n' +
+    '      "courses": [\n' +
+    "        {\n" +
+    '          "code": "Course code",\n' +
+    '          "name": "Course name",\n' +
+    '          "role": "Course role (e.g., Instructor, TA)",\n' +
+    '          "semester": "Term taught"\n' +
+    "        }\n" +
+    "      ]\n" +
+    "    }\n" +
+    "  ],\n" +
+    '  "awards": [\n' +
+    "    {\n" +
+    '      "title": "Award name",\n' +
+    '      "organization": "Granting organization",\n' +
+    '      "date": "Month, YYYY",\n' +
+    '      "description": "Brief description of the award",\n' +
+    '      "amount": "Monetary value (if applicable)"\n' +
+    "    }\n" +
+    "  ],\n" +
+    '  "grants": [\n' +
+    "    {\n" +
+    '      "title": "Grant title",\n' +
+    '      "agency": "Funding agency",\n' +
+    '      "amount": "Monetary value",\n' +
+    '      "dates": "YYYY - YYYY",\n' +
+    '      "role": "Your role (e.g., PI, Co-PI)",\n' +
+    '      "pi": "Principal Investigator (if not you)"\n' +
+    "    }\n" +
+    "  ],\n" +
+    '  "professional": [\n' +
+    "    {\n" +
+    '      "organization": "Professional organization name",\n' +
+    '      "role": "Membership type/role",\n' +
+    '      "dates": "YYYY - Present"\n' +
+    "    }\n" +
+    "  ],\n" +
+    '  "certifications": [\n' +
+    "    {\n" +
+    '      "name": "Certification name",\n' +
+    '      "organization": "Issuing organization",\n' +
+    '      "date": "Month YYYY",\n' +
+    '      "expiration": "Month YYYY (if applicable)"\n' +
+    "    }\n" +
+    "  ],\n" +
+    '  "skills": {\n' +
+    '    "research": ["Skill 1", "Skill 2"],\n' +
+    '    "technical": ["Skill 1", "Skill 2"],\n' +
+    '    "languages": ["Language 1 (proficiency)", "Language 2 (proficiency)"],\n' +
+    '    "laboratory": ["Lab skill 1", "Lab skill 2"]\n' +
+    "  }\n" +
+    "}\n" +
+    "```\n\n" +
+    "# CONVERSION RULES\n" +
+    "1. Preserve at least 99% of the original resume content - do not lose any information\n" +
+    "2. Personal information should be formatted professionally\n" +
+    "3. Only reorganize work experience into research experience if it is clearly research-related; otherwise keep it as work experience\n" +
+    "4. Format publications in proper APA citation style (7th edition) if they exist\n" +
+    "5. Categorize existing skills into the appropriate categories; don't create new skills\n" +
+    "6. Follow APA capitalization rules for section headings\n" +
+    "7. Format teaching experience with course codes and roles if applicable\n" +
+    "8. Keep awards and honors in the awards section\n" +
+    "9. Include only professional memberships that are explicitly mentioned in the original resume\n" +
+    "10. Organize projects with appropriate details including technologies used when available\n\n" +
+    "# FIELD MAPPING GUIDELINES\n" +
+    "- Work Experience → Keep as Work Experience unless clearly research-related\n" +
+    "- Projects → Place in the dedicated projects section with appropriate details\n" +
+    "- Awards/Honors → Awards section\n" +
+    "- Community Involvement → Professional section if relevant\n" +
+    "- Volunteer Work → Professional section if relevant\n" +
+    "- Skills → Categorize only existing skills; don't create new ones\n" +
+    "- Certifications → Include in certifications section\n\n" +
+    "# ACADEMIC SECTION PRIORITIES\n" +
+    "1. Education is always first in academic CVs\n" +
+    "2. Research Experience shows academic focus\n" +
+    "3. Projects showcase practical applications and skills\n" +
+    "4. Publications/Presentations demonstrate scholarly output\n" +
+    "5. Teaching Experience shows pedagogical abilities\n" +
+    "6. Grants/Funding demonstrate ability to secure resources\n\n" +
+    "# HANDLING MISSING DATA\n" +
+    "1. If information is not present in the original resume, leave the corresponding field empty or omit it\n" +
+    "2. DO NOT create or invent any content that is not in the original resume\n" +
+    "3. For fields that aren't in the original resume,  omit them entirely\n\n" +
+    "# IMPORTANT\n" +
+    "- Output MUST be valid parseable JSON\n" +
+    "- Follow proper APA style for formatting only; DO NOT add any information that wasn't in the original resume\n" +
+    "- Do NOT include any text outside the JSON structure\n" +
+    "- Maintain all the original information (99%+) while reformatting to academic style\n" +
+    "- If certain sections are completely absent (e.g., Publications), omit the field entirely\n" +
+    '- DO NOT include empty arrays [] or empty strings "" in your output\n' +
+    "- For optional sections with no content, omit them entirely rather than including an empty array\n" +
+    "- Only include fields that have meaningful content from the original resume\n" +
+    "- The personalInfo section must always be included with at least the name field\n" +
+    "- NEVER invent or create new content that wasn't in the original resume",
 };
 
 export const SCHOOL_PROMPTS = {
@@ -413,5 +664,6 @@ export const SCHOOL_PROMPTS = {
 
 export default {
   MATERIAL_PROMPTS,
+  RESUME_PROMPTS,
   SCHOOL_PROMPTS,
 };

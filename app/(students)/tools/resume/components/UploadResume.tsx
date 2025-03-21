@@ -20,6 +20,13 @@ import { createClient } from "@/utils/supabase/client";
 import { useUserStore } from "@/store/userStore";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { processVectorChatStream } from "@/app/utils/streamUtils";
+
+type FileInfo = {
+  name: string;
+  status: string;
+  url?: string;
+};
 
 type UploadResumeProps = {
   onAskMentor: () => void;
@@ -40,6 +47,12 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
   const [formattedResume, setFormattedResume] = useState<ResumeData | null>(
     null
   );
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [fileInfo, setFileInfo] = useState<FileInfo | null>(null);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [streamingProgress, setStreamingProgress] = useState(false);
+  const [streamingDots, setStreamingDots] = useState("");
 
   const resetState = () => {
     setStep(1);
@@ -146,6 +159,20 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
     }
   };
 
+  // Effect for the loading dots animation
+  useEffect(() => {
+    if (!streamingProgress) return;
+
+    const interval = setInterval(() => {
+      setStreamingDots(prev => {
+        if (prev === "...") return "";
+        return prev + ".";
+      });
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [streamingProgress]);
+
   const handleFormatAsAPA = async () => {
     if (!vectorStoreId) {
       setError("No resume uploaded. Please upload a resume first.");
@@ -155,8 +182,10 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
     try {
       setLoading(true);
       setError(null);
+      setStreamingProgress(true);
 
-      const response = await fetch("/api/vector-chat", {
+      // Use the streaming endpoint
+      const response = await fetch("/api/vector-chat-stream", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -172,13 +201,22 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
         throw new Error("Failed to format resume");
       }
 
-      const data = await response.json();
-      console.log("Format response:", data);
+      // Process the stream using our utility function
+      const { parsedContent, error: streamError } = await processVectorChatStream<ResumeData>(
+        response,
+        (chunk) => {
+          // Keep the streaming progress indicator active while receiving chunks
+          setStreamingProgress(true);
+        }
+      );
 
-      if (data.response?.parsed_content) {
-        setFormattedResume(data.response.parsed_content);
-      } else if (data.parse_error) {
-        throw new Error(data.parse_error);
+      // Handle the results
+      if (streamError) {
+        throw new Error(streamError);
+      }
+
+      if (parsedContent) {
+        setFormattedResume(parsedContent);
       } else {
         throw new Error("Failed to parse formatted resume");
       }
@@ -187,6 +225,7 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
       setError(error instanceof Error ? error.message : "Formatting failed");
     } finally {
       setLoading(false);
+      setStreamingProgress(false);
     }
   };
 
@@ -433,19 +472,29 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
               </div>
 
               {!formattedResume && (
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
+                <button
+                  className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300"
                   onClick={handleFormatAsAPA}
-                  disabled={loading}
-                  className="w-full flex items-center justify-center bg-green-600 text-white py-3 px-4 rounded-lg"
+                  disabled={loading || !vectorStoreId}
                 >
                   {loading ? (
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    <>
+                      <RefreshCw className="animate-spin h-5 w-5" />
+                      {streamingProgress ? (
+                        <span>
+                          Processing your resume{streamingDots}
+                        </span>
+                      ) : (
+                        <span>Formatting...</span>
+                      )}
+                    </>
                   ) : (
-                    <Sparkles size={18} className="mr-2" />
+                    <>
+                      <Sparkles className="h-5 w-5" />
+                      Format as APA
+                    </>
                   )}
-                  {loading ? "Formatting..." : "Format as APA"}
-                </motion.button>
+                </button>
               )}
 
               {formattedResume && (
@@ -461,19 +510,27 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
                       />
                     </div>
                     <div className="flex space-x-4">
-                      <motion.button
-                        whileTap={{ scale: 0.95 }}
+                      <button
                         onClick={handleFormatAsAPA}
                         disabled={loading}
-                        className="flex items-center justify-center border border-gray-300 py-2 px-3 rounded-lg text-sm"
+                        className="mt-4 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
                       >
                         {loading ? (
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500 mr-2"></div>
+                          <>
+                            <RefreshCw className="animate-spin h-4 w-4" />
+                            {streamingProgress ? (
+                              <span>Processing{streamingDots}</span>
+                            ) : (
+                              <span>Reformatting...</span>
+                            )}
+                          </>
                         ) : (
-                          <RefreshCw size={16} className="mr-2" />
+                          <>
+                            <RefreshCw className="h-4 w-4" />
+                            Reformat
+                          </>
                         )}
-                        {loading ? "Reformatting..." : "Reformat"}
-                      </motion.button>
+                      </button>
                     </div>
                   </div>
 

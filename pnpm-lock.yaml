@@ -50,6 +50,9 @@ importers:
       framer-motion:
         specifier: ^12.5.0
         version: 12.5.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      https-proxy-agent:
+        specifier: ^7.0.6
+        version: 7.0.6
       lucide-react:
         specifier: ^0.468.0
         version: 0.468.0(react@19.0.0)

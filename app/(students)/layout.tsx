@@ -1,7 +1,7 @@
 "use client";
 
 import BottomNavigation from "@/components/BottomNavigation";
-import StudentHeader from "@/app/components/StudentHeader";
+import StudentHeader from "@/app/(students)/components/StudentHeader";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { UserProvider } from "@/components/UserProvider";

@@ -8,54 +8,31 @@ import { useRouter } from "next/navigation";
 import { UserXP, UserHearts } from "@/app/types/index";
 import { themeConfig } from "@/app/config/themeConfig";
 import { motion } from "framer-motion";
+import { useUserStore } from "@/store/userStore";
 
 export default function StudentHeader() {
   const router = useRouter();
   const supabase = createClient();
-  const [profile, setProfile] = useState<any>(null);
+  const { user, isLoading: userLoading } = useUserStore();
   const [userXP, setUserXP] = useState<UserXP | null>(null);
   const [userHearts, setUserHearts] = useState<UserHearts | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchUserData() {
+    async function fetchUserResources() {
+      if (!user) return;
+
       try {
-        // Get current user
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) {
-          router.push("/sign-in");
-          return;
-        }
-
-        // Check if user has a profile
-        const { data: userData, error: userError } = await supabase
-          .from("users")
-          .select("*")
-          .eq("auth_id", user.id)
-          .single();
-
-        if (userError || !userData || !userData.name) {
-          router.push("/onboarding");
-          return;
-        }
-
-        setProfile(userData);
+        setLoading(true);
 
         // Fetch XP and Hearts data
         const [xpResponse, heartsResponse] = await Promise.all([
-          supabase
-            .from("user_xp")
-            .select("*")
-            .eq("user_id", userData.id)
-            .single(),
+          supabase.from("user_xp").select("*").eq("user_id", user.id).single(),
 
           supabase
             .from("user_hearts")
             .select("*")
-            .eq("user_id", userData.id)
+            .eq("user_id", user.id)
             .single(),
         ]);
 
@@ -67,30 +44,31 @@ export default function StudentHeader() {
           setUserHearts(heartsResponse.data);
         }
       } catch (error) {
-        console.error("Error loading user data:", error);
-        router.push("/sign-in");
+        console.error("Error loading user resources:", error);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchUserData();
-  }, [router, supabase]);
+    if (user) {
+      fetchUserResources();
+    }
+  }, [user, supabase]);
 
-  // Get avatar path based on profile's avatar_name
-  const avatarPath = profile
-    ? `/images/avatars/${profile.avatar_name}.png`
-    : "";
+  // Get avatar path based on user's avatar_name
+  const avatarPath = user ? `/images/avatars/${user.avatar_name}.png` : "";
 
   const navigateToProfile = () => {
     router.push("/profile");
   };
 
+  const isDataLoading = userLoading || loading;
+
   return (
     <header className="w-screen border-b bg-background">
       <div className="mx-auto w-full max-w-screen-md px-4 py-4 flex items-center justify-between">
         <div className="flex flex-wrap items-center gap-3">
-          {loading || !profile ? (
+          {isDataLoading || !user ? (
             <>
               <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 animate-pulse flex-shrink-0"></div>
               <div className="w-24 h-6 bg-gray-200 animate-pulse rounded"></div>
@@ -108,13 +86,13 @@ export default function StudentHeader() {
                 <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-primary flex-shrink-0">
                   <Image
                     src={avatarPath}
-                    alt={profile.name}
+                    alt={user.name}
                     fill
                     className="object-cover"
                   />
                 </div>
                 {/* Name */}
-                <p className="text-lg font-bold">{profile.name}</p>
+                <p className="text-lg font-bold">{user.name}</p>
               </motion.div>
 
               {/* XP as money */}

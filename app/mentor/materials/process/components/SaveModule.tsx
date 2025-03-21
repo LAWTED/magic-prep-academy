@@ -3,14 +3,8 @@
 import { BookOpen, Save, Check } from "lucide-react";
 import { MATERIAL_PROMPTS } from "@/app/config/systemPrompts";
 import { useEffect, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/utils/supabase/client";
 
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-// Interface for subjects
 interface Subject {
   id: string;
   subject_name: string;
@@ -35,6 +29,7 @@ export default function SaveModule({
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [savedModuleId, setSavedModuleId] = useState<string>("");
+  const supabase = createClient();
 
   // Fetch subjects
   useEffect(() => {
@@ -98,7 +93,9 @@ export default function SaveModule({
           const responseText = data.response.output_text;
           try {
             // Try to manually extract title and summary
-            const match = responseText.match(/title["\s:]+([^"]+)["\s,}]+summary["\s:]+([^"]+)/i);
+            const match = responseText.match(
+              /title["\s:]+([^"]+)["\s,}]+summary["\s:]+([^"]+)/i
+            );
             if (match) {
               setModuleName(match[1].trim());
               setDescription(match[2].trim());
@@ -154,13 +151,17 @@ export default function SaveModule({
       }
 
       // Insert the module
-      const { data: newModule, error: insertError } = await supabase.from("modules").insert({
-        subject_id: selectedSubjectId,
-        module_name: moduleName,
-        description: description,
-        order_index: 0,
-        vector_store_id: vectorStoreId,
-      }).select('id').single();
+      const { data: newModule, error: insertError } = await supabase
+        .from("modules")
+        .insert({
+          subject_id: selectedSubjectId,
+          module_name: moduleName,
+          description: description,
+          order_index: 0,
+          vector_store_id: vectorStoreId,
+        })
+        .select("id")
+        .single();
 
       if (insertError) {
         throw insertError;

@@ -7,10 +7,12 @@ import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
 import { UserAcademic } from "@/app/types";
 import Link from "next/link";
+import { useUserStore } from "@/store/userStore";
 
 export default function AcademicProfilePage() {
   const router = useRouter();
   const supabase = createClient();
+  const { user, isLoading: userLoading } = useUserStore();
   const [academicData, setAcademicData] = useState<UserAcademic | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -43,33 +45,13 @@ export default function AcademicProfilePage() {
   useEffect(() => {
     async function fetchAcademicData() {
       try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) {
-          router.push("/sign-in");
-          return;
-        }
-
-        // Get user's ID from the users table
-        const { data: userData, error: userError } = await supabase
-          .from("users")
-          .select("id")
-          .eq("auth_id", user.id)
-          .single();
-
-        if (userError || !userData) {
-          console.error("Error fetching user:", userError);
-          router.push("/onboarding");
-          return;
-        }
+        if (!user) return;
 
         // Get academic data
         const { data, error } = await supabase
           .from("user_academic")
           .select("*")
-          .eq("user_id", userData.id)
+          .eq("user_id", user.id)
           .single();
 
         if (error && error.code !== "PGRST116") {
@@ -79,7 +61,7 @@ export default function AcademicProfilePage() {
         // Initialize data if doesn't exist
         if (!data) {
           const newAcademicData = {
-            user_id: userData.id,
+            user_id: user.id,
             content: formData,
           };
 
@@ -118,8 +100,10 @@ export default function AcademicProfilePage() {
       }
     }
 
-    fetchAcademicData();
-  }, [router, supabase]);
+    if (!userLoading && user) {
+      fetchAcademicData();
+    }
+  }, [user, supabase, userLoading, formData]);
 
   const handleChange = (
     section: string,

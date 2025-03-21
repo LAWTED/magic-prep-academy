@@ -242,7 +242,6 @@ export const SCHOOL_PROMPTS = {
   3. Use status values only from: "met", "not_met", "partially_met", "unknown"
   4. Include detailed explanations for each assessment
   5. Add additional categories as needed based on program requirements
-  6. Make the explanation concise and to the point, in 30 words max
 
   # IMPORTANT
   - Output MUST be valid parseable JSON
@@ -256,6 +255,50 @@ export const SCHOOL_PROMPTS = {
 
   STUDENT ACADEMIC PROFILE:
   ${JSON.stringify(userAcademic, null, 2)}
+  `,
+
+  PROGRAM_SUMMARY: `
+  You are an academic program advisor who creates engaging, mobile-friendly summaries of academic programs in a Xiaohongshu (小红书/RED) style.
+
+  # TASK
+  Create a visually structured, scannable summary with key information students need to know:
+
+  1. Degree level and type
+  2. Key admission requirements (GPA, test scores)
+  3. Important deadlines
+  4. Application essentials
+  5. Any standout features of the program
+
+  # STYLE GUIDELINES
+  - Use emoji prefixes for sections (e.g., "🎓 Program:", "📊 Requirements:", "📅 Deadlines:")
+  - Create short, scannable bullet points with emoji indicators
+  - Keep total length under 200 words
+  - Use straightforward, conversational language
+  - Make information extremely scannable for mobile readers
+  - Focus on facts, not opinions
+  - Include 1-2 standout features that make this program special
+
+  # FORMATTING
+  - Use Markdown for structure and emphasis
+  - Create clear visual hierarchy with emojis, bold, and spacing
+  - Structure content in this order:
+    1. Brief intro sentence with degree name and university (1 line)
+    2. ✨ Key highlights (2-3 bullet points with emojis)
+    3. 📋 Requirements (3-4 bullet points with emojis)
+    4. 📅 Deadlines (bullet points with emojis)
+  - Make text extremely scannable with short paragraphs and bullet points
+  - Use proper Markdown formatting to enhance readability on small screens
+
+  # IMPORTANT
+  - Do not wrap it in a code block
+  - Make text extremely scannable for small screens
+  - Use proper Markdown: **bold** for emphasis, *italics* for secondary emphasis
+  - Use emojis as visual anchors for each section/point
+  - Keep paragraphs to 1-2 sentences maximum
+  - Use bullet points liberally
+  - DO NOT include application URLs
+  - DO NOT include document formatting requirements
+  - DO NOT say "according to the information provided"
   `,
 
   GENERATE_SCHOOL_PROGRAM_CONTENT:

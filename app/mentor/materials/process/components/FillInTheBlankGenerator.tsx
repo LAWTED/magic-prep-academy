@@ -39,6 +39,7 @@ export default function FillInTheBlankGenerator({
         body: JSON.stringify({
           vectorStoreId,
           prompt: MATERIAL_PROMPTS.GENERATE_FILL_IN_THE_BLANK,
+          validator_name: "fillInTheBlank",
         }),
       });
 
@@ -48,57 +49,16 @@ export default function FillInTheBlankGenerator({
 
       const data = await response.json();
 
-      // JSON extraction and parsing
-      try {
-        const jsonText = data.response.output_text;
-
-        // Try different patterns to extract JSON
-        const jsonRegexPatterns = [
-          /```json\n([\s\S]*?)\n```/, // Standard JSON code block
-          /```\n([\s\S]*?)\n```/, // Code block without language
-          /\{[\s\S]*"title"[\s\S]*\}/, // Direct JSON object
-        ];
-
-        let cleanJson = "";
-        for (const pattern of jsonRegexPatterns) {
-          const match = jsonText.match(pattern);
-          if (match && match[1]) {
-            cleanJson = match[1].trim();
-            break;
-          } else if (match) {
-            cleanJson = match[0].trim();
-            break;
-          }
-        }
-
-        // If no pattern matched, use the whole response as a last resort
-        if (!cleanJson) {
-          cleanJson = jsonText.trim();
-        }
-
-        // Additional cleanup for common issues
-        cleanJson = cleanJson
-          .replace(/^```json/, "")
-          .replace(/```$/, "")
-          .trim();
-
-        // Parse the JSON
-        const parsedContent = JSON.parse(cleanJson);
-
-        // Validate the required structure
-        if (
-          !parsedContent.title ||
-          !parsedContent.questions ||
-          !Array.isArray(parsedContent.questions)
-        ) {
-          throw new Error("Generated content is missing required fields");
-        }
-
-        setContent(parsedContent);
+      // 检查API是否返回了解析后的内容
+      if (data.response.parsed_content) {
+        setContent(data.response.parsed_content);
         setIsGenerated(true);
-      } catch (parseError) {
-        console.error("Error parsing JSON:", parseError);
-        setError("Failed to parse generated content. Please try again.");
+      } else if (data.parse_error) {
+        // API尝试解析但失败了
+        setError("Failed to parse content: " + data.parse_error);
+      } else {
+        // API没有尝试解析
+        setError("Failed to generate valid content. Please try again.");
       }
     } catch (err) {
       console.error("Error fetching fill-in-the-blank questions:", err);

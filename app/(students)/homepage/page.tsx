@@ -18,7 +18,7 @@ import { useUserStore } from "@/store/userStore";
 export default function HomePage() {
   const router = useRouter();
   const supabase = createClient();
-  const { user, profile, isLoading: userLoading } = useUserStore();
+  const { user, isLoading: userLoading } = useUserStore();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [allModules, setAllModules] = useState<ModuleWithSubject[]>([]);
   const [moduleProgress, setModuleProgress] = useState<
@@ -31,20 +31,20 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        if (!profile) return;
+        if (!user) return;
 
         // Fetch XP and Hearts data
         const [xpResponse, heartsResponse] = await Promise.all([
           supabase
             .from("user_xp")
             .select("*")
-            .eq("user_id", profile.id)
+            .eq("user_id", user.id)
             .single(),
 
           supabase
             .from("user_hearts")
             .select("*")
-            .eq("user_id", profile.id)
+            .eq("user_id", user.id)
             .single(),
         ]);
 
@@ -57,7 +57,7 @@ export default function HomePage() {
         }
 
         // If no subjects, nothing else to fetch
-        if (!profile.subjects || profile.subjects.length === 0) {
+        if (!user.subjects || user.subjects.length === 0) {
           setLoading(false);
           return;
         }
@@ -65,13 +65,13 @@ export default function HomePage() {
         // Fetch subjects and all modules in parallel
         const [subjectsResponse, modulesResponse] = await Promise.all([
           // Get all subjects
-          supabase.from("subjects").select("*").in("id", profile.subjects),
+          supabase.from("subjects").select("*").in("id", user.subjects),
 
           // Get all modules for all subjects at once
           supabase
             .from("modules")
             .select("*")
-            .in("subject_id", profile.subjects)
+            .in("subject_id", user.subjects)
             .order("order_index"),
         ]);
 
@@ -101,7 +101,7 @@ export default function HomePage() {
           const { data: progressData } = await supabase
             .from("module_progress")
             .select("*")
-            .eq("user_id", profile.id)
+            .eq("user_id", user.id)
             .in("module_id", moduleIds);
 
           if (progressData) {
@@ -122,7 +122,7 @@ export default function HomePage() {
     if (!userLoading) {
       fetchData();
     }
-  }, [profile, supabase, userLoading]);
+  }, [user, supabase, userLoading]);
 
   if (loading || userLoading) {
     return (

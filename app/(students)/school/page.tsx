@@ -1,41 +1,38 @@
 "use client";
 
 import { createClient } from "@/utils/supabase/client";
-import { ChevronRight, School, BookOpen } from "lucide-react";
+import { ChevronRight, School, BookOpen, Filter, X, Heart } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useUserStore } from "@/store/userStore";
-
-interface School {
-  id: string;
-  name: string;
-  location: string;
-}
-
-interface Program {
-  id: string;
-  school_id: string;
-  subject_id: string;
-  name: string;
-}
-
-interface Subject {
-  id: string;
-  subject_name: string;
-}
-
-interface SchoolWithPrograms extends School {
-  programs: (Program & { subject_name: string })[];
-}
+import {
+  Program,
+  SchoolWithPrograms,
+  Subject,
+  School as SchoolType,
+} from "@/app/types";
+import { SCHOOL_PROMPTS } from "@/app/config/systemPrompts";
 
 export default function SchoolPage() {
   const router = useRouter();
   const supabase = createClient();
-  const { user, profile, isLoading: userLoading } = useUserStore();
+  const { user, isLoading: userLoading } = useUserStore();
   const [loading, setLoading] = useState(true);
-  const [schoolsWithPrograms, setSchoolsWithPrograms] = useState<SchoolWithPrograms[]>([]);
+  const [schoolsWithPrograms, setSchoolsWithPrograms] = useState<
+    SchoolWithPrograms[]
+  >([]);
+  const [allSchoolsWithPrograms, setAllSchoolsWithPrograms] = useState<
+    SchoolWithPrograms[]
+  >([]);
   const [expandedSchool, setExpandedSchool] = useState<string | null>(null);
+  const [locations, setLocations] = useState<string[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState<string>("");
+  const [selectedSubject, setSelectedSubject] = useState<string>("");
+  const [showFavorited, setShowFavorited] = useState(true);
+  const [favoritedPrograms, setFavoritedPrograms] = useState<string[]>([]);
+  const [filtersVisible, setFiltersVisible] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -60,8 +57,25 @@ export default function SchoolPage() {
           return;
         }
 
+        // Fetch favorited programs if user is logged in
+        let favoritedProgramIds: string[] = [];
+        if (user) {
+          const { data: favoritesData, error: favoritesError } = await supabase
+            .from('user_programs_progress')
+            .select('program_id')
+            .eq('user_id', user.id)
+            .eq('status', 'favorited');
+
+          if (!favoritesError && favoritesData) {
+            favoritedProgramIds = favoritesData.map(item => item.program_id);
+            setFavoritedPrograms(favoritedProgramIds);
+          }
+        }
+
         // Get all unique subject IDs from programs
-        const subjectIds = Array.from(new Set(programsData.map(program => program.subject_id)));
+        const subjectIds = Array.from(
+          new Set(programsData.map((program) => program.subject_id))
+        );
 
         // Fetch all subjects
         const { data: subjectsData, error: subjectsError } = await supabase
@@ -74,6 +88,8 @@ export default function SchoolPage() {
           return;
         }
 
+        setSubjects(subjectsData);
+
         // Create a mapping of subject IDs to subject names
         const subjectMap: Record<string, string> = {};
         subjectsData.forEach((subject: Subject) => {
@@ -83,7 +99,7 @@ export default function SchoolPage() {
         // Organize programs by school
         const schoolsMap: Record<string, SchoolWithPrograms> = {};
 
-        schoolsData.forEach((school: School) => {
+        schoolsData.forEach((school: SchoolType) => {
           schoolsMap[school.id] = {
             ...school,
             programs: [],
@@ -101,9 +117,16 @@ export default function SchoolPage() {
 
         // Convert the map to an array and sort by school name
         const schoolsWithProgramsArray = Object.values(schoolsMap)
-          .filter(school => school.programs.length > 0)
+          .filter((school) => school.programs.length > 0)
           .sort((a, b) => a.name.localeCompare(b.name));
 
+        // Extract unique locations for filtering
+        const uniqueLocations = Array.from(
+          new Set(schoolsWithProgramsArray.map((school) => school.location))
+        ).sort();
+
+        setLocations(uniqueLocations);
+        setAllSchoolsWithPrograms(schoolsWithProgramsArray);
         setSchoolsWithPrograms(schoolsWithProgramsArray);
       } catch (error) {
         console.error("Error loading school data:", error);
@@ -115,7 +138,53 @@ export default function SchoolPage() {
     if (!userLoading) {
       fetchData();
     }
-  }, [router, supabase, userLoading]);
+  }, [router, supabase, userLoading, user]);
+
+  useEffect(() => {
+    // Apply filters whenever selected filters change
+    let filteredSchools = [...allSchoolsWithPrograms];
+
+    // Filter by location
+    if (selectedLocation) {
+      filteredSchools = filteredSchools.filter(
+        (school) => school.location === selectedLocation
+      );
+    }
+
+    // Filter by subject
+    if (selectedSubject) {
+      filteredSchools = filteredSchools.filter((school) =>
+        school.programs.some(
+          (program) => program.subject_id === selectedSubject
+        )
+      );
+
+      // Also filter the programs within each school
+      filteredSchools = filteredSchools.map((school) => ({
+        ...school,
+        programs: school.programs.filter(
+          (program) => program.subject_id === selectedSubject
+        ),
+      }));
+    }
+
+    // Filter by favorited status
+    if (showFavorited) {
+      filteredSchools = filteredSchools.filter((school) =>
+        school.programs.some((program) => favoritedPrograms.includes(program.id))
+      );
+
+      // Also filter the programs within each school
+      filteredSchools = filteredSchools.map((school) => ({
+        ...school,
+        programs: school.programs.filter(
+          (program) => favoritedPrograms.includes(program.id)
+        ),
+      }));
+    }
+
+    setSchoolsWithPrograms(filteredSchools);
+  }, [selectedLocation, selectedSubject, showFavorited, allSchoolsWithPrograms, favoritedPrograms]);
 
   const toggleSchool = (schoolId: string) => {
     if (expandedSchool === schoolId) {
@@ -123,6 +192,12 @@ export default function SchoolPage() {
     } else {
       setExpandedSchool(schoolId);
     }
+  };
+
+  const clearFilters = () => {
+    setSelectedLocation("");
+    setSelectedSubject("");
+    setShowFavorited(true);
   };
 
   if (loading || userLoading) {
@@ -137,28 +212,115 @@ export default function SchoolPage() {
 
   return (
     <div className="p-4 space-y-6">
-      <h2 className="text-lg font-medium flex items-center gap-2">
-        <School className="w-5 h-5 text-primary" />
-        Schools and Programs
-      </h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-medium flex items-center gap-2">
+          <School className="w-5 h-5 text-primary" />
+          Schools and Programs
+        </h2>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowFavorited(!showFavorited)}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium ${
+              showFavorited
+                ? "bg-primary/10 text-primary"
+                : "bg-gray-100 text-gray-600"
+            }`}
+          >
+            <Heart className={`w-4 h-4 ${showFavorited ? "fill-primary" : ""}`} />
+            Favorites
+          </button>
+          <button
+            onClick={() => setFiltersVisible(!filtersVisible)}
+            className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium"
+          >
+            <Filter className="w-4 h-4" />
+            Filter
+          </button>
+        </div>
+      </div>
+
+      {filtersVisible && (
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          className="bg-white p-4 rounded-xl shadow-sm space-y-4"
+        >
+          <div className="flex justify-between items-center">
+            <h3 className="font-medium">Filters</h3>
+            {(selectedLocation || selectedSubject) && (
+              <button
+                onClick={clearFilters}
+                className="text-xs flex items-center gap-1 text-gray-500"
+              >
+                <X className="w-3 h-3" /> Clear all
+              </button>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">Location</label>
+            <select
+              value={selectedLocation}
+              onChange={(e) => setSelectedLocation(e.target.value)}
+              className="w-full border border-gray-200 rounded-lg p-2.5 bg-transparent"
+            >
+              <option value="">All locations</option>
+              {locations.map((location) => (
+                <option key={location} value={location}>
+                  {location}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">Subject</label>
+            <select
+              value={selectedSubject}
+              onChange={(e) => setSelectedSubject(e.target.value)}
+              className="w-full border border-gray-200 rounded-lg p-2.5 bg-transparent"
+            >
+              <option value="">All subjects</option>
+              {subjects.map((subject) => (
+                <option key={subject.id} value={subject.id}>
+                  {subject.subject_name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </motion.div>
+      )}
 
       {schoolsWithPrograms.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
-          <p>No schools or programs found</p>
+          <p>No schools or programs found with selected filters</p>
+          {(selectedLocation || selectedSubject || showFavorited) && (
+            <button
+              onClick={clearFilters}
+              className="mt-2 text-primary text-sm"
+            >
+              Clear filters
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-4">
           {schoolsWithPrograms.map((school) => (
-            <div key={school.id} className="bg-white rounded-xl overflow-hidden shadow-sm">
+            <div
+              key={school.id}
+              className="bg-white rounded-xl overflow-hidden shadow-sm"
+            >
               <button
                 onClick={() => toggleSchool(school.id)}
-                className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors active:scale-[0.98] touch-action-manipulation"
+                className="w-full p-4 flex items-center justify-between  transition-colors active:scale-[0.98] touch-action-manipulation"
               >
                 <div className="flex-1 text-left">
                   <h3 className="font-medium text-lg">{school.name}</h3>
                   <p className="text-sm text-gray-600">{school.location}</p>
                   <p className="text-xs text-gray-500 mt-1">
-                    {school.programs.length} program{school.programs.length !== 1 ? "s" : ""}
+                    {school.programs.length} program
+                    {school.programs.length !== 1 ? "s" : ""}
                   </p>
                 </div>
                 <ChevronRight
@@ -180,7 +342,7 @@ export default function SchoolPage() {
                     {school.programs.map((program) => (
                       <div
                         key={program.id}
-                        className="p-4 pl-6 flex items-center hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                        className="p-4 pl-6 flex items-center  active:bg-gray-100 transition-colors"
                         onClick={() => router.push(`/school/${program.id}`)}
                       >
                         <div className="flex-1">

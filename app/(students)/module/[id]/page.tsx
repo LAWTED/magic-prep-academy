@@ -6,31 +6,10 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { themeConfig } from "../../../config/themeConfig";
-import { UserXP, UserHearts } from "@/app/types/index";
+import { UserXP, UserHearts, Module, Session, SessionProgress } from "@/app/types/index";
 import { useUserStore } from "@/store/userStore";
 
-interface Session {
-  id: string;
-  module_id: string;
-  session_name: string;
-  content: {
-    type: string;
-    content: any;
-  };
-}
 
-interface SessionProgress {
-  session_id: string;
-  progress: string;
-  score: number;
-}
-
-interface Module {
-  id: string;
-  subject_id: string;
-  module_name: string;
-  description: string;
-}
 
 export default function ModulePage({
   params,
@@ -40,7 +19,7 @@ export default function ModulePage({
   const { id } = use(params);
   const router = useRouter();
   const supabase = createClient();
-  const { user, profile, isLoading: userLoading } = useUserStore();
+  const { user, isLoading: userLoading } = useUserStore();
   const [module, setModule] = useState<Module | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [progress, setProgress] = useState<Record<string, SessionProgress>>({});
@@ -54,12 +33,12 @@ export default function ModulePage({
     console.log("Module ID:", id);
     async function fetchData() {
       try {
-        if (!profile) return;
+        if (!user) return;
 
         // Get module details, and sessions in parallel
         const [moduleResponse, sessionsResponse] = await Promise.all([
           supabase.from("modules").select("*").eq("id", id).single(),
-          supabase.from("sessions").select("*").eq("module_id", id)
+          supabase.from("sessions").select("*").eq("module_id", id),
         ]);
 
         if (moduleResponse.error || !moduleResponse.data) {
@@ -75,16 +54,12 @@ export default function ModulePage({
 
         // Fetch user XP and hearts data
         const [xpResponse, heartsResponse] = await Promise.all([
-          supabase
-            .from("user_xp")
-            .select("*")
-            .eq("user_id", profile.id)
-            .single(),
+          supabase.from("user_xp").select("*").eq("user_id", user.id).single(),
           supabase
             .from("user_hearts")
             .select("*")
-            .eq("user_id", profile.id)
-            .single()
+            .eq("user_id", user.id)
+            .single(),
         ]);
 
         if (xpResponse.data) {
@@ -97,19 +72,23 @@ export default function ModulePage({
 
         if (sessionsData.length > 0) {
           // Fetch session progress and module progress in parallel
-          const [sessionProgressResponse, moduleProgressResponse] = await Promise.all([
-            supabase
-              .from("session_progress")
-              .select("*")
-              .eq("user_id", profile.id)
-              .in("session_id", sessionsData.map(s => s.id)),
-            supabase
-              .from("module_progress")
-              .select("progress")
-              .eq("user_id", profile.id)
-              .eq("module_id", id)
-              .single()
-          ]);
+          const [sessionProgressResponse, moduleProgressResponse] =
+            await Promise.all([
+              supabase
+                .from("session_progress")
+                .select("*")
+                .eq("user_id", user.id)
+                .in(
+                  "session_id",
+                  sessionsData.map((s) => s.id)
+                ),
+              supabase
+                .from("module_progress")
+                .select("progress")
+                .eq("user_id", user.id)
+                .eq("module_id", id)
+                .single(),
+            ]);
 
           // Process session progress
           if (!sessionProgressResponse.error && sessionProgressResponse.data) {
@@ -120,11 +99,17 @@ export default function ModulePage({
             setProgress(progressMap);
 
             // Check if all sessions are completed
-            const allCompleted = sessionsData.every(session => progressMap[session.id] && progressMap[session.id].progress === "completed");
+            const allCompleted = sessionsData.every(
+              (session) =>
+                progressMap[session.id] &&
+                progressMap[session.id].progress === "completed"
+            );
 
             // If we have module progress data, use it
             if (!moduleProgressResponse.error && moduleProgressResponse.data) {
-              setIsModuleCompleted(moduleProgressResponse.data.progress === "completed");
+              setIsModuleCompleted(
+                moduleProgressResponse.data.progress === "completed"
+              );
             } else if (allCompleted) {
               // If all sessions completed but no module progress, update it
               setIsModuleCompleted(true);
@@ -133,14 +118,14 @@ export default function ModulePage({
               await Promise.all([
                 // Update module progress
                 supabase.from("module_progress").upsert({
-                  user_id: profile.id,
+                  user_id: user.id,
                   module_id: id,
                   progress: "completed",
                   updated_at: new Date().toISOString(),
                 }),
 
                 // Award XP
-                awardModuleCompletionXP(profile.id, xpResponse.data),
+                awardModuleCompletionXP(user.id, xpResponse.data),
               ]);
             }
           }
@@ -155,10 +140,13 @@ export default function ModulePage({
     if (!userLoading) {
       fetchData();
     }
-  }, [id, supabase, userLoading, profile]);
+  }, [id, supabase, userLoading, user]);
 
   // Award XP for completing a module
-  const awardModuleCompletionXP = async (userId: string, currentXP: UserXP | null) => {
+  const awardModuleCompletionXP = async (
+    userId: string,
+    currentXP: UserXP | null
+  ) => {
     if (!currentXP) return;
 
     try {
@@ -171,7 +159,7 @@ export default function ModulePage({
       const { error } = await supabase
         .from("user_xp")
         .update({
-          total_xp: newTotalXP
+          total_xp: newTotalXP,
         })
         .eq("user_id", userId);
 
@@ -183,19 +171,20 @@ export default function ModulePage({
       // Update local state
       setUserXP({
         ...currentXP,
-        total_xp: newTotalXP
+        total_xp: newTotalXP,
       });
 
       // Show success message
-      alert(`Congratulations! You earned ¥${XP_REWARD} for completing the module!`);
-
+      alert(
+        `Congratulations! You earned ¥${XP_REWARD} for completing the module!`
+      );
     } catch (error) {
       console.error("Error awarding module completion XP:", error);
     }
   };
 
   const handleStartSession = async (sessionId: string) => {
-    if (!profile) return;
+    if (!user) return;
 
     // If session is already completed, don't use hearts
     if (progress[sessionId]) {
@@ -216,7 +205,7 @@ export default function ModulePage({
       const { error } = await supabase
         .from("user_hearts")
         .update({ current_hearts: newHeartCount })
-        .eq("user_id", profile.id);
+        .eq("user_id", user.id);
 
       if (error) {
         console.error("Error updating hearts:", error);
@@ -226,7 +215,7 @@ export default function ModulePage({
       // Update local state
       setUserHearts({
         ...userHearts,
-        current_hearts: newHeartCount
+        current_hearts: newHeartCount,
       });
 
       // Navigate to session

@@ -24,17 +24,20 @@ export default function StudentsLayout({
   const shouldShowHeader =
     pathname === "/homepage" ||
     pathname === "/awards" ||
-    pathname === "/school" ||
-    pathname.startsWith("/school/");
+    pathname === "/school";
+
+  const isProfilePage =
+    pathname === "/profile" || pathname.startsWith("/profile/");
 
   return (
     <UserProvider>
-      <div className="min-h-[100dvh] flex flex-col bg-background">
+      <div className="min-h-[100dvh] flex flex-col bg-background w-full">
         {shouldShowHeader && <StudentHeader />}
         <main
           className={cn(
-            "flex-1 flex flex-col w-full max-w-screen-md mx-auto ",
-            shouldShowNavigation && "pb-16"
+            "flex-1 flex flex-col w-full mx-auto",
+            shouldShowNavigation && "pb-16",
+            !isProfilePage && "max-w-screen-md"
           )}
         >
           {children}

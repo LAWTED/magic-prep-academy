@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { UserXP, UserHearts } from "@/app/types/index";
 import { themeConfig } from "@/app/config/themeConfig";
+import { motion } from "framer-motion";
 
 export default function StudentHeader() {
   const router = useRouter();
@@ -81,6 +82,10 @@ export default function StudentHeader() {
     ? `/images/avatars/${profile.avatar_name}.png`
     : "";
 
+  const navigateToProfile = () => {
+    router.push("/profile");
+  };
+
   return (
     <header className="w-screen border-b bg-background">
       <div className="mx-auto w-full max-w-screen-md px-4 py-4 flex items-center justify-between">
@@ -94,17 +99,24 @@ export default function StudentHeader() {
             </>
           ) : (
             <>
-              {/* Avatar */}
-              <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-primary flex-shrink-0">
-                <Image
-                  src={avatarPath}
-                  alt={profile.name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              {/* Name */}
-              <p className="text-lg font-bold">{profile.name}</p>
+              {/* Avatar and Name - Clickable */}
+              <motion.div
+                className="flex items-center gap-3 cursor-pointer"
+                onClick={navigateToProfile}
+                whileTap={{ scale: 0.97 }}
+              >
+                <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-primary flex-shrink-0">
+                  <Image
+                    src={avatarPath}
+                    alt={profile.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                {/* Name */}
+                <p className="text-lg font-bold">{profile.name}</p>
+              </motion.div>
+
               {/* XP as money */}
               <div className="flex items-center gap-2 bg-white/90 px-3 py-1.5 rounded-xl">
                 {themeConfig.xpReward(userXP?.total_xp || 0)}

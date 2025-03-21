@@ -19,18 +19,22 @@ interface Session {
   };
 }
 
-export default function SessionPage({ params }: { params: Promise<{ id: string }> }) {
+export default function SessionPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const router = useRouter();
   const supabase = createClient();
-  const { user, profile, isLoading: userLoading } = useUserStore();
+  const { user, isLoading: userLoading } = useUserStore();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchSession() {
       try {
-        if (!profile) return;
+        if (!user) return;
 
         // Fetch session data
         const { data: sessionData } = await supabase
@@ -52,15 +56,15 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     if (!userLoading) {
       fetchSession();
     }
-  }, [id, supabase, userLoading, profile]);
+  }, [id, supabase, userLoading, user]);
 
   const handleQuizComplete = async () => {
-    if (!profile?.id || !session) return;
+    if (!user?.id || !session) return;
 
     try {
       // Update session progress
       await supabase.from("session_progress").upsert({
-        user_id: profile.id,
+        user_id: user.id,
         session_id: id,
         progress: "completed",
         score: 100, // In a real app, this would be the actual score
@@ -71,7 +75,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
       const { data: userXP } = await supabase
         .from("user_xp")
         .select("*")
-        .eq("user_id", profile.id)
+        .eq("user_id", user.id)
         .single();
 
       if (userXP) {
@@ -85,7 +89,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
             level: newLevel,
             updated_at: new Date().toISOString(),
           })
-          .eq("user_id", profile.id);
+          .eq("user_id", user.id);
       }
 
       // Navigate back to module page
@@ -119,9 +123,13 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
 
     switch (session.content.type) {
       case "MULTIPLE_CHOICE":
-        return <MultipleChoiceQuiz data={session.content.content} {...commonProps} />;
+        return (
+          <MultipleChoiceQuiz data={session.content.content} {...commonProps} />
+        );
       case "FILL_IN_THE_BLANK":
-        return <FillInTheBlankQuiz data={session.content.content} {...commonProps} />;
+        return (
+          <FillInTheBlankQuiz data={session.content.content} {...commonProps} />
+        );
       case "MATCHING":
         return <MatchingQuiz data={session.content.content} {...commonProps} />;
       case "DIALOGUE":
@@ -137,9 +145,5 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     }
   };
 
-  return (
-    <div className="min-h-[100dvh] bg-gray-50">
-      {renderQuiz()}
-    </div>
-  );
+  return <div className="min-h-[100dvh] bg-gray-50">{renderQuiz()}</div>;
 }

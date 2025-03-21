@@ -12,7 +12,7 @@ import { useUserStore } from "@/store/userStore";
 export default function AwardsPage() {
   const router = useRouter();
   const supabase = createClient();
-  const { user, profile, isLoading: userLoading } = useUserStore();
+  const { user, isLoading: userLoading } = useUserStore();
   const [userXP, setUserXP] = useState<UserXP | null>(null);
   const [userHearts, setUserHearts] = useState<UserHearts | null>(null);
   const [loading, setLoading] = useState(true);
@@ -25,31 +25,32 @@ export default function AwardsPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        if (!profile) return;
+        if (!user) return;
 
         // Fetch XP and Hearts data
-        const [xpResponse, heartsResponse, awardsResponse, purchasedResponse] = await Promise.all([
-          supabase
-            .from("user_xp")
-            .select("*")
-            .eq("user_id", profile.id)
-            .single(),
+        const [xpResponse, heartsResponse, awardsResponse, purchasedResponse] =
+          await Promise.all([
+            supabase
+              .from("user_xp")
+              .select("*")
+              .eq("user_id", user.id)
+              .single(),
 
-          supabase
-            .from("user_hearts")
-            .select("*")
-            .eq("user_id", profile.id)
-            .single(),
+            supabase
+              .from("user_hearts")
+              .select("*")
+              .eq("user_id", user.id)
+              .single(),
 
-          // Get available awards
-          supabase.from("awards").select("*").order("price"),
+            // Get available awards
+            supabase.from("awards").select("*").order("price"),
 
-          // Get purchased awards
-          supabase
-            .from("user_awards")
-            .select("award_id")
-            .eq("user_id", profile.id),
-        ]);
+            // Get purchased awards
+            supabase
+              .from("user_awards")
+              .select("award_id")
+              .eq("user_id", user.id),
+          ]);
 
         if (xpResponse.data) {
           setUserXP(xpResponse.data);
@@ -77,11 +78,11 @@ export default function AwardsPage() {
     if (!userLoading) {
       fetchData();
     }
-  }, [profile, supabase, userLoading]);
+  }, [user, supabase, userLoading]);
 
   const purchaseAward = async (awardId: string, price: number) => {
     // Check if user has enough XP
-    if (!userXP || userXP.total_xp < price || !profile) {
+    if (!userXP || userXP.total_xp < price || !user) {
       // Show insufficient funds message
       return;
     }
@@ -93,7 +94,7 @@ export default function AwardsPage() {
       const { error: updateXpError } = await supabase
         .from("user_xp")
         .update({ total_xp: userXP.total_xp - price })
-        .eq("user_id", profile.id);
+        .eq("user_id", user.id);
 
       if (updateXpError) {
         console.error("Error updating XP:", updateXpError);
@@ -104,7 +105,7 @@ export default function AwardsPage() {
       const { error: purchaseError } = await supabase
         .from("user_awards")
         .insert({
-          user_id: profile.id,
+          user_id: user.id,
           award_id: awardId,
         });
 
@@ -114,7 +115,7 @@ export default function AwardsPage() {
         await supabase
           .from("user_xp")
           .update({ total_xp: userXP.total_xp })
-          .eq("user_id", profile.id);
+          .eq("user_id", user.id);
         return;
       }
 
@@ -134,12 +135,12 @@ export default function AwardsPage() {
     }
   };
 
-  // Get avatar path based on profile's avatar_name
-  const avatarPath = profile
-    ? `/images/avatars/${profile.avatar_name}.png`
+  // Get avatar path based on user's avatar_name
+  const avatarPath = user
+    ? `/images/avatars/${user.avatar_name}.png`
     : "";
 
-  if (loading || !profile) {
+  if (loading || !user) {
     return (
       <div className="p-4 space-y-6 overflow-auto">
         <div className="flex items-center justify-center h-[calc(100vh-180px)]">

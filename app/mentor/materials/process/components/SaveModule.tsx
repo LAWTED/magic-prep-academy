@@ -30,8 +30,7 @@ export default function SaveModule({
   const [moduleName, setModuleName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [isLoadingSubjects, setIsLoadingSubjects] = useState<boolean>(true);
-  const [isLoadingSummary, setIsLoadingSummary] = useState<boolean>(true);
-  const [isLoadingTitle, setIsLoadingTitle] = useState<boolean>(true);
+  const [isLoadingMetadata, setIsLoadingMetadata] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
@@ -64,13 +63,13 @@ export default function SaveModule({
     fetchSubjects();
   }, []);
 
-  // Fetch summary for description
+  // Fetch module metadata (title and summary) in one request
   useEffect(() => {
-    const fetchSummary = async () => {
+    const fetchModuleMetadata = async () => {
       if (!vectorStoreId) return;
 
       try {
-        setIsLoadingSummary(true);
+        setIsLoadingMetadata(true);
         const response = await fetch("/api/vector-chat", {
           method: "POST",
           headers: {
@@ -78,56 +77,54 @@ export default function SaveModule({
           },
           body: JSON.stringify({
             vectorStoreId,
-            prompt: MATERIAL_PROMPTS.SUMMARY,
+            prompt: MATERIAL_PROMPTS.GENERATE_MODULE_METADATA,
+            validator_name: "moduleMetadata",
           }),
         });
 
         if (!response.ok) {
-          throw new Error("Failed to generate summary");
+          throw new Error("Failed to generate module metadata");
         }
 
         const data = await response.json();
-        const generatedSummary = data.response.output_text;
-        setDescription(generatedSummary);
-      } catch (err) {
-        console.error("Error fetching summary:", err);
-      } finally {
-        setIsLoadingSummary(false);
-      }
-    };
 
-    const fetchTitle = async () => {
-      if (!vectorStoreId) return;
-
-      try {
-        setIsLoadingTitle(true);
-        const response = await fetch("/api/vector-chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            vectorStoreId,
-            prompt: MATERIAL_PROMPTS.GENERATE_TITLE,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to generate title");
+        if (data.response.parsed_content) {
+          const { title, summary } = data.response.parsed_content;
+          setModuleName(title);
+          setDescription(summary);
+        } else if (data.parse_error) {
+          console.error("Error parsing metadata:", data.parse_error);
+          // Fallback to text response if JSON parsing fails
+          const responseText = data.response.output_text;
+          try {
+            // Try to manually extract title and summary
+            const match = responseText.match(/title["\s:]+([^"]+)["\s,}]+summary["\s:]+([^"]+)/i);
+            if (match) {
+              setModuleName(match[1].trim());
+              setDescription(match[2].trim());
+            } else {
+              setModuleName("New Module");
+              setDescription(responseText);
+            }
+          } catch (err) {
+            setModuleName("New Module");
+            setDescription(responseText.substring(0, 500));
+          }
+        } else {
+          // If no parsed content but no error either
+          setModuleName("New Module");
+          setDescription(data.response.output_text || "");
         }
-
-        const data = await response.json();
-        const generatedTitle = data.response.output_text;
-        setModuleName(generatedTitle);
       } catch (err) {
-        console.error("Error fetching title:", err);
+        console.error("Error fetching module metadata:", err);
+        setModuleName("New Module");
+        setDescription("");
       } finally {
-        setIsLoadingTitle(false);
+        setIsLoadingMetadata(false);
       }
     };
 
-    fetchSummary();
-    fetchTitle();
+    fetchModuleMetadata();
   }, [vectorStoreId]);
 
   const saveModule = async () => {
@@ -217,7 +214,7 @@ export default function SaveModule({
           <label className="block text-sm font-medium mb-1">
             Module Name *
           </label>
-          {isLoadingTitle ? (
+          {isLoadingMetadata ? (
             <div className="h-10 w-full bg-muted animate-pulse rounded"></div>
           ) : (
             <input
@@ -232,7 +229,7 @@ export default function SaveModule({
 
         <div>
           <label className="block text-sm font-medium mb-1">Description</label>
-          {isLoadingSummary ? (
+          {isLoadingMetadata ? (
             <div className="h-32 w-full bg-muted animate-pulse rounded"></div>
           ) : (
             <textarea
@@ -259,7 +256,7 @@ export default function SaveModule({
           <button
             onClick={saveModule}
             disabled={
-              isSaving || !selectedSubjectId || !moduleName || isLoadingSummary
+              isSaving || !selectedSubjectId || !moduleName || isLoadingMetadata
             }
             className="w-full p-3 bg-primary text-white rounded-md hover:bg-primary/90 disabled:bg-primary/50 disabled:cursor-not-allowed flex items-center justify-center"
           >

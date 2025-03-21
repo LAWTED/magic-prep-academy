@@ -1,6 +1,13 @@
 "use client";
 
-import { Loader2, FileText, Save, CheckCircle2, HelpCircle, MessageCircle } from "lucide-react";
+import {
+  Loader2,
+  FileText,
+  Save,
+  CheckCircle2,
+  HelpCircle,
+  MessageCircle,
+} from "lucide-react";
 import { useState } from "react";
 import { MATERIAL_PROMPTS } from "@/app/config/systemPrompts";
 import { createClient } from "@/utils/supabase/client";
@@ -39,6 +46,7 @@ export default function DialogueGenerator({
         body: JSON.stringify({
           vectorStoreId,
           prompt: MATERIAL_PROMPTS.GENERATE_DIALOGUE,
+          validator_name: "dialogue",
         }),
       });
 
@@ -48,57 +56,13 @@ export default function DialogueGenerator({
 
       const data = await response.json();
 
-      // JSON extraction and parsing
-      try {
-        const jsonText = data.response.output_text;
-
-        // Try different patterns to extract JSON
-        const jsonRegexPatterns = [
-          /```json\n([\s\S]*?)\n```/, // Standard JSON code block
-          /```\n([\s\S]*?)\n```/, // Code block without language
-          /\{[\s\S]*"title"[\s\S]*\}/, // Direct JSON object
-        ];
-
-        let cleanJson = "";
-        for (const pattern of jsonRegexPatterns) {
-          const match = jsonText.match(pattern);
-          if (match && match[1]) {
-            cleanJson = match[1].trim();
-            break;
-          } else if (match) {
-            cleanJson = match[0].trim();
-            break;
-          }
-        }
-
-        // If no pattern matched, use the whole response as a last resort
-        if (!cleanJson) {
-          cleanJson = jsonText.trim();
-        }
-
-        // Additional cleanup for common issues
-        cleanJson = cleanJson
-          .replace(/^```json/, "")
-          .replace(/```$/, "")
-          .trim();
-
-        // Parse the JSON
-        const parsedContent = JSON.parse(cleanJson);
-
-        // Validate the required structure
-        if (
-          !parsedContent.title ||
-          !parsedContent.dialogue ||
-          !Array.isArray(parsedContent.dialogue)
-        ) {
-          throw new Error("Generated content is missing required fields");
-        }
-
-        setContent(parsedContent);
+      if (data.response.parsed_content) {
+        setContent(data.response.parsed_content);
         setIsGenerated(true);
-      } catch (parseError) {
-        console.error("Error parsing JSON:", parseError);
-        setError("Failed to parse generated content. Please try again.");
+      } else if (data.parse_error) {
+        setError("Failed to parse content: " + data.parse_error);
+      } else {
+        setError("Failed to generate valid content. Please try again.");
       }
     } catch (err) {
       console.error("Error fetching dialogue exercise:", err);
@@ -196,7 +160,9 @@ export default function DialogueGenerator({
     <div className="mt-6">
       <div
         className={`relative rounded-xl transition-all ${
-          isGenerated ? "bg-muted" : "bg-primary/5 hover:bg-primary/10 cursor-pointer"
+          isGenerated
+            ? "bg-muted"
+            : "bg-primary/5 hover:bg-primary/10 cursor-pointer"
         }`}
         onClick={() => !isGenerated && !isLoading && fetchContent()}
       >

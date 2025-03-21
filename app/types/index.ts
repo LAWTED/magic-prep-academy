@@ -16,14 +16,6 @@ export interface UserHearts {
   updated_at: string;
 }
 
-export interface Module {
-  id: string;
-  subject_id: string;
-  module_name: string;
-  order_index: number;
-  description: string;
-}
-
 export interface Subject {
   id: string;
   subject_name: string;
@@ -46,11 +38,94 @@ export interface Award {
   price: number;
   image_path: string;
   is_purchasable: boolean;
-};
+}
 
 export interface UserAward {
   id: string;
   user_id: string;
   award_id: string;
   acquired_at: string;
-};
+}
+
+export interface Session {
+  id: string;
+  module_id: string;
+  session_name: string;
+  content: {
+    type: string;
+    content: any;
+  };
+}
+
+export interface SessionProgress {
+  session_id: string;
+  progress: string;
+  score: number;
+}
+
+export interface Module {
+  id: string;
+  subject_id: string;
+  module_name: string;
+  description: string;
+}
+
+export interface School {
+  id: string;
+  name: string;
+  location: string;
+}
+
+export interface Program {
+  id: string;
+  school_id: string;
+  subject_id: string;
+  name: string;
+}
+
+export interface Subject {
+  id: string;
+  subject_name: string;
+}
+
+export interface SchoolWithPrograms extends School {
+  programs: (Program & { subject_name: string })[];
+}
+
+export interface UserAcademic {
+  id: string;
+  user_id: string;
+  content: {
+    gpa?: {
+      score?: number;
+      wes?: Record<string, any>;
+    };
+    gre?: {
+      verbal?: number;
+      quantitative?: number;
+      analytical?: number;
+      total?: number;
+    };
+    languageScore?: {
+      toefl?: {
+        reading?: number;
+        writing?: number;
+        speaking?: number;
+        listening?: number;
+        total?: number;
+      };
+      ielts?: {
+        reading?: number;
+        writing?: number;
+        speaking?: number;
+        listening?: number;
+        overall?: number;
+      };
+      duolingo?: {
+        score?: number;
+      };
+    };
+  };
+  created_at: string;
+  updated_at: string;
+}

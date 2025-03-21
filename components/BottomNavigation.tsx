@@ -25,6 +25,11 @@ export default function BottomNavigation() {
       icon: Award,
     },
     // {
+    //   name: "Profile",
+    //   href: "/profile",
+    //   icon: User,
+    // },
+    // {
     //   name: "Prepare",
     //   href: "/prepare",
     //   icon: BookOpen,

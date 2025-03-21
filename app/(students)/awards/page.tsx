@@ -7,11 +7,12 @@ import { useRouter } from "next/navigation";
 import { UserXP, UserHearts, Award } from "@/app/types/index";
 import { themeConfig } from "@/app/config/themeConfig";
 import { motion } from "framer-motion";
+import { useUserStore } from "@/store/userStore";
 
 export default function AwardsPage() {
   const router = useRouter();
   const supabase = createClient();
-  const [profile, setProfile] = useState<any>(null);
+  const { user, profile, isLoading: userLoading } = useUserStore();
   const [userXP, setUserXP] = useState<UserXP | null>(null);
   const [userHearts, setUserHearts] = useState<UserHearts | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,49 +25,31 @@ export default function AwardsPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // Get current user
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) {
-          router.push("/sign-in");
-          return;
-        }
-
-        // Check if user has a profile
-        const { data: userData, error: userError } = await supabase
-          .from("users")
-          .select("*")
-          .eq("auth_id", user.id)
-          .single();
-
-        if (userError || !userData || !userData.name) {
-          router.push("/onboarding");
-          return;
-        }
-
-        setProfile(userData);
+        if (!profile) return;
 
         // Fetch XP and Hearts data
-        const [xpResponse, heartsResponse, awardsResponse, userAwardsResponse] =
-          await Promise.all([
-            supabase
-              .from("user_xp")
-              .select("*")
-              .eq("user_id", userData.id)
-              .single(),
+        const [xpResponse, heartsResponse, awardsResponse, purchasedResponse] = await Promise.all([
+          supabase
+            .from("user_xp")
+            .select("*")
+            .eq("user_id", profile.id)
+            .single(),
 
-            supabase
-              .from("user_hearts")
-              .select("*")
-              .eq("user_id", userData.id)
-              .single(),
+          supabase
+            .from("user_hearts")
+            .select("*")
+            .eq("user_id", profile.id)
+            .single(),
 
-            supabase.from("awards").select("*"),
+          // Get available awards
+          supabase.from("awards").select("*").order("price"),
 
-            supabase.from("user_awards").select("*").eq("user_id", userData.id),
-          ]);
+          // Get purchased awards
+          supabase
+            .from("user_awards")
+            .select("award_id")
+            .eq("user_id", profile.id),
+        ]);
 
         if (xpResponse.data) {
           setUserXP(xpResponse.data);
@@ -80,21 +63,21 @@ export default function AwardsPage() {
           setAwards(awardsResponse.data);
         }
 
-        if (userAwardsResponse.data) {
-          setPurchasedAwards(
-            userAwardsResponse.data.map((item) => item.award_id)
-          );
+        if (purchasedResponse.data) {
+          const purchased = purchasedResponse.data.map((item) => item.award_id);
+          setPurchasedAwards(purchased);
         }
       } catch (error) {
         console.error("Error loading awards data:", error);
-        router.push("/sign-in");
       } finally {
         setLoading(false);
       }
     }
 
-    fetchData();
-  }, [router, supabase]);
+    if (!userLoading) {
+      fetchData();
+    }
+  }, [profile, supabase, userLoading]);
 
   const purchaseAward = async (awardId: string, price: number) => {
     // Check if user has enough XP

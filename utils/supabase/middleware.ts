@@ -22,26 +22,60 @@ export const updateSession = async (request: NextRequest) => {
           },
           setAll(cookiesToSet) {
             cookiesToSet.forEach(({ name, value }) =>
-              request.cookies.set(name, value),
+              request.cookies.set(name, value)
             );
             response = NextResponse.next({
               request,
             });
             cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options),
+              response.cookies.set(name, value, options)
             );
           },
         },
-      },
+      }
     );
 
     // This will refresh session if expired - required for Server Components
     // https://supabase.com/docs/guides/auth/server-side/nextjs
-    const user = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    // protected routes
-    if (request.nextUrl.pathname.startsWith("/protected") && user.error) {
+    // Check authentication status for protected routes
+    const studentRoutes = [
+      "/homepage",
+      "/awards",
+      "/school",
+      "/module",
+      "/session",
+      "/onboarding",
+    ];
+
+    // Check if current path is a student route
+    const isStudentRoute = studentRoutes.some(
+      (route) =>
+        request.nextUrl.pathname.startsWith(route) ||
+        request.nextUrl.pathname === route
+    );
+
+    // Check for protected routes or student routes
+    if (isStudentRoute && !user) {
       return NextResponse.redirect(new URL("/sign-in", request.url));
+    }
+
+    // For student routes, also check if user has a profile
+    if (isStudentRoute && user) {
+      const { data: userData, error: profileError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("auth_id", user.id)
+        .single();
+
+      if (profileError || !userData) {
+        // If user is authenticated but has no profile, redirect to onboarding
+        return NextResponse.redirect(new URL("/onboarding", request.url));
+      }
     }
 
     return response;

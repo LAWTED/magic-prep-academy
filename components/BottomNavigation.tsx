@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Award, BookOpen, User } from "lucide-react";
+import { Home, Award, BookOpen, User, BookCheck, School } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function BottomNavigation() {
@@ -10,14 +10,19 @@ export default function BottomNavigation() {
 
   const navItems = [
     {
+      name: "Learn",
+      href: "/homepage",
+      icon: BookCheck,
+    },
+    {
+      name: "School",
+      href: "/school",
+      icon: School,
+    },
+    {
       name: "Awards",
       href: "/awards",
       icon: Award,
-    },
-    {
-      name: "Learn",
-      href: "/homepage",
-      icon: Home,
     },
     // {
     //   name: "Prepare",

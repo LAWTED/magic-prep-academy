@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { useUserStore } from "@/store/userStore";
 
 const avatarOptions = [
   { name: "Nemo", path: "/images/avatars/Nemo.png" },
@@ -18,6 +19,7 @@ const avatarOptions = [
 export default function OnboardingPage() {
   const router = useRouter();
   const supabase = createClient();
+  const { fetchUserData } = useUserStore();
   const [userId, setUserId] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const totalSteps = 4;
@@ -123,6 +125,9 @@ export default function OnboardingPage() {
       // Upsert profile data
       let { error } = await supabase.from("users").upsert(updates);
       if (error) throw error;
+
+      // Refresh user store data with the new profile
+      await fetchUserData();
 
       router.push("/homepage");
     } catch (error) {

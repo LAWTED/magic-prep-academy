@@ -7,6 +7,7 @@ import MultipleChoiceQuiz from "@/app/(students)/session/[id]/components/quizzes
 import FillInTheBlankQuiz from "@/app/(students)/session/[id]/components/quizzes/FillInTheBlankQuiz";
 import MatchingQuiz from "@/app/(students)/session/[id]/components/quizzes/MatchingQuiz";
 import DialogueQuiz from "@/app/(students)/session/[id]/components/quizzes/DialogueQuiz";
+import { useUserStore } from "@/store/userStore";
 
 interface Session {
   id: string;
@@ -22,30 +23,14 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   const { id } = use(params);
   const router = useRouter();
   const supabase = createClient();
+  const { user, profile, isLoading: userLoading } = useUserStore();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchSessionAndUser() {
+    async function fetchSession() {
       try {
-        // Get current user
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          router.push("/sign-in");
-          return;
-        }
-
-        // Get user's profile to get the actual user ID from the users table
-        const { data: userData } = await supabase
-          .from("users")
-          .select("id")
-          .eq("auth_id", user.id)
-          .single();
-
-        if (userData) {
-          setUserId(userData.id);
-        }
+        if (!profile) return;
 
         // Fetch session data
         const { data: sessionData } = await supabase
@@ -58,45 +43,55 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
           setSession(sessionData);
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching session data:", error);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchSessionAndUser();
-  }, [id, supabase, router]);
+    if (!userLoading) {
+      fetchSession();
+    }
+  }, [id, supabase, userLoading, profile]);
 
   const handleQuizComplete = async () => {
-    if (!userId || !session) return;
+    if (!profile?.id || !session) return;
 
     try {
-      // Check if progress already exists
-      const { data: existingProgress } = await supabase
-        .from("session_progress")
+      // Update session progress
+      await supabase.from("session_progress").upsert({
+        user_id: profile.id,
+        session_id: id,
+        progress: "completed",
+        score: 100, // In a real app, this would be the actual score
+        updated_at: new Date().toISOString(),
+      });
+
+      // Award XP
+      const { data: userXP } = await supabase
+        .from("user_xp")
         .select("*")
-        .eq("user_id", userId)
-        .eq("session_id", session.id)
+        .eq("user_id", profile.id)
         .single();
 
-      if (!existingProgress) {
-        // Create new progress entry
-        const { error } = await supabase
-          .from("session_progress")
-          .insert({
-            user_id: userId,
-            session_id: session.id,
-            progress: 'completed',
-            score: 0, // As requested, setting score to 0 for now
-          });
+      if (userXP) {
+        const newXP = userXP.current_xp + 50; // 50 XP per session
+        const newLevel = Math.floor(newXP / 100) + 1;
 
-        if (error) throw error;
+        await supabase
+          .from("user_xp")
+          .update({
+            current_xp: newXP,
+            level: newLevel,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", profile.id);
       }
 
       // Navigate back to module page
       router.push(`/module/${session.module_id}`);
     } catch (error) {
-      console.error("Error updating progress:", error);
+      console.error("Error completing session:", error);
     }
   };
 
@@ -108,10 +103,10 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     );
   }
 
-  if (!session || !userId) {
+  if (!session) {
     return (
       <div className="flex items-center justify-center h-[100dvh]">
-        <p>Session not found or user not authenticated</p>
+        <p>Session not found</p>
       </div>
     );
   }

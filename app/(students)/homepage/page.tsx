@@ -13,11 +13,12 @@ import {
   ModuleWithSubject,
 } from "@/app/types/index";
 import { themeConfig } from "@/app/config/themeConfig";
+import { useUserStore } from "@/store/userStore";
 
-export default function ProtectedPage() {
+export default function HomePage() {
   const router = useRouter();
   const supabase = createClient();
-  const [profile, setProfile] = useState<any>(null);
+  const { user, profile, isLoading: userLoading } = useUserStore();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [allModules, setAllModules] = useState<ModuleWithSubject[]>([]);
   const [moduleProgress, setModuleProgress] = useState<
@@ -30,42 +31,20 @@ export default function ProtectedPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // Get current user
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) {
-          router.push("/sign-in");
-          return;
-        }
-
-        // Check if user has a profile
-        const { data: userData, error: userError } = await supabase
-          .from("users")
-          .select("*")
-          .eq("auth_id", user.id)
-          .single();
-
-        if (userError || !userData || !userData.name) {
-          router.push("/onboarding");
-          return;
-        }
-
-        setProfile(userData);
+        if (!profile) return;
 
         // Fetch XP and Hearts data
         const [xpResponse, heartsResponse] = await Promise.all([
           supabase
             .from("user_xp")
             .select("*")
-            .eq("user_id", userData.id)
+            .eq("user_id", profile.id)
             .single(),
 
           supabase
             .from("user_hearts")
             .select("*")
-            .eq("user_id", userData.id)
+            .eq("user_id", profile.id)
             .single(),
         ]);
 
@@ -78,7 +57,7 @@ export default function ProtectedPage() {
         }
 
         // If no subjects, nothing else to fetch
-        if (!userData.subjects || userData.subjects.length === 0) {
+        if (!profile.subjects || profile.subjects.length === 0) {
           setLoading(false);
           return;
         }
@@ -86,13 +65,13 @@ export default function ProtectedPage() {
         // Fetch subjects and all modules in parallel
         const [subjectsResponse, modulesResponse] = await Promise.all([
           // Get all subjects
-          supabase.from("subjects").select("*").in("id", userData.subjects),
+          supabase.from("subjects").select("*").in("id", profile.subjects),
 
           // Get all modules for all subjects at once
           supabase
             .from("modules")
             .select("*")
-            .in("subject_id", userData.subjects)
+            .in("subject_id", profile.subjects)
             .order("order_index"),
         ]);
 
@@ -122,7 +101,7 @@ export default function ProtectedPage() {
           const { data: progressData } = await supabase
             .from("module_progress")
             .select("*")
-            .eq("user_id", userData.id)
+            .eq("user_id", profile.id)
             .in("module_id", moduleIds);
 
           if (progressData) {
@@ -135,16 +114,17 @@ export default function ProtectedPage() {
         }
       } catch (error) {
         console.error("Error loading homepage data:", error);
-        router.push("/sign-in");
       } finally {
         setLoading(false);
       }
     }
 
-    fetchData();
-  }, [router, supabase]);
+    if (!userLoading) {
+      fetchData();
+    }
+  }, [profile, supabase, userLoading]);
 
-  if (loading || !profile) {
+  if (loading || userLoading) {
     return (
       <div className="p-4 space-y-6">
         <div className="flex items-center justify-center h-[calc(100vh-180px)]">

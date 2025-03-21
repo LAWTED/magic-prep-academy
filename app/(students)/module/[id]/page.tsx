@@ -7,6 +7,7 @@ import { ArrowLeft, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { themeConfig } from "../../../config/themeConfig";
 import { UserXP, UserHearts } from "@/app/types/index";
+import { useUserStore } from "@/store/userStore";
 
 interface Session {
   id: string;
@@ -39,11 +40,11 @@ export default function ModulePage({
   const { id } = use(params);
   const router = useRouter();
   const supabase = createClient();
+  const { user, profile, isLoading: userLoading } = useUserStore();
   const [module, setModule] = useState<Module | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [progress, setProgress] = useState<Record<string, SessionProgress>>({});
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
   const [isModuleCompleted, setIsModuleCompleted] = useState(false);
   const [userXP, setUserXP] = useState<UserXP | null>(null);
   const [userHearts, setUserHearts] = useState<UserHearts | null>(null);
@@ -53,37 +54,22 @@ export default function ModulePage({
     console.log("Module ID:", id);
     async function fetchData() {
       try {
-        // Get current user
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) {
-          router.push("/sign-in");
-          return;
-        }
+        if (!profile) return;
 
-        // Get user's profile, module details, and sessions in parallel
-        const [userResponse, moduleResponse, sessionsResponse] = await Promise.all([
-          supabase.from("users").select("id").eq("auth_id", user.id).single(),
+        // Get module details, and sessions in parallel
+        const [moduleResponse, sessionsResponse] = await Promise.all([
           supabase.from("modules").select("*").eq("id", id).single(),
           supabase.from("sessions").select("*").eq("module_id", id)
         ]);
-
-        if (userResponse.error || !userResponse.data) {
-          console.error("Error fetching user data:", userResponse.error);
-          return;
-        }
 
         if (moduleResponse.error || !moduleResponse.data) {
           console.error("Error fetching module data:", moduleResponse.error);
           return;
         }
 
-        const userData = userResponse.data;
         const moduleData = moduleResponse.data;
         const sessionsData = sessionsResponse.data || [];
 
-        setUserId(userData.id);
         setModule(moduleData);
         setSessions(sessionsData);
 
@@ -92,12 +78,12 @@ export default function ModulePage({
           supabase
             .from("user_xp")
             .select("*")
-            .eq("user_id", userData.id)
+            .eq("user_id", profile.id)
             .single(),
           supabase
             .from("user_hearts")
             .select("*")
-            .eq("user_id", userData.id)
+            .eq("user_id", profile.id)
             .single()
         ]);
 
@@ -115,12 +101,12 @@ export default function ModulePage({
             supabase
               .from("session_progress")
               .select("*")
-              .eq("user_id", userData.id)
+              .eq("user_id", profile.id)
               .in("session_id", sessionsData.map(s => s.id)),
             supabase
               .from("module_progress")
               .select("progress")
-              .eq("user_id", userData.id)
+              .eq("user_id", profile.id)
               .eq("module_id", id)
               .single()
           ]);
@@ -147,27 +133,29 @@ export default function ModulePage({
               await Promise.all([
                 // Update module progress
                 supabase.from("module_progress").upsert({
-                  user_id: userData.id,
+                  user_id: profile.id,
                   module_id: id,
                   progress: "completed",
-                  score: 0
+                  updated_at: new Date().toISOString(),
                 }),
 
-                // Award 100 XP for first-time completion
-                awardModuleCompletionXP(userData.id, xpResponse.data)
+                // Award XP
+                awardModuleCompletionXP(profile.id, xpResponse.data),
               ]);
             }
           }
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error loading module data:", error);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchData();
-  }, [id, supabase, router]);
+    if (!userLoading) {
+      fetchData();
+    }
+  }, [id, supabase, userLoading, profile]);
 
   // Award XP for completing a module
   const awardModuleCompletionXP = async (userId: string, currentXP: UserXP | null) => {
@@ -207,7 +195,7 @@ export default function ModulePage({
   };
 
   const handleStartSession = async (sessionId: string) => {
-    if (!userId) return;
+    if (!profile) return;
 
     // If session is already completed, don't use hearts
     if (progress[sessionId]) {
@@ -228,7 +216,7 @@ export default function ModulePage({
       const { error } = await supabase
         .from("user_hearts")
         .update({ current_hearts: newHeartCount })
-        .eq("user_id", userId);
+        .eq("user_id", profile.id);
 
       if (error) {
         console.error("Error updating hearts:", error);

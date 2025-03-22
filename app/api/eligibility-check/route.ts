@@ -3,7 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 
 import { cookies } from "next/headers";
 import { openai } from "@/lib/openai";
-import { SCHOOL_PROMPTS } from "@/app/config/systemPrompts";
+import { SCHOOL_PROMPTS } from "@/app/config/themePrompts";
 import { parseAIGeneratedJson, validators } from "@/app/utils/jsonParser";
 
 export async function POST(req: Request) {

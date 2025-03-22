@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { openai } from "@/lib/openai";
 import { parseAIGeneratedJson } from "@/app/utils/jsonParser";
-import { SCHOOL_PROMPTS } from "@/app/config/systemPrompts";
+import { SCHOOL_PROMPTS } from "@/app/config/themePrompts";
 
 export async function POST(request: Request) {
   try {

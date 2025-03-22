@@ -2,7 +2,7 @@
 
 import { Loader2, FileText, Save, CheckCircle2, HelpCircle } from "lucide-react";
 import { useState } from "react";
-import { MATERIAL_PROMPTS } from "@/app/config/systemPrompts";
+import { MATERIAL_PROMPTS } from "@/app/config/themePrompts";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
 

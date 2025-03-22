@@ -202,86 +202,8 @@ export const MATERIAL_PROMPTS = {
     "- Ensure blanks are integrated naturally into the conversation",
 };
 
-export const RESUME_PROMPTS = {
-  /**
-   * Prompt to analyze a resume for academic applications
-   */
-  ANALYZE_RESUME:
-    "You're an academic CV expert. Analyze this resume for academic strength and content quality.\n\n" +
-    "# YOUR TASK\n" +
-    "Analyze the provided resume content to evaluate its effectiveness for academic applications.\n\n" +
-    "# RESPONSE FORMAT\n" +
-    "You MUST return ONLY valid JSON following this exact structure:\n" +
-    "```json\n" +
-    "{\n" +
-    '  "scores": {\n' +
-    '    "content": {\n' +
-    '      "score": 85,\n' +
-    '      "feedback": "The resume has strong academic content with research experience and publications, but could use more detail on research methodology."\n' +
-    '    },\n' +
-    '    "quality": {\n' +
-    '      "score": 70,\n' +
-    '      "feedback": "The writing quality is good but contains some vague descriptions and generic language that could be more specific."\n' +
-    '    },\n' +
-    '    "impact": {\n' +
-    '      "score": 80,\n' +
-    '      "feedback": "Achievements are well-documented, but could better quantify impact and outcomes of research and projects."\n' +
-    '    },\n' +
-    '    "clarity": {\n' +
-    '      "score": 75,\n' +
-    '      "feedback": "The organization is logical but some sections could be more concise and better prioritized for academic readers."\n' +
-    '    }\n' +
-    '  },\n' +
-    '  "overallScore": 78,\n' +
-    '  "overallFeedback": "This resume demonstrates solid academic credentials but needs refinement in quantifying research impact and providing more specific details about academic contributions.",\n' +
-    '  "actionableSteps": [\n' +
-    '    "Add more specifics about research methodologies used in projects",\n' +
-    '    "Quantify research outcomes with metrics where possible",\n' +
-    '    "Highlight academic collaborations more prominently",\n' +
-    '    "Add more detail to publication descriptions"\n' +
-    '  ]\n' +
-    "}\n" +
-    "```\n\n" +
-    "# SCORING CRITERIA\n" +
-    "1. Content (0-100):\n" +
-    "   - Academic relevance of experiences and qualifications\n" +
-    "   - Depth and breadth of academic accomplishments\n" +
-    "   - Presence of research experience, publications, and teaching\n" +
-    "   - Relevance to academic career paths\n\n" +
-    "2. Quality (0-100):\n" +
-    "   - Use of strong, specific language\n" +
-    "   - Technical precision in describing academic work\n" +
-    "   - Level of detail provided for key accomplishments\n" +
-    "   - Avoidance of vague or generic descriptions\n\n" +
-    "3. Impact (0-100):\n" +
-    "   - Quantifiable achievements and results\n" +
-    "   - Demonstrated contributions to field\n" +
-    "   - Evidence of recognition (awards, grants, etc.)\n" +
-    "   - Clear outcomes from research and projects\n\n" +
-    "4. Clarity (0-100):\n" +
-    "   - Logical organization and flow\n" +
-    "   - Prioritization of most relevant information\n" +
-    "   - Conciseness and readability\n" +
-    "   - Appropriate section organization\n\n" +
-    "# FEEDBACK REQUIREMENTS\n" +
-    "1. Be specific about strengths and weaknesses\n" +
-    "2. Provide constructive criticism\n" +
-    "3. Focus on academic context\n" +
-    "4. Suggest 3-5 specific, actionable improvements\n\n" +
-    "# IMPORTANT\n" +
-    "- Output MUST be valid parseable JSON\n" +
-    "- Score each category separately on a scale of 0-100\n" +
-    "- Calculate overallScore as the average of all category scores\n" +
-    "- Do NOT include any text outside the JSON structure\n" +
-    "- Provide detailed, specific feedback for each category\n" +
-    "- Give concrete examples from the resume when possible\n" +
-    "- Analyze the content quality, not just the formatting or structure",
-
-  /**
-   * Prompt to format a resume in APA style
-   */
-  FORMAT_APA:
-    "You are a professional resume/CV format conversion expert specializing in academic formatting. Convert the provided resume or CV content into an APA-style academic CV in a specific JSON format. DO NOT create any new content - your job is ONLY to reformat and reorganize the existing content.\n\n" +
+export const FORMAT_GUIDELINES = {
+  APA_FORMAT_GUIDELINES:
     "# RESPONSE FORMAT\n" +
     "You MUST return ONLY valid JSON following this exact structure:\n" +
     "```json\n" +
@@ -418,7 +340,90 @@ export const RESUME_PROMPTS = {
     '    "laboratory": ["Lab skill 1", "Lab skill 2"]\n' +
     "  }\n" +
     "}\n" +
+    "```\n\n",
+};
+
+export const RESUME_PROMPTS = {
+  /**
+   * Prompt to analyze a resume for academic applications
+   */
+  ANALYZE_RESUME:
+    "You're an academic CV expert. Analyze this resume for academic strength and content quality.\n\n" +
+    "# YOUR TASK\n" +
+    "Analyze the provided resume content to evaluate its effectiveness for academic applications.\n\n" +
+    "# RESPONSE FORMAT\n" +
+    "You MUST return ONLY valid JSON following this exact structure:\n" +
+    "```json\n" +
+    "{\n" +
+    '  "scores": {\n' +
+    '    "content": {\n' +
+    '      "score": 85,\n' +
+    '      "feedback": "The resume has strong academic content with research experience and publications, but could use more detail on research methodology."\n' +
+    "    },\n" +
+    '    "quality": {\n' +
+    '      "score": 70,\n' +
+    '      "feedback": "The writing quality is good but contains some vague descriptions and generic language that could be more specific."\n' +
+    "    },\n" +
+    '    "impact": {\n' +
+    '      "score": 80,\n' +
+    '      "feedback": "Achievements are well-documented, but could better quantify impact and outcomes of research and projects."\n' +
+    "    },\n" +
+    '    "clarity": {\n' +
+    '      "score": 75,\n' +
+    '      "feedback": "The organization is logical but some sections could be more concise and better prioritized for academic readers."\n' +
+    "    }\n" +
+    "  },\n" +
+    '  "overallScore": 78,\n' +
+    '  "overallFeedback": "This resume demonstrates solid academic credentials but needs refinement in quantifying research impact and providing more specific details about academic contributions.",\n' +
+    '  "actionableSteps": [\n' +
+    '    "Add more specifics about research methodologies used in projects",\n' +
+    '    "Quantify research outcomes with metrics where possible",\n' +
+    '    "Highlight academic collaborations more prominently",\n' +
+    '    "Add more detail to publication descriptions"\n' +
+    "  ]\n" +
+    "}\n" +
     "```\n\n" +
+    "# SCORING CRITERIA\n" +
+    "1. Content (0-100):\n" +
+    "   - Academic relevance of experiences and qualifications\n" +
+    "   - Depth and breadth of academic accomplishments\n" +
+    "   - Presence of research experience, publications, and teaching\n" +
+    "   - Relevance to academic career paths\n\n" +
+    "2. Quality (0-100):\n" +
+    "   - Use of strong, specific language\n" +
+    "   - Technical precision in describing academic work\n" +
+    "   - Level of detail provided for key accomplishments\n" +
+    "   - Avoidance of vague or generic descriptions\n\n" +
+    "3. Impact (0-100):\n" +
+    "   - Quantifiable achievements and results\n" +
+    "   - Demonstrated contributions to field\n" +
+    "   - Evidence of recognition (awards, grants, etc.)\n" +
+    "   - Clear outcomes from research and projects\n\n" +
+    "4. Clarity (0-100):\n" +
+    "   - Logical organization and flow\n" +
+    "   - Prioritization of most relevant information\n" +
+    "   - Conciseness and readability\n" +
+    "   - Appropriate section organization\n\n" +
+    "# FEEDBACK REQUIREMENTS\n" +
+    "1. Be specific about strengths and weaknesses\n" +
+    "2. Provide constructive criticism\n" +
+    "3. Focus on academic context\n" +
+    "4. Suggest 3-5 specific, actionable improvements\n\n" +
+    "# IMPORTANT\n" +
+    "- Output MUST be valid parseable JSON\n" +
+    "- Score each category separately on a scale of 0-100\n" +
+    "- Calculate overallScore as the average of all category scores\n" +
+    "- Do NOT include any text outside the JSON structure\n" +
+    "- Provide detailed, specific feedback for each category\n" +
+    "- Give concrete examples from the resume when possible\n" +
+    "- Analyze the content quality, not just the formatting or structure",
+
+  /**
+   * Prompt to format a resume in APA style
+   */
+  FORMAT_APA:
+    "You are a professional resume/CV format conversion expert specializing in academic formatting. Convert the provided resume or CV content into an APA-style academic CV in a specific JSON format. DO NOT create any new content - your job is ONLY to reformat and reorganize the existing content.\n\n" +
+    FORMAT_GUIDELINES.APA_FORMAT_GUIDELINES +
     "# CONVERSION RULES\n" +
     "1. Preserve at least 99% of the original resume content - do not lose any information\n" +
     "2. Personal information should be formatted professionally\n" +

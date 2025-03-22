@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { openai } from "@/lib/openai";
 import { parseAIGeneratedJson, validators } from "@/app/utils/jsonParser";
-import { RESUME_PROMPTS } from "@/app/config/systemPrompts";
+import { RESUME_PROMPTS } from "@/app/config/themePrompts";
 import { ResumeAnalysisData } from "@/app/types";
 
 /**

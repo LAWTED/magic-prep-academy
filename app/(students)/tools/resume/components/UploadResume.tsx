@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import APAPreview, { ResumeData } from "./APAPreview";
-import { RESUME_PROMPTS } from "@/app/config/systemPrompts";
+import { RESUME_PROMPTS } from "@/app/config/themePrompts";
 import { createClient } from "@/utils/supabase/client";
 import { useUserStore } from "@/store/userStore";
 import { toast } from "sonner";

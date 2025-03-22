@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Download, Share2, Copy, ChevronDown, ChevronUp } from "lucide-react";
+import { Download, ChevronDown, ChevronUp, Database } from "lucide-react";
 import { generateAPAResumePdf } from "./generateAPAResumePdf";
+import { toast } from "sonner";
+import { createClient } from "@/utils/supabase/client";
 
 // Define resume data type
 export type ResumeData = {
@@ -120,25 +122,33 @@ export type ResumeData = {
 type APAPreviewProps = {
   resumeData: ResumeData;
   fileName: string;
+  defaultExpanded?: boolean;
+  documentId?: string | null;
 };
 
-export default function APAPreview({ resumeData, fileName }: APAPreviewProps) {
+export default function APAPreview({
+  resumeData,
+  fileName,
+  defaultExpanded = true,
+  documentId = null,
+}: APAPreviewProps) {
   const [expandedSections, setExpandedSections] = useState<{
     [key: string]: boolean;
   }>({
-    education: true,
-    workExperience: true,
-    research: true,
-    projects: true,
-    publications: true,
-    presentations: true,
-    teaching: true,
-    awards: true,
-    grants: true,
-    professional: true,
-    certifications: true,
-    skills: true,
+    education: defaultExpanded,
+    workExperience: defaultExpanded,
+    research: defaultExpanded,
+    projects: defaultExpanded,
+    publications: defaultExpanded,
+    presentations: defaultExpanded,
+    teaching: defaultExpanded,
+    awards: defaultExpanded,
+    grants: defaultExpanded,
+    professional: defaultExpanded,
+    certifications: defaultExpanded,
+    skills: defaultExpanded,
   });
+  const [isSaving, setIsSaving] = useState(false);
 
   const toggleSection = (section: string) => {
     setExpandedSections((prev) => ({
@@ -156,6 +166,63 @@ export default function APAPreview({ resumeData, fileName }: APAPreviewProps) {
       await generateAPAResumePdf(resumeData, fileName);
     } catch (error) {
       console.error("Failed to download PDF:", error);
+      toast.error("Failed to download PDF");
+    }
+  };
+
+  // Save to document_versions table
+  const handleSave = async () => {
+    if (!documentId) return;
+
+    try {
+      setIsSaving(true);
+      const supabase = createClient();
+
+      // First get the latest version number
+      const { data: versionData, error: versionError } = await supabase
+        .from("document_versions")
+        .select("version_number")
+        .eq("document_id", documentId)
+        .order("version_number", { ascending: false })
+        .limit(1);
+
+      if (versionError) {
+        throw versionError;
+      }
+
+      // Calculate next version number
+      const nextVersionNumber =
+        versionData && versionData.length > 0
+          ? versionData[0].version_number + 1
+          : 1;
+
+      // Prepare metadata
+      const metadata = {
+        format: "APA",
+        content: resumeData,
+      };
+
+      // Insert new version
+      const { error: insertError } = await supabase
+        .from("document_versions")
+        .insert({
+          document_id: documentId,
+          version_number: nextVersionNumber,
+          metadata: metadata,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      toast.success("Resume saved successfully!");
+    } catch (error) {
+      console.error("Failed to save resume:", error);
+      toast.error("Failed to save resume");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -163,27 +230,27 @@ export default function APAPreview({ resumeData, fileName }: APAPreviewProps) {
     <div className="bg-white rounded-lg border p-6 max-w-2xl mx-auto">
       {/* Header with actions */}
       <div className="mb-6 flex justify-end space-x-2">
+        {documentId && (
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            className="p-2 rounded-full hover:bg-gray-100"
+            title="Save as new version"
+            onClick={handleSave}
+            disabled={isSaving}
+          >
+            <Database
+              size={18}
+              className={isSaving ? "text-gray-400 animate-pulse" : ""}
+            />
+          </motion.button>
+        )}
         <motion.button
           whileTap={{ scale: 0.95 }}
           className="p-2 rounded-full hover:bg-gray-100"
-          title="Download"
+          title="Download PDF"
           onClick={handleDownloadPDF}
         >
           <Download size={18} />
-        </motion.button>
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          className="p-2 rounded-full hover:bg-gray-100"
-          title="Share"
-        >
-          <Share2 size={18} />
-        </motion.button>
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          className="p-2 rounded-full hover:bg-gray-100"
-          title="Copy"
-        >
-          <Copy size={18} />
         </motion.button>
       </div>
 
@@ -191,15 +258,22 @@ export default function APAPreview({ resumeData, fileName }: APAPreviewProps) {
       <div className="font-serif">
         {/* Personal Information */}
         <div className="text-center mb-6">
-          <h1 className="text-xl font-bold mb-1">{resumeData.personalInfo.name}</h1>
+          <h1 className="text-xl font-bold mb-1">
+            {resumeData.personalInfo.name}
+          </h1>
           <p className="text-sm">
-            {resumeData.personalInfo.address} • {resumeData.personalInfo.phone} •{" "}
-            {resumeData.personalInfo.email}
+            {resumeData.personalInfo.address} • {resumeData.personalInfo.phone}{" "}
+            • {resumeData.personalInfo.email}
           </p>
-          {(resumeData.personalInfo.orcid || resumeData.personalInfo.website) && (
+          {(resumeData.personalInfo.orcid ||
+            resumeData.personalInfo.website) && (
             <p className="text-sm mt-1">
-              {resumeData.personalInfo.orcid && <>ORCID: {resumeData.personalInfo.orcid} • </>}
-              {resumeData.personalInfo.website && <>{resumeData.personalInfo.website}</>}
+              {resumeData.personalInfo.orcid && (
+                <>ORCID: {resumeData.personalInfo.orcid} • </>
+              )}
+              {resumeData.personalInfo.website && (
+                <>{resumeData.personalInfo.website}</>
+              )}
             </p>
           )}
         </div>
@@ -230,17 +304,21 @@ export default function APAPreview({ resumeData, fileName }: APAPreviewProps) {
                       <p>{edu.dates}</p>
                     </div>
                     <p>
-                      <span className="italic">{edu.degree}</span>, {edu.location}
+                      <span className="italic">{edu.degree}</span>,{" "}
+                      {edu.location}
                     </p>
                     {edu.gpa && <p>GPA: {edu.gpa}</p>}
                     {edu.advisor && <p>Advisor: {edu.advisor}</p>}
                     {edu.thesis && <p>Thesis: "{edu.thesis}"</p>}
-                    {edu.relevantCoursework && edu.relevantCoursework.length > 0 && (
-                      <>
-                        <p className="font-semibold mt-1">Relevant Coursework:</p>
-                        <p>{edu.relevantCoursework.join("; ")}</p>
-                      </>
-                    )}
+                    {edu.relevantCoursework &&
+                      edu.relevantCoursework.length > 0 && (
+                        <>
+                          <p className="font-semibold mt-1">
+                            Relevant Coursework:
+                          </p>
+                          <p>{edu.relevantCoursework.join("; ")}</p>
+                        </>
+                      )}
                   </div>
                 ))}
               </div>
@@ -276,18 +354,26 @@ export default function APAPreview({ resumeData, fileName }: APAPreviewProps) {
                     <p>
                       {work.company}, {work.location}
                     </p>
-                    {work.supervisor && <p className="italic">Supervisor: {work.supervisor}</p>}
+                    {work.supervisor && (
+                      <p className="italic">Supervisor: {work.supervisor}</p>
+                    )}
                     <ul className="list-disc ml-5 mt-1">
                       {work.description.map((desc, i) => (
-                        <li key={i} className="text-sm">{desc}</li>
+                        <li key={i} className="text-sm">
+                          {desc}
+                        </li>
                       ))}
                     </ul>
                     {work.achievements && work.achievements.length > 0 && (
                       <>
-                        <p className="font-semibold text-sm mt-1">Key Achievements:</p>
+                        <p className="font-semibold text-sm mt-1">
+                          Key Achievements:
+                        </p>
                         <ul className="list-disc ml-5">
                           {work.achievements.map((achievement, i) => (
-                            <li key={i} className="text-sm">{achievement}</li>
+                            <li key={i} className="text-sm">
+                              {achievement}
+                            </li>
                           ))}
                         </ul>
                       </>
@@ -330,7 +416,9 @@ export default function APAPreview({ resumeData, fileName }: APAPreviewProps) {
                     <p className="italic">Principal Investigator: {res.pi}</p>
                     <ul className="list-disc ml-5 mt-1">
                       {res.description.map((desc, i) => (
-                        <li key={i} className="text-sm">{desc}</li>
+                        <li key={i} className="text-sm">
+                          {desc}
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -368,19 +456,27 @@ export default function APAPreview({ resumeData, fileName }: APAPreviewProps) {
                     <p className="text-sm">{project.organization}</p>
                     <ul className="list-disc ml-5 mt-1">
                       {project.description.map((desc, i) => (
-                        <li key={i} className="text-sm">{desc}</li>
+                        <li key={i} className="text-sm">
+                          {desc}
+                        </li>
                       ))}
                     </ul>
-                    {project.technologies && project.technologies.length > 0 && (
-                      <p className="text-sm mt-1">
-                        <span className="font-semibold">Technologies:</span>{" "}
-                        {project.technologies.join(", ")}
-                      </p>
-                    )}
+                    {project.technologies &&
+                      project.technologies.length > 0 && (
+                        <p className="text-sm mt-1">
+                          <span className="font-semibold">Technologies:</span>{" "}
+                          {project.technologies.join(", ")}
+                        </p>
+                      )}
                     {project.url && (
                       <p className="text-sm mt-1">
                         <span className="font-semibold">URL:</span>{" "}
-                        <a href={project.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                        <a
+                          href={project.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
                           {project.url}
                         </a>
                       </p>
@@ -704,12 +800,14 @@ export default function APAPreview({ resumeData, fileName }: APAPreviewProps) {
                 // Format category name for display (capitalize first letter of each word)
                 const formattedCategory = category
                   .split(/(?=[A-Z])/)
-                  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                  .join(' ');
+                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(" ");
 
                 return (
                   <p key={category} className="mt-1 first:mt-0">
-                    <span className="font-semibold">{formattedCategory} Skills:</span>{" "}
+                    <span className="font-semibold">
+                      {formattedCategory} Skills:
+                    </span>{" "}
                     {skills.join(", ")}
                   </p>
                 );

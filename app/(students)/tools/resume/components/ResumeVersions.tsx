@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Loader2, Edit, CheckCircle } from "lucide-react";
+import { Calendar, Loader2, Edit, CheckCircle, Trash2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -38,6 +38,7 @@ export default function ResumeVersions({
   const [isLoading, setIsLoading] = useState(true);
   const [editingVersion, setEditingVersion] = useState<string | null>(null);
   const [editedName, setEditedName] = useState("");
+  const [deletingVersion, setDeletingVersion] = useState<string | null>(null);
 
   useEffect(() => {
     if (documentId) {
@@ -124,6 +125,42 @@ export default function ResumeVersions({
     }
   };
 
+  const handleDeleteVersion = async (version: ResumeVersion, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering card click
+
+    // Don't allow deleting if it's the only version
+    if (versions.length <= 1) {
+      toast.error("Cannot delete the only version of this resume");
+      return;
+    }
+
+    // Set deleting state to show loading indicator
+    setDeletingVersion(version.id);
+
+    try {
+      const { error } = await supabase
+        .from("document_versions")
+        .delete()
+        .eq("id", version.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setVersions((prev) => prev.filter((v) => v.id !== version.id));
+      toast.success("Version deleted successfully");
+
+      // If user deleted the version they were viewing in detail, redirect back to main view
+      if (window.location.pathname.includes(version.id)) {
+        router.push(`/tools/resume/${documentId}`);
+      }
+    } catch (error) {
+      console.error("Error deleting version:", error);
+      toast.error("Failed to delete version");
+    } finally {
+      setDeletingVersion(null);
+    }
+  };
+
   return (
     <div>
       <div className="space-y-4">
@@ -189,14 +226,29 @@ export default function ResumeVersions({
                     Save
                   </motion.button>
                 ) : (
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    className="text-xs bg-amber-50 text-amber-600 hover:bg-amber-100 py-1.5 px-3 rounded-lg flex items-center"
-                    onClick={(e) => handleStartRename(version, e)}
-                  >
-                    <Edit size={14} className="mr-1.5" />
-                    Rename
-                  </motion.button>
+                  <>
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      className="text-xs bg-amber-50 text-amber-600 hover:bg-amber-100 py-1.5 px-3 rounded-lg flex items-center"
+                      onClick={(e) => handleStartRename(version, e)}
+                    >
+                      <Edit size={14} className="mr-1.5" />
+                      Rename
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      className="text-xs bg-red-50 text-red-600 hover:bg-red-100 py-1.5 px-3 rounded-lg flex items-center"
+                      onClick={(e) => handleDeleteVersion(version, e)}
+                      disabled={deletingVersion === version.id}
+                    >
+                      {deletingVersion === version.id ? (
+                        <Loader2 size={14} className="mr-1.5 animate-spin" />
+                      ) : (
+                        <Trash2 size={14} className="mr-1.5" />
+                      )}
+                      Delete
+                    </motion.button>
+                  </>
                 )}
               </div>
             </div>

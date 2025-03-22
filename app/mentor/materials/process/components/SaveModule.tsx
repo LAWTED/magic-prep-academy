@@ -1,7 +1,7 @@
 "use client";
 
 import { BookOpen, Save, Check } from "lucide-react";
-import { MATERIAL_PROMPTS } from "@/app/config/systemPrompts";
+import { MATERIAL_PROMPTS } from "@/app/config/themePrompts";
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 

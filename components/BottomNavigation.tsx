@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Award, BookOpen, User, BookCheck, School, Wrench } from "lucide-react";
+import { Home, Award, BookOpen, User, BookCheck, School, Wrench, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function BottomNavigation() {
@@ -18,6 +18,11 @@ export default function BottomNavigation() {
       name: "School",
       href: "/school",
       icon: School,
+    },
+    {
+      name: "Chat",
+      href: "/chat",
+      icon: MessageCircle,
     },
     {
       name: "Tools",

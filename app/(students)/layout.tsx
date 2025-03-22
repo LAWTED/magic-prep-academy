@@ -21,7 +21,9 @@ export default function StudentsLayout({
     pathname === "/school" ||
     pathname.startsWith("/school/") ||
     pathname === "/tools" ||
-    pathname.startsWith("/tools/");
+    pathname.startsWith("/tools/") ||
+    pathname === "/chat" ||
+    pathname.startsWith("/chat/");
 
   // Check if the current path should have the header
   const shouldShowHeader =

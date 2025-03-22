@@ -12,7 +12,7 @@ import {
   Subject,
   School as SchoolType,
 } from "@/app/types";
-import { SCHOOL_PROMPTS } from "@/app/config/systemPrompts";
+import { SCHOOL_PROMPTS } from "@/app/config/themePrompts";
 
 export default function SchoolPage() {
   const router = useRouter();

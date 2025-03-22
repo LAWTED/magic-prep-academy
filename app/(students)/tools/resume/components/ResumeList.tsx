@@ -2,7 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Download, Eye, CheckCircle, Edit, Trash2, Plus, Loader2, ChevronRight } from "lucide-react";
+import {
+  Download,
+  Eye,
+  CheckCircle,
+  Edit,
+  Trash2,
+  Plus,
+  Loader2,
+  ChevronRight,
+} from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { useUserStore } from "@/store/userStore";
 import { toast } from "sonner";
@@ -46,11 +55,11 @@ export default function ResumeList({ hideNewButton = false }: ResumeListProps) {
       setIsLoading(true);
 
       const { data, error } = await supabase
-        .from('documents')
-        .select('*')
-        .eq('user_id', user?.id)
-        .eq('type', 'resume')
-        .order('updated_at', { ascending: false });
+        .from("documents")
+        .select("*")
+        .eq("user_id", user?.id)
+        .eq("type", "resume")
+        .order("updated_at", { ascending: false });
 
       if (error) {
         throw error;
@@ -58,8 +67,8 @@ export default function ResumeList({ hideNewButton = false }: ResumeListProps) {
 
       setResumes(data || []);
     } catch (error) {
-      console.error('Error fetching resumes:', error);
-      toast.error('Failed to load resumes');
+      console.error("Error fetching resumes:", error);
+      toast.error("Failed to load resumes");
     } finally {
       setIsLoading(false);
     }
@@ -70,15 +79,15 @@ export default function ResumeList({ hideNewButton = false }: ResumeListProps) {
 
     try {
       const { data, error } = await supabase
-        .from('documents')
+        .from("documents")
         .insert({
           user_id: user.id,
           name: newResumeName,
-          type: 'resume',
+          type: "resume",
           metadata: {
             content: {},
-            format: 'APA'
-          }
+            format: "APA",
+          },
         })
         .select()
         .single();
@@ -92,8 +101,8 @@ export default function ResumeList({ hideNewButton = false }: ResumeListProps) {
       setShowNewResumeModal(false);
       toast.success("Resume created successfully");
     } catch (error) {
-      console.error('Error creating resume:', error);
-      toast.error('Failed to create resume');
+      console.error("Error creating resume:", error);
+      toast.error("Failed to create resume");
     }
   };
 
@@ -109,12 +118,12 @@ export default function ResumeList({ hideNewButton = false }: ResumeListProps) {
 
     try {
       const { data, error } = await supabase
-        .from('documents')
+        .from("documents")
         .update({
           name: editName,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', id)
+        .eq("id", id)
         .select()
         .single();
 
@@ -123,25 +132,20 @@ export default function ResumeList({ hideNewButton = false }: ResumeListProps) {
       }
 
       setResumes((prev) =>
-        prev.map((resume) =>
-          resume.id === id ? data : resume
-        )
+        prev.map((resume) => (resume.id === id ? data : resume))
       );
       setEditMode(null);
       toast.success("Resume renamed successfully");
     } catch (error) {
-      console.error('Error updating resume:', error);
-      toast.error('Failed to rename resume');
+      console.error("Error updating resume:", error);
+      toast.error("Failed to rename resume");
     }
   };
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent triggering the card click
     try {
-      const { error } = await supabase
-        .from('documents')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from("documents").delete().eq("id", id);
 
       if (error) {
         throw error;
@@ -150,17 +154,17 @@ export default function ResumeList({ hideNewButton = false }: ResumeListProps) {
       setResumes((prev) => prev.filter((resume) => resume.id !== id));
       toast.success("Resume deleted successfully");
     } catch (error) {
-      console.error('Error deleting resume:', error);
-      toast.error('Failed to delete resume');
+      console.error("Error deleting resume:", error);
+      toast.error("Failed to delete resume");
     }
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -170,10 +174,10 @@ export default function ResumeList({ hideNewButton = false }: ResumeListProps) {
 
   return (
     <div className={hideNewButton ? "" : "p-4"}>
-      <div className={`flex justify-between items-center ${!hideNewButton ? "mb-6" : ""}`}>
-        {!hideNewButton && (
-          <h2 className="text-lg font-semibold">Resumes</h2>
-        )}
+      <div
+        className={`flex justify-between items-center ${!hideNewButton ? "mb-6" : ""}`}
+      >
+        {!hideNewButton && <h2 className="text-lg font-semibold">Resumes</h2>}
         {!hideNewButton && (
           <motion.button
             whileTap={{ scale: 0.95 }}
@@ -195,7 +199,9 @@ export default function ResumeList({ hideNewButton = false }: ResumeListProps) {
         ) : resumes.length === 0 ? (
           <div className="text-center py-12 px-4 border rounded-xl bg-gray-50">
             <p className="text-gray-500 mb-2">No resumes found</p>
-            <p className="text-sm text-gray-400">Use the Upload Resume button to get started</p>
+            <p className="text-sm text-gray-400">
+              Use the Upload Resume button to get started
+            </p>
           </div>
         ) : (
           resumes.map((resume) => (
@@ -205,7 +211,10 @@ export default function ResumeList({ hideNewButton = false }: ResumeListProps) {
               onClick={() => handleViewVersions(resume)}
             >
               {editMode === resume.id ? (
-                <div className="flex items-center mb-3" onClick={e => e.stopPropagation()}>
+                <div
+                  className="flex items-center mb-3"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <input
                     type="text"
                     value={editName}
@@ -246,7 +255,10 @@ export default function ResumeList({ hideNewButton = false }: ResumeListProps) {
                 )}
               </div>
 
-              <div className="flex flex-wrap gap-2" onClick={e => e.stopPropagation()}>
+              <div
+                className="flex flex-wrap gap-2"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   className="text-xs bg-gray-100 hover:bg-gray-200 py-1.5 px-3 rounded-lg flex items-center"
@@ -258,13 +270,7 @@ export default function ResumeList({ hideNewButton = false }: ResumeListProps) {
                   <Eye size={14} className="mr-1.5" />
                   View Versions
                 </motion.button>
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  className="text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 py-1.5 px-3 rounded-lg flex items-center"
-                >
-                  <Download size={14} className="mr-1.5" />
-                  Download
-                </motion.button>
+
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   onClick={(e) => handleStartEdit(resume, e)}

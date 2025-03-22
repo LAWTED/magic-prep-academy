@@ -75,9 +75,25 @@ export default function ResumeVersionDetailPage() {
   };
 
   const handleAskMentor = () => {
-    toast.info("Mentor chat functionality will be implemented soon");
-    // For future implementation:
-    // router.push(`/tools/resume/mentor?documentId=${params.id}&versionId=${params.versionId}`);
+    try {
+      if (!resumeData || Object.keys(resumeData).length === 0) {
+        toast.error("No resume data available to share with the mentor");
+        return;
+      }
+
+      // Create a prompt with the resume data
+      const versionLabel = versionName || `Version ${versionNumber || ""}`;
+      const initialPrompt = `Please review my resume "${documentName}" (${versionLabel}) for academic applications and provide feedback on how to improve it. Here is the resume data:\n\n${JSON.stringify({ format: "APA", content: resumeData }, null, 2)}`;
+
+      // Store in sessionStorage for the chat page to access
+      sessionStorage.setItem("resume_review_prompt", initialPrompt);
+
+      // Navigate to chat with the PhD mentor
+      router.push(`/chat?person=phd-mentor&has_resume=true`);
+    } catch (error) {
+      console.error("Error preparing resume for review:", error);
+      toast.error("Could not prepare resume for review");
+    }
   };
 
   if (loading) {

@@ -14,13 +14,13 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import APAPreview, { ResumeData } from "./APAPreview";
-import { DOCUMENTS_PROMPTS } from "@/app/config/themePrompts";
 import { createClient } from "@/utils/supabase/client";
 import { useUserStore } from "@/store/userStore";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { processVectorChatStream } from "@/app/utils/streamUtils";
+import { DOCUMENTS_PROMPTS } from "@/app/config/themePrompts";
+import TextPreview from "./TextPreview";
 
 type FileInfo = {
   name: string;
@@ -28,11 +28,16 @@ type FileInfo = {
   url?: string;
 };
 
-type UploadResumeProps = {
+type SOPData = {
+  format: 'text';
+  content: string;
+};
+
+type UploadSOPProps = {
   onAskMentor: () => void;
 };
 
-export default function UploadResume({ onAskMentor }: UploadResumeProps) {
+export default function UploadSOP({ onAskMentor }: UploadSOPProps) {
   const { user } = useUserStore();
   const supabase = createClient();
   const router = useRouter();
@@ -44,9 +49,7 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
   const [loading, setLoading] = useState(false);
   const [fileId, setFileId] = useState<string>("");
   const [vectorStoreId, setVectorStoreId] = useState<string>("");
-  const [formattedResume, setFormattedResume] = useState<ResumeData | null>(
-    null
-  );
+  const [formattedSOP, setFormattedSOP] = useState<SOPData | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [fileInfo, setFileInfo] = useState<FileInfo | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
@@ -60,7 +63,7 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
     setError(null);
     setFileId("");
     setVectorStoreId("");
-    setFormattedResume(null);
+    setFormattedSOP(null);
   };
 
   const nextStep = () => {
@@ -93,12 +96,13 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
       if (
         droppedFile.type === "application/pdf" ||
         droppedFile.type ===
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+        droppedFile.type === "text/plain"
       ) {
         setFile(droppedFile);
         await uploadFile(droppedFile);
       } else {
-        setError("Please upload a PDF or DOCX file");
+        setError("Please upload a PDF, DOCX, or TXT file");
       }
     }
   };
@@ -116,19 +120,20 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
       setLoading(true);
       setError(null);
 
-      // Validate file type again to ensure it's PDF or DOCX
+      // Validate file type again to ensure it's PDF, DOCX, or TXT
       if (
         fileToUpload.type !== "application/pdf" &&
         fileToUpload.type !==
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document" &&
+        fileToUpload.type !== "text/plain"
       ) {
-        throw new Error("Invalid file type. Please upload a PDF or DOCX file.");
+        throw new Error("Invalid file type. Please upload a PDF, DOCX, or TXT file.");
       }
 
       const formData = new FormData();
       formData.append("file", fileToUpload);
       formData.append("inputType", "document");
-      formData.append("fileType", "resume");
+      formData.append("fileType", "sop");
       formData.append("contentType", fileToUpload.type);
       formData.append("fileName", fileToUpload.name);
 
@@ -164,7 +169,7 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
     if (!streamingProgress) return;
 
     const interval = setInterval(() => {
-      setStreamingDots((prev) => {
+      setStreamingDots(prev => {
         if (prev === "...") return "";
         return prev + ".";
       });
@@ -173,9 +178,9 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
     return () => clearInterval(interval);
   }, [streamingProgress]);
 
-  const handleFormatAsAPA = async () => {
+  const handleExtractSOP = async () => {
     if (!vectorStoreId) {
-      setError("No resume uploaded. Please upload a resume first.");
+      setError("No SOP uploaded. Please upload a SOP first.");
       return;
     }
 
@@ -192,21 +197,23 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
         },
         body: JSON.stringify({
           vectorStoreId: vectorStoreId,
-          prompt: DOCUMENTS_PROMPTS.FORMAT_APA,
-          validator_name: "apaResume",
+          prompt: DOCUMENTS_PROMPTS.FORMAT_SOP,
+          validator_name: "sopExtract",
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to format resume");
+        throw new Error("Failed to extract SOP");
       }
 
       // Process the stream using our utility function
-      const { parsedContent, error: streamError } =
-        await processVectorChatStream<ResumeData>(response, (chunk) => {
+      const { parsedContent, error: streamError } = await processVectorChatStream<SOPData>(
+        response,
+        (chunk) => {
           // Keep the streaming progress indicator active while receiving chunks
           setStreamingProgress(true);
-        });
+        }
+      );
 
       // Handle the results
       if (streamError) {
@@ -214,29 +221,32 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
       }
 
       if (parsedContent) {
-        setFormattedResume(parsedContent);
+        setFormattedSOP(parsedContent);
       } else {
-        throw new Error("Failed to parse formatted resume");
+        throw new Error("Failed to extract SOP content");
       }
     } catch (error) {
-      console.error("Format error:", error);
-      setError(error instanceof Error ? error.message : "Formatting failed");
+      console.error("Extraction error:", error);
+      setError(error instanceof Error ? error.message : "Extraction failed");
     } finally {
       setLoading(false);
       setStreamingProgress(false);
     }
   };
 
-  const handleSaveResume = async () => {
-    if (!formattedResume || !user) return;
+  const handleSaveSOP = async () => {
+    if (!user || !formattedSOP) {
+      setError("You need to be logged in and have a formatted SOP to save");
+      return;
+    }
 
     try {
       setLoading(true);
       setError(null);
 
-      const fileName = file?.name || "Resume";
-      const resumeName = fileName.replace(/\.[^/.]+$/, ""); // Remove file extension
-      const documentName = `${resumeName} - APA Format`;
+      const fileName = file?.name || "SOP";
+      const sopName = fileName.replace(/\.[^/.]+$/, ""); // Remove file extension
+      const documentName = `${sopName}`;
 
       // First, insert into documents table
       const { data: documentData, error: documentError } = await supabase
@@ -244,10 +254,10 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
         .insert({
           user_id: user.id,
           name: documentName,
-          type: "resume",
+          type: "sop",
           metadata: {
+            format: "text",
             original_file_name: file?.name,
-            format: "APA",
             created_from_id: fileId || null,
           },
         })
@@ -270,8 +280,8 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
           name: null,
           version_number: 1,
           metadata: {
-            content: formattedResume,
-            format: "APA",
+            format: "text",
+            content: formattedSOP.content,
           },
         })
         .select()
@@ -281,19 +291,15 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
         throw versionError;
       }
 
-      toast.success("Resume saved successfully!");
-      console.log("Resume saved:", {
-        document: documentData,
-        version: versionData,
-      });
+      toast.success("SOP saved successfully!");
 
-      // Navigate to the main resume listing page
-      router.push("/tools/resume");
+      // Navigate to the main SOP listing page
+      router.push("/tools/sop");
     } catch (error) {
       console.error("Save error:", error);
-      toast.error("Failed to save resume");
+      toast.error("Failed to save SOP");
       setError(
-        error instanceof Error ? error.message : "Failed to save resume"
+        error instanceof Error ? error.message : "Failed to save SOP"
       );
     } finally {
       setLoading(false);
@@ -311,7 +317,7 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
           ></div>
         </div>
         <div className="flex justify-between mt-2 text-xs text-gray-500">
-          <span>Resume Builder</span>
+          <span>SOP Builder</span>
           <span>
             {step}/{totalSteps}
           </span>
@@ -343,7 +349,7 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
           transition={{ duration: 0.2 }}
           className="w-full"
         >
-          {/* Step 1: Upload Resume */}
+          {/* Step 1: Upload SOP */}
           {step === 1 && (
             <div className="space-y-6">
               <motion.div
@@ -352,9 +358,9 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
                 transition={{ delay: 0.2 }}
                 className="text-center mb-6"
               >
-                <h1 className="text-2xl font-bold mb-2">Upload Your Resume</h1>
+                <h1 className="text-2xl font-bold mb-2">Upload Your SOP</h1>
                 <p className="text-gray-500">
-                  Upload your resume to get started
+                  Upload your statement of purpose to get started
                 </p>
               </motion.div>
 
@@ -382,13 +388,13 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
                       <Upload size={40} className="text-gray-400" />
                     </div>
                     <h3 className="text-lg font-semibold mb-2">
-                      Drag & drop your resume
+                      Drag & drop your SOP
                     </h3>
                     <p className="text-sm text-gray-500 mb-4">
                       Or click to browse your files
                     </p>
                     <p className="text-xs text-gray-400 mb-4">
-                      Supported formats: PDF, DOCX
+                      Supported formats: PDF, DOCX, TXT
                     </p>
                     <label className="inline-block">
                       <span className="bg-blue-600 text-white py-2 px-4 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors">
@@ -397,7 +403,7 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
                       <input
                         type="file"
                         className="hidden"
-                        accept=".pdf,.docx"
+                        accept=".pdf,.docx,.txt"
                         onChange={handleFileChange}
                         disabled={loading}
                       />
@@ -438,7 +444,7 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
             </div>
           )}
 
-          {/* Step 2: Format as APA */}
+          {/* Step 2: Extract Text */}
           {step === 2 && (
             <div className="space-y-6">
               <motion.div
@@ -447,9 +453,9 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
                 transition={{ delay: 0.2 }}
                 className="text-center mb-6"
               >
-                <h1 className="text-2xl font-bold mb-2">Format Resume</h1>
+                <h1 className="text-2xl font-bold mb-2">Extract SOP Text</h1>
                 <p className="text-gray-500">
-                  Transform your resume into APA format
+                  Extract the text content from your statement of purpose
                 </p>
               </motion.div>
 
@@ -466,45 +472,42 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
                 </div>
               </div>
 
-              {!formattedResume && (
+              {!formattedSOP && (
                 <button
                   className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300"
-                  onClick={handleFormatAsAPA}
+                  onClick={handleExtractSOP}
                   disabled={loading || !vectorStoreId}
                 >
                   {loading ? (
                     <>
                       <RefreshCw className="animate-spin h-5 w-5" />
                       {streamingProgress ? (
-                        <span>Processing your resume{streamingDots}</span>
+                        <span>
+                          Processing your SOP{streamingDots}
+                        </span>
                       ) : (
-                        <span>Formatting...</span>
+                        <span>Extracting text...</span>
                       )}
                     </>
                   ) : (
                     <>
                       <Sparkles className="h-5 w-5" />
-                      Format as APA
+                      Extract SOP Text
                     </>
                   )}
                 </button>
               )}
 
-              {formattedResume && (
+              {formattedSOP && (
                 <>
                   <div className="border rounded-xl p-4">
                     <h3 className="font-semibold mb-4">
-                      APA Formatted Resume Preview
+                      Extracted SOP Text Preview
                     </h3>
-                    <div className="mb-4">
-                      <APAPreview
-                        resumeData={formattedResume}
-                        fileName={`${file?.name} - APA Format`}
-                      />
-                    </div>
+                    <TextPreview content={formattedSOP.content} className="mb-4" />
                     <div className="flex space-x-4">
                       <button
-                        onClick={handleFormatAsAPA}
+                        onClick={handleExtractSOP}
                         disabled={loading}
                         className="mt-4 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
                       >
@@ -514,13 +517,13 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
                             {streamingProgress ? (
                               <span>Processing{streamingDots}</span>
                             ) : (
-                              <span>Reformatting...</span>
+                              <span>Re-extracting...</span>
                             )}
                           </>
                         ) : (
                           <>
                             <RefreshCw className="h-4 w-4" />
-                            Reformat
+                            Re-extract
                           </>
                         )}
                       </button>
@@ -552,7 +555,7 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
             </div>
           )}
 
-          {/* Step 3: Save Resume */}
+          {/* Step 3: Save SOP */}
           {step === 3 && (
             <div className="space-y-6">
               <motion.div
@@ -561,16 +564,20 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
                 transition={{ delay: 0.2 }}
                 className="text-center mb-6"
               >
-                <h1 className="text-2xl font-bold mb-2">Save Your Resume</h1>
+                <h1 className="text-2xl font-bold mb-2">Save Your SOP</h1>
                 <p className="text-gray-500">
-                  Review and save your APA formatted resume
+                  Review and save your statement of purpose
                 </p>
               </motion.div>
 
-              <APAPreview
-                resumeData={formattedResume as ResumeData}
-                fileName={`${file?.name} - APA Format`}
-              />
+              <div className="border rounded-xl p-6">
+                <h3 className="font-semibold mb-3">{file?.name}</h3>
+                <TextPreview content={formattedSOP?.content || ""} className="mb-4" />
+                <div className="flex items-center text-sm text-gray-500">
+                  <FileText size={16} className="mr-1" />
+                  <span>Format: Text</span>
+                </div>
+              </div>
 
               <div className="flex space-x-4 mt-6">
                 <motion.button
@@ -584,7 +591,7 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
                 </motion.button>
                 <motion.button
                   whileTap={{ scale: 0.95 }}
-                  onClick={handleSaveResume}
+                  onClick={handleSaveSOP}
                   disabled={loading}
                   className="flex-1 flex items-center justify-center bg-green-600 text-white py-3 px-4 rounded-lg"
                 >
@@ -593,7 +600,7 @@ export default function UploadResume({ onAskMentor }: UploadResumeProps) {
                   ) : (
                     <Download size={18} className="mr-2" />
                   )}
-                  {loading ? "Saving..." : "Save Resume"}
+                  {loading ? "Saving..." : "Save SOP"}
                 </motion.button>
               </div>
 

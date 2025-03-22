@@ -153,3 +153,39 @@ export interface ResumeAnalysisData {
   overallFeedback: string;
   actionableSteps: string[];
 }
+
+export interface SOPAnalysisData {
+  scores: {
+    clarity: {
+      score: number;
+      feedback: string;
+    };
+    motivation: {
+      score: number;
+      feedback: string;
+    };
+    relevance: {
+      score: number;
+      feedback: string;
+    };
+    writing: {
+      score: number;
+      feedback: string;
+    };
+  };
+  overallScore: number;
+  overallFeedback: string;
+  actionableSteps: string[];
+}
+
+export interface Document_METADATA {
+  format: string;
+  original_file_name?: string;
+  created_from_id?: string;
+}
+
+export interface Document_VERSIONS_METADATA {
+  format: string;
+  content: string;
+}
+

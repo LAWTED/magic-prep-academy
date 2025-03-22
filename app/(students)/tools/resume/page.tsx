@@ -36,7 +36,7 @@ export default function ResumePage() {
       {/* Resume List */}
       <div>
         <h2 className="text-xl font-semibold mb-4">Your Resumes</h2>
-        <ResumeList hideNewButton={true} />
+        <ResumeList />
       </div>
     </div>
   );

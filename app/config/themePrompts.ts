@@ -341,9 +341,21 @@ export const FORMAT_GUIDELINES = {
     "  }\n" +
     "}\n" +
     "```\n\n",
+
+  /**
+   * Prompt to format a Statement of Purpose
+   */
+  TEXT_FORMAT:
+    "# RESPONSE FORMAT\n" +
+    "You MUST return ONLY valid JSON following this exact structure:\n" +
+    "```json\n" +
+    "{\n" +
+    '  "content": "The full extracted text of the SOP, preserving paragraphs and structure"\n' +
+    "}\n" +
+    "```\n\n",
 };
 
-export const RESUME_PROMPTS = {
+export const DOCUMENTS_PROMPTS = {
   /**
    * Prompt to analyze a resume for academic applications
    */
@@ -419,6 +431,81 @@ export const RESUME_PROMPTS = {
     "- Analyze the content quality, not just the formatting or structure",
 
   /**
+   * Prompt to analyze a Statement of Purpose
+   */
+  ANALYZE_SOP:
+    "You're a graduate admissions expert. Analyze this Statement of Purpose for academic strength and quality.\n\n" +
+    "# YOUR TASK\n" +
+    "Analyze the provided Statement of Purpose to evaluate its effectiveness for graduate program applications.\n\n" +
+    "# RESPONSE FORMAT\n" +
+    "You MUST return ONLY valid JSON following this exact structure:\n" +
+    "```json\n" +
+    "{\n" +
+    '  "scores": {\n' +
+    '    "clarity": {\n' +
+    '      "score": 80,\n' +
+    '      "feedback": "The SOP clearly articulates the applicant\'s academic background and goals, but could better connect past experiences to future plans."\n' +
+    "    },\n" +
+    '    "motivation": {\n' +
+    '      "score": 75,\n' +
+    '      "feedback": "The motivation for pursuing this program is present but could be made more compelling with specific examples of how this program aligns with their goals."\n' +
+    "    },\n" +
+    '    "relevance": {\n' +
+    '      "score": 85,\n' +
+    '      "feedback": "The SOP effectively demonstrates the applicant\'s fit for the program through relevant experiences and skills."\n' +
+    "    },\n" +
+    '    "writing": {\n' +
+    '      "score": 70,\n' +
+    '      "feedback": "The writing is generally clear, but contains some overly complex sentences and passive voice that could be simplified for better impact."\n' +
+    "    }\n" +
+    "  },\n" +
+    '  "overallScore": 77,\n' +
+    '  "overallFeedback": "This SOP demonstrates a solid understanding of the field and the applicant\'s goals, but could be strengthened with more concrete examples and clearer connections between past experiences and future aspirations.",\n' +
+    '  "actionableSteps": [\n' +
+    '    "Add specific examples of research or projects that demonstrate interest in the field",\n' +
+    '    "More clearly connect past experiences to future academic and career goals",\n' +
+    '    "Strengthen the explanation of why this specific program is the right fit",\n' +
+    '    "Improve sentence structure and eliminate passive voice for more impactful writing",\n' +
+    '    "Be more specific about long-term career goals"\n' +
+    "  ]\n" +
+    "}\n" +
+    "```\n\n" +
+    "# SCORING CRITERIA\n" +
+    "1. Clarity (0-100):\n" +
+    "   - Clear articulation of academic and career goals\n" +
+    "   - Logical structure and flow of ideas\n" +
+    "   - Coherent narrative that connects past, present, and future\n" +
+    "   - Well-defined reasons for pursuing the program\n\n" +
+    "2. Motivation (0-100):\n" +
+    "   - Compelling explanation of interest in the field\n" +
+    "   - Authentic personal story and passion\n" +
+    "   - Clear explanation of why now is the right time for graduate study\n" +
+    "   - Connection between personal background and academic interests\n\n" +
+    "3. Relevance (0-100):\n" +
+    "   - Specific reasons for applying to this particular program\n" +
+    "   - Alignment between applicant's background and program focus\n" +
+    "   - References to specific faculty, courses, or resources at the institution\n" +
+    "   - Clear demonstration of how the program will help achieve stated goals\n\n" +
+    "4. Writing (0-100):\n" +
+    "   - Use of strong, specific language\n" +
+    "   - Grammar, spelling, and sentence structure\n" +
+    "   - Appropriate academic tone\n" +
+    "   - Concise and efficient communication\n\n" +
+    "# FEEDBACK REQUIREMENTS\n" +
+    "1. Be specific about strengths and weaknesses\n" +
+    "2. Provide constructive criticism\n" +
+    "3. Focus on admissions committee perspective\n" +
+    "4. Suggest 3-5 specific, actionable improvements\n\n" +
+    "# IMPORTANT\n" +
+    "- Output MUST be valid parseable JSON\n" +
+    "- Score each category separately on a scale of 0-100\n" +
+    "- Calculate overallScore as the average of all category scores\n" +
+    "- Do NOT include any text outside the JSON structure\n" +
+    "- Provide detailed, specific feedback for each category\n" +
+    "- Give concrete examples from the SOP when possible\n" +
+    "- Analyze the content quality, not just the formatting or structure",
+
+  /**
    * Prompt to format a resume in APA style
    */
   FORMAT_APA:
@@ -465,6 +552,28 @@ export const RESUME_PROMPTS = {
     "- Only include fields that have meaningful content from the original resume\n" +
     "- The personalInfo section must always be included with at least the name field\n" +
     "- NEVER invent or create new content that wasn't in the original resume",
+
+  /**
+   * Prompt to extract SOP text content
+   */
+  FORMAT_SOP:
+    "You are a professional statement of purpose (SOP) content extraction expert. Extract the full text content of the provided SOP document. Your job is ONLY to extract the text faithfully without adding any analysis, interpretation, or new content.\n\n" +
+    FORMAT_GUIDELINES.TEXT_FORMAT +
+    "# EXTRACTION RULES\n" +
+    "1. Preserve 100% of the original SOP content - do not lose any information\n" +
+    "2. Maintain the original paragraph structure with proper line breaks\n" +
+    "3. Include all headings, titles, and section markers as they appear\n" +
+    "4. Preserve any bulleted or numbered lists\n" +
+    "5. Do not add any commentary, analysis, or additional content\n" +
+    "6. Ensure special characters and formatting are properly retained\n\n" +
+    "# IMPORTANT\n" +
+    "- Output MUST be valid parseable JSON\n" +
+    "- Do NOT include any text outside the JSON structure\n" +
+    "- Maintain all the original information (100%) while extracting the content\n" +
+    "- Do NOT attempt to reformat or reorganize the content beyond text extraction\n" +
+    "- Do NOT add any analysis, feedback, or commentary about the SOP\n" +
+    "- Faithfully reproduce the full text as it appears in the original document\n" +
+    "- Preserve paragraph breaks using '\\n' characters in the JSON string",
 };
 
 export const SCHOOL_PROMPTS = {
@@ -669,6 +778,6 @@ export const SCHOOL_PROMPTS = {
 
 export default {
   MATERIAL_PROMPTS,
-  RESUME_PROMPTS,
+  DOCUMENTS_PROMPTS,
   SCHOOL_PROMPTS,
 };

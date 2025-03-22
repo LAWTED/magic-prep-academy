@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { openai } from "@/lib/openai";
 import { parseAIGeneratedJson, validators } from "@/app/utils/jsonParser";
-import { RESUME_PROMPTS } from "@/app/config/themePrompts";
-import { ResumeAnalysisData } from "@/app/types";
+import { DOCUMENTS_PROMPTS } from "@/app/config/themePrompts";
+import { ResumeAnalysisData, SOPAnalysisData } from "@/app/types";
 
 /**
  * Document analyze API
- * Analyzes different types of documents (resume, CV, etc.)
+ * Analyzes different types of documents (resume, CV, SOP, etc.)
  */
 export async function POST(request: Request) {
   try {
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       // Handle resume analysis
       const response = await openai.responses.create({
         model: "gpt-4o-mini",
-        input: `${RESUME_PROMPTS.ANALYZE_RESUME}
+        input: `${DOCUMENTS_PROMPTS.ANALYZE_RESUME}
 
 RESUME CONTENT:
 ${JSON.stringify(content, null, 2)}`,
@@ -49,6 +49,38 @@ ${JSON.stringify(content, null, 2)}`,
         });
       } catch (parseError) {
         console.error("Error parsing resume analysis:", parseError);
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Failed to parse analysis results",
+            raw_response: response.output_text,
+          },
+          { status: 422 }
+        );
+      }
+    } else if (type === "sop") {
+      // Handle SOP analysis
+      const response = await openai.responses.create({
+        model: "gpt-4o-mini",
+        input: `${DOCUMENTS_PROMPTS.ANALYZE_SOP}
+
+SOP CONTENT:
+${JSON.stringify(content, null, 2)}`,
+      });
+
+      try {
+        // Parse and validate the JSON response
+        const parsedContent = parseAIGeneratedJson<SOPAnalysisData>(
+          response.output_text,
+          validators.sopContentAnalysis
+        );
+
+        return NextResponse.json({
+          success: true,
+          analysis: parsedContent,
+        });
+      } catch (parseError) {
+        console.error("Error parsing SOP analysis:", parseError);
         return NextResponse.json(
           {
             success: false,

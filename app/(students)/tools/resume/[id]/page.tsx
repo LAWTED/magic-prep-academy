@@ -10,29 +10,21 @@ import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import ResumeVersions from "../components/ResumeVersions";
 import APAPreview from "../components/APAPreview";
+import { Document_METADATA, Document_VERSIONS_METADATA } from "@/app/types";
 
 type ResumeDocument = {
   id: string;
   name: string;
   created_at: string;
   updated_at: string;
-  metadata: {
-    content: any;
-    format: string;
-    original_file_name?: string;
-  };
+  metadata: Document_METADATA;
 };
 
 type ResumeVersion = {
   id: string;
   document_id: string;
   version_number: number;
-  metadata: {
-    content: any;
-    format: string;
-    created_from_id?: string;
-    original_file_name?: string;
-  };
+  metadata: Document_VERSIONS_METADATA;
   created_at: string;
   name?: string;
 };
@@ -57,14 +49,6 @@ export default function ResumeVersionsPage() {
     if (documentId && user) {
       fetchResumeDocument();
       fetchLatestVersion();
-
-      // Initial load with a short delay to ensure client-side hydration
-      const refreshTimer = setTimeout(() => {
-        fetchResumeDocument();
-        fetchLatestVersion();
-      }, 1000);
-
-      return () => clearTimeout(refreshTimer);
     }
   }, [documentId, user]);
 

@@ -6,6 +6,7 @@ import { Calendar, Loader2, Edit, CheckCircle, Trash2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { Document_VERSIONS_METADATA } from "@/app/types";
 
 type ResumeVersion = {
   id: string;
@@ -13,12 +14,7 @@ type ResumeVersion = {
   version_number: number;
   created_at: string;
   updated_at: string;
-  metadata: {
-    content: any;
-    format: string;
-    original_file_name?: string;
-    created_from_id?: string;
-  };
+  metadata: Document_VERSIONS_METADATA;
 };
 
 type ResumeVersionsProps = {

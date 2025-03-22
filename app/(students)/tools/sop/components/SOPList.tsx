@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Document_METADATA } from "@/app/types";
 
-type ResumeItem = {
+type SOPItem = {
   id: string;
   name: string;
   created_at: string;
@@ -24,22 +24,22 @@ type ResumeItem = {
   metadata: Document_METADATA;
 };
 
-export default function ResumeList() {
+export default function SOPList() {
   const supabase = createClient();
   const { user } = useUserStore();
   const router = useRouter();
-  const [resumes, setResumes] = useState<ResumeItem[]>([]);
+  const [sops, setSOPs] = useState<SOPItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editMode, setEditMode] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
 
   useEffect(() => {
     if (user) {
-      fetchResumes();
+      fetchSOPs();
     }
   }, [user]);
 
-  const fetchResumes = async () => {
+  const fetchSOPs = async () => {
     try {
       setIsLoading(true);
 
@@ -47,26 +47,26 @@ export default function ResumeList() {
         .from("documents")
         .select("*")
         .eq("user_id", user?.id)
-        .eq("type", "resume")
+        .eq("type", "sop")
         .order("updated_at", { ascending: false });
 
       if (error) {
         throw error;
       }
 
-      setResumes(data || []);
+      setSOPs(data || []);
     } catch (error) {
-      console.error("Error fetching resumes:", error);
-      toast.error("Failed to load resumes");
+      console.error("Error fetching SOPs:", error);
+      toast.error("Failed to load SOPs");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleStartEdit = (resume: ResumeItem, e: React.MouseEvent) => {
+  const handleStartEdit = (sop: SOPItem, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent triggering the card click
-    setEditMode(resume.id);
-    setEditName(resume.name);
+    setEditMode(sop.id);
+    setEditName(sop.name);
   };
 
   const handleSaveEdit = async (id: string, e: React.MouseEvent) => {
@@ -88,14 +88,14 @@ export default function ResumeList() {
         throw error;
       }
 
-      setResumes((prev) =>
-        prev.map((resume) => (resume.id === id ? data : resume))
+      setSOPs((prev) =>
+        prev.map((sop) => (sop.id === id ? data : sop))
       );
       setEditMode(null);
-      toast.success("Resume renamed successfully");
+      toast.success("SOP renamed successfully");
     } catch (error) {
-      console.error("Error updating resume:", error);
-      toast.error("Failed to rename resume");
+      console.error("Error updating SOP:", error);
+      toast.error("Failed to rename SOP");
     }
   };
 
@@ -108,11 +108,11 @@ export default function ResumeList() {
         throw error;
       }
 
-      setResumes((prev) => prev.filter((resume) => resume.id !== id));
-      toast.success("Resume deleted successfully");
+      setSOPs((prev) => prev.filter((sop) => sop.id !== id));
+      toast.success("SOP deleted successfully");
     } catch (error) {
-      console.error("Error deleting resume:", error);
-      toast.error("Failed to delete resume");
+      console.error("Error deleting SOP:", error);
+      toast.error("Failed to delete SOP");
     }
   };
 
@@ -125,8 +125,8 @@ export default function ResumeList() {
     });
   };
 
-  const handleViewVersions = (resume: ResumeItem) => {
-    router.push(`/tools/resume/${resume.id}`);
+  const handleViewVersions = (sop: SOPItem) => {
+    router.push(`/tools/sop/${sop.id}`);
   };
 
   return (
@@ -134,23 +134,23 @@ export default function ResumeList() {
       {isLoading ? (
         <div className="flex justify-center items-center p-12">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <span className="ml-2 text-gray-500">Loading resumes...</span>
+          <span className="ml-2 text-gray-500">Loading SOPs...</span>
         </div>
-      ) : resumes.length === 0 ? (
+      ) : sops.length === 0 ? (
         <div className="text-center py-12 px-4 border rounded-xl bg-gray-50">
-          <p className="text-gray-500 mb-2">No resumes found</p>
+          <p className="text-gray-500 mb-2">No SOPs found</p>
           <p className="text-sm text-gray-400">
-            Use the Upload Resume button to get started
+            Use the Upload SOP button to get started
           </p>
         </div>
       ) : (
-        resumes.map((resume) => (
+        sops.map((sop) => (
           <div
-            key={resume.id}
+            key={sop.id}
             className="border rounded-xl p-5 hover:border-blue-200 transition-colors cursor-pointer relative"
-            onClick={() => handleViewVersions(resume)}
+            onClick={() => handleViewVersions(sop)}
           >
-            {editMode === resume.id ? (
+            {editMode === sop.id ? (
               <div
                 className="flex items-center mb-3"
                 onClick={(e) => e.stopPropagation()}
@@ -164,7 +164,7 @@ export default function ResumeList() {
                 />
                 <motion.button
                   whileTap={{ scale: 0.95 }}
-                  onClick={(e) => handleSaveEdit(resume.id, e)}
+                  onClick={(e) => handleSaveEdit(sop.id, e)}
                   className="text-green-600"
                 >
                   <CheckCircle size={18} />
@@ -173,11 +173,11 @@ export default function ResumeList() {
             ) : (
               <div className="flex justify-between items-center mb-3">
                 <div className="flex items-center">
-                  <h3 className="font-medium text-lg">{resume.name}</h3>
+                  <h3 className="font-medium text-lg">{sop.name}</h3>
                 </div>
                 <div className="flex items-center">
                   <span className="text-xs text-gray-500 mr-2">
-                    {formatDate(resume.updated_at)}
+                    {formatDate(sop.updated_at)}
                   </span>
                   <ChevronRight size={16} className="text-gray-400" />
                 </div>
@@ -186,11 +186,11 @@ export default function ResumeList() {
 
             <div className="flex flex-wrap items-center text-sm mb-4 text-gray-600">
               <span className="bg-gray-100 rounded-full px-3 py-1 text-xs mr-2 mb-1">
-                {resume.metadata?.format || "Unknown"} Format
+                Statement of Purpose
               </span>
-              {resume.metadata?.original_file_name && (
+              {sop.metadata?.original_file_name && (
                 <span className="text-xs truncate max-w-[250px]">
-                  From: {resume.metadata.original_file_name}
+                  From: {sop.metadata.original_file_name}
                 </span>
               )}
             </div>
@@ -204,7 +204,7 @@ export default function ResumeList() {
                 className="text-xs bg-gray-100 hover:bg-gray-200 py-1.5 px-3 rounded-lg flex items-center"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleViewVersions(resume);
+                  handleViewVersions(sop);
                 }}
               >
                 <Eye size={14} className="mr-1.5" />
@@ -213,7 +213,7 @@ export default function ResumeList() {
 
               <motion.button
                 whileTap={{ scale: 0.95 }}
-                onClick={(e) => handleStartEdit(resume, e)}
+                onClick={(e) => handleStartEdit(sop, e)}
                 className="text-xs bg-amber-50 text-amber-600 hover:bg-amber-100 py-1.5 px-3 rounded-lg flex items-center"
               >
                 <Edit size={14} className="mr-1.5" />
@@ -221,7 +221,7 @@ export default function ResumeList() {
               </motion.button>
               <motion.button
                 whileTap={{ scale: 0.95 }}
-                onClick={(e) => handleDelete(resume.id, e)}
+                onClick={(e) => handleDelete(sop.id, e)}
                 className="text-xs bg-red-50 text-red-600 hover:bg-red-100 py-1.5 px-3 rounded-lg flex items-center"
               >
                 <Trash2 size={14} className="mr-1.5" />

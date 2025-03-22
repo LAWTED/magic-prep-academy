@@ -214,4 +214,49 @@ export const validators = {
       typeof json.personalInfo.name === "string"
     );
   },
+
+  /**
+   * Validates SOP extract JSON structure - simple format with text content
+   */
+  sopExtract: (json: any): boolean => {
+    return (
+      json &&
+      typeof json === "object" &&
+      typeof json.content === "string" &&
+      json.content.length > 0
+    );
+  },
+
+  /**
+   * Validates SOP analysis JSON structure for content analysis
+   */
+  sopContentAnalysis: (json: any): boolean => {
+    return (
+      json &&
+      typeof json === "object" &&
+      json.scores &&
+      typeof json.scores === "object" &&
+      json.scores.clarity &&
+      typeof json.scores.clarity === "object" &&
+      typeof json.scores.clarity.score === "number" &&
+      typeof json.scores.clarity.feedback === "string" &&
+      json.scores.motivation &&
+      typeof json.scores.motivation === "object" &&
+      typeof json.scores.motivation.score === "number" &&
+      typeof json.scores.motivation.feedback === "string" &&
+      json.scores.relevance &&
+      typeof json.scores.relevance === "object" &&
+      typeof json.scores.relevance.score === "number" &&
+      typeof json.scores.relevance.feedback === "string" &&
+      json.scores.writing &&
+      typeof json.scores.writing === "object" &&
+      typeof json.scores.writing.score === "number" &&
+      typeof json.scores.writing.feedback === "string" &&
+      typeof json.overallScore === "number" &&
+      typeof json.overallFeedback === "string" &&
+      Array.isArray(json.actionableSteps) &&
+      json.actionableSteps.length > 0 &&
+      json.actionableSteps.every((item: any) => typeof item === "string")
+    );
+  },
 };

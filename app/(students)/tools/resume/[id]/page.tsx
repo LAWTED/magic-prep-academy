@@ -307,6 +307,7 @@ export default function ResumeVersionsPage() {
             documentId={documentId}
             documentName={resumeDocument?.name || ""}
             onBack={() => {}} // Not used since we have the Link above
+            onVersionChange={fetchLatestVersion}
           />
         </>
       ) : (

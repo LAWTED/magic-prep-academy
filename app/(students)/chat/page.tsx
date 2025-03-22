@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { processVectorChatStream } from "@/app/utils/streamUtils";
 import { useUserStore } from "@/store/userStore";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -16,7 +16,7 @@ import {
   type ChatPerson,
 } from "./components";
 
-export default function ChatPage() {
+function Chat() {
   const { user } = useUserStore();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -287,12 +287,12 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
-      <ChatHeader
-        selectedPerson={selectedPerson}
-        onPersonChange={handleChangePerson}
-        onClearChat={clearChat}
-        messagesCount={messages.length}
+      <div className="flex flex-col h-[calc(100vh-4rem)]">
+        <ChatHeader
+          selectedPerson={selectedPerson}
+          onPersonChange={handleChangePerson}
+          onClearChat={clearChat}
+          messagesCount={messages.length}
       />
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4 relative">
@@ -318,8 +318,16 @@ export default function ChatPage() {
       <ChatInput
         selectedPerson={selectedPerson}
         isStreaming={isStreaming}
-        onSendMessage={handleSendMessage}
-      />
-    </div>
+          onSendMessage={handleSendMessage}
+        />
+      </div>
+  );
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense fallback={<div className="p-6">Loading...</div>}>
+      <Chat />
+    </Suspense>
   );
 }

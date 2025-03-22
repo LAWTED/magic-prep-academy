@@ -20,7 +20,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { processVectorChatStream } from "@/app/utils/streamUtils";
 import { DOCUMENTS_PROMPTS } from "@/app/config/themePrompts";
-import TextPreview from "./TextPreview";
+import TextPreview from "@/app/(students)/tools/components/TextPreview";
 
 type FileInfo = {
   name: string;

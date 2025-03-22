@@ -567,6 +567,7 @@ export const DOCUMENTS_PROMPTS = {
     "5. Do not add any commentary, analysis, or additional content\n" +
     "6. Ensure special characters and formatting are properly retained\n\n" +
     "# IMPORTANT\n" +
+    "- Do not use the modifier letter apostrophe ʼ. Only use the standard apostrophe '.\n" +
     "- Output MUST be valid parseable JSON\n" +
     "- Do NOT include any text outside the JSON structure\n" +
     "- Maintain all the original information (100%) while extracting the content\n" +

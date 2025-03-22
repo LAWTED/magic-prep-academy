@@ -30,12 +30,14 @@ type SOPVersionsProps = {
   documentId: string;
   documentName: string;
   onBack: () => void;
+  onVersionChange?: () => void;
 };
 
 export default function SOPVersions({
   documentId,
   documentName,
   onBack,
+  onVersionChange,
 }: SOPVersionsProps) {
   const supabase = createClient();
   const router = useRouter();
@@ -105,6 +107,11 @@ export default function SOPVersions({
       );
       setEditingVersion(null);
       toast.success("Version renamed successfully");
+
+      // 调用回调通知父组件版本已更改
+      if (onVersionChange) {
+        onVersionChange();
+      }
     } catch (error) {
       console.error("Error updating version:", error);
       toast.error("Failed to rename version");
@@ -152,6 +159,11 @@ export default function SOPVersions({
 
       setVersions((prev) => prev.filter((version) => version.id !== id));
       toast.success("Version deleted successfully");
+
+      // 调用回调通知父组件版本已更改
+      if (onVersionChange) {
+        onVersionChange();
+      }
     } catch (error) {
       console.error("Error deleting version:", error);
       toast.error("Failed to delete version");

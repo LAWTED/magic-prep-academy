@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { processVectorChatStream } from "@/app/utils/streamUtils";
 import { useUserStore } from "@/store/userStore";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
@@ -17,7 +17,7 @@ import {
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
-export default function ResumeEditPage() {
+function ResumeEdit() {
   const { user } = useUserStore();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -274,5 +274,13 @@ export default function ResumeEditPage() {
         onSendMessage={handleSendMessage}
       />
     </div>
+  );
+}
+
+export default function ResumeEditPage() {
+  return (
+    <Suspense fallback={<div className="p-6">Loading...</div>}>
+      <ResumeEdit />
+    </Suspense>
   );
 }

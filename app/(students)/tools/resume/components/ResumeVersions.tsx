@@ -21,12 +21,14 @@ type ResumeVersionsProps = {
   documentId: string;
   documentName: string;
   onBack: () => void;
+  onVersionChange?: () => void;
 };
 
 export default function ResumeVersions({
   documentId,
   documentName,
   onBack,
+  onVersionChange,
 }: ResumeVersionsProps) {
   const supabase = createClient();
   const router = useRouter();
@@ -90,50 +92,74 @@ export default function ResumeVersions({
     version: ResumeVersion,
     e: React.MouseEvent
   ) => {
-    e.stopPropagation(); // 防止触发卡片点击
-
-    if (!editedName.trim()) {
-      toast.error("Version name cannot be empty");
-      return;
-    }
-
+    e.stopPropagation();
     try {
-      const { error } = await supabase
+      if (!editedName.trim()) {
+        toast.error("Name cannot be empty");
+        return;
+      }
+
+      const { data, error } = await supabase
         .from("document_versions")
-        .update({ name: editedName.trim() })
-        .eq("id", version.id);
+        .update({
+          name: editedName,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", version.id)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
-      // 更新本地状态
+      // Update the versions list with the renamed version
       setVersions((prev) =>
-        prev.map((v) =>
-          v.id === version.id ? { ...v, name: editedName.trim() } : v
-        )
+        prev.map((v) => (v.id === version.id ? data : v))
       );
-
+      setEditingVersion(null);
       toast.success("Version renamed successfully");
+
+      // 调用回调通知父组件版本已更改
+      if (onVersionChange) {
+        onVersionChange();
+      }
     } catch (error) {
       console.error("Error renaming version:", error);
       toast.error("Failed to rename version");
-    } finally {
-      setEditingVersion(null);
     }
   };
 
   const handleDeleteVersion = async (version: ResumeVersion, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent triggering card click
-
-    // Don't allow deleting if it's the only version
-    if (versions.length <= 1) {
-      toast.error("Cannot delete the only version of this resume");
-      return;
-    }
-
-    // Set deleting state to show loading indicator
-    setDeletingVersion(version.id);
-
+    e.stopPropagation();
     try {
+      setDeletingVersion(version.id);
+
+      // If this is the only version, ask about deleting the entire document
+      if (versions.length === 1) {
+        const confirmDelete = window.confirm(
+          "This is the only version. Deleting it will remove the entire document. Continue?"
+        );
+
+        if (!confirmDelete) {
+          setDeletingVersion(null);
+          return;
+        }
+
+        // Delete the document (will cascade to delete versions)
+        const { error } = await supabase
+          .from("documents")
+          .delete()
+          .eq("id", documentId);
+
+        if (error) throw error;
+
+        toast.success("Document deleted successfully");
+        router.push("/tools/resume");
+        return;
+      }
+
+      // Delete the specific version
       const { error } = await supabase
         .from("document_versions")
         .delete()
@@ -145,9 +171,9 @@ export default function ResumeVersions({
       setVersions((prev) => prev.filter((v) => v.id !== version.id));
       toast.success("Version deleted successfully");
 
-      // If user deleted the version they were viewing in detail, redirect back to main view
-      if (window.location.pathname.includes(version.id)) {
-        router.push(`/tools/resume/${documentId}`);
+      // 调用回调通知父组件版本已更改
+      if (onVersionChange) {
+        onVersionChange();
       }
     } catch (error) {
       console.error("Error deleting version:", error);

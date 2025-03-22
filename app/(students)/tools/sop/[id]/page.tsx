@@ -9,7 +9,7 @@ import { useUserStore } from "@/store/userStore";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import SOPVersions from "../components/SOPVersions";
-import TextPreview from "../components/TextPreview";
+import TextPreview from "@/app/(students)/tools/components/TextPreview";
 import { Document_METADATA, Document_VERSIONS_METADATA } from "@/app/types";
 
 type SOPDocument = {
@@ -139,6 +139,7 @@ export default function SOPVersionsPage() {
           content={latestVersion.metadata.content}
           maxHeight="max-h-64"
           className="text-gray-800"
+          fileName={`sop-version-${latestVersion.version_number}.pdf`}
         />
       </div>
     );
@@ -221,6 +222,7 @@ export default function SOPVersionsPage() {
             documentId={documentId}
             documentName={sopDocument?.name || ""}
             onBack={() => {}} // Not used since we have the Link above
+            onVersionChange={fetchLatestVersion}
           />
         </>
       ) : (

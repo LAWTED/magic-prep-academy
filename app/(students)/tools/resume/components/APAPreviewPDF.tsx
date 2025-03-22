@@ -176,6 +176,17 @@ const APAPreviewPDF = ({ resumeData }: APAPreviewPDFProps) => {
                     ))}
                   </View>
                 )}
+                {work.achievements && work.achievements.length > 0 && (
+                  <View style={{marginTop: 3, marginLeft: 10}}>
+                    <Text style={{...styles.listItem, ...styles.bold}}>Key Achievements:</Text>
+                    {work.achievements.map((achievement, i) => (
+                      <View key={`work-achievement-${i}`} style={styles.bulletText}>
+                        <Text style={styles.bullet}>• </Text>
+                        <Text style={styles.listItem}>{achievement}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
               </View>
             ))}
           </View>
@@ -237,6 +248,11 @@ const APAPreviewPDF = ({ resumeData }: APAPreviewPDFProps) => {
                       </View>
                     ))}
                   </View>
+                )}
+                {proj.url && (
+                  <Text style={{...styles.listItem, marginTop: 2}}>
+                    URL: {proj.url}
+                  </Text>
                 )}
               </View>
             ))}
@@ -410,38 +426,24 @@ const APAPreviewPDF = ({ resumeData }: APAPreviewPDFProps) => {
         {resumeData.skills && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>SKILLS</Text>
-            {resumeData.skills.research && resumeData.skills.research.length > 0 && (
-              <View style={{marginBottom: 4}}>
-                <Text style={{...styles.listItem, ...styles.bold}}>Research:</Text>
-                <Text style={{...styles.listItem, marginLeft: 10}}>
-                  {resumeData.skills.research.join(", ")}
-                </Text>
-              </View>
-            )}
-            {resumeData.skills.technical && resumeData.skills.technical.length > 0 && (
-              <View style={{marginBottom: 4}}>
-                <Text style={{...styles.listItem, ...styles.bold}}>Technical:</Text>
-                <Text style={{...styles.listItem, marginLeft: 10}}>
-                  {resumeData.skills.technical.join(", ")}
-                </Text>
-              </View>
-            )}
-            {resumeData.skills.languages && resumeData.skills.languages.length > 0 && (
-              <View style={{marginBottom: 4}}>
-                <Text style={{...styles.listItem, ...styles.bold}}>Languages:</Text>
-                <Text style={{...styles.listItem, marginLeft: 10}}>
-                  {resumeData.skills.languages.join(", ")}
-                </Text>
-              </View>
-            )}
-            {resumeData.skills.laboratory && resumeData.skills.laboratory.length > 0 && (
-              <View style={{marginBottom: 4}}>
-                <Text style={{...styles.listItem, ...styles.bold}}>Laboratory:</Text>
-                <Text style={{...styles.listItem, marginLeft: 10}}>
-                  {resumeData.skills.laboratory.join(", ")}
-                </Text>
-              </View>
-            )}
+            {Object.entries(resumeData.skills).map(([category, skills]) => {
+              if (!skills || (skills as string[]).length === 0) return null;
+
+              // Format category name (capitalize first letter)
+              const formattedCategory = category
+                .split(/(?=[A-Z])/)
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(" ");
+
+              return (
+                <View key={category} style={{marginBottom: 4}}>
+                  <Text style={{...styles.listItem, ...styles.bold}}>{formattedCategory} Skills:</Text>
+                  <Text style={{...styles.listItem, marginLeft: 10}}>
+                    {(skills as string[]).join(", ")}
+                  </Text>
+                </View>
+              );
+            })}
           </View>
         )}
       </Page>

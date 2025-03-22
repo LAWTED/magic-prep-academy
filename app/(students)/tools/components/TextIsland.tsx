@@ -44,7 +44,7 @@ export default function TextIsland({ onSave }: TextIslandProps) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="fixed bottom-20 inset-x-0 flex justify-center z-50"
+          className="fixed bottom-20 inset-x-0 flex justify-center z-50 safe-bottom"
           onMouseEnter={handleHover}
           onMouseLeave={handleMouseLeave}
         >

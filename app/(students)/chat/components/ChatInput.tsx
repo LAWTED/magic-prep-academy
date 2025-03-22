@@ -45,7 +45,7 @@ export function ChatInput({ selectedPerson, isStreaming, onSendMessage }: ChatIn
       initial={{ y: 50, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.3 }}
-      className="border-t p-4 pb-safe"
+      className="border-t p-4 safe-bottom"
     >
       <div className="relative">
         <textarea

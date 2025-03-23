@@ -9,6 +9,7 @@ type ChatHeaderProps = {
   onPersonChange: (person: ChatPerson) => void;
   onClearChat: () => void;
   messagesCount: number;
+  allChatPersons?: ChatPerson[]; // Add support for all chat persons including real mentors
 };
 
 // 下拉菜单动画
@@ -36,7 +37,8 @@ export function ChatHeader({
   selectedPerson,
   onPersonChange,
   onClearChat,
-  messagesCount
+  messagesCount,
+  allChatPersons = chatPersons
 }: ChatHeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -65,19 +67,31 @@ export function ChatHeader({
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           className="flex items-center gap-2"
         >
-          <div
-            className={`p-2 rounded-full ${
-              selectedPerson.id === "phd-mentor"
-                ? "bg-purple-100"
-                : selectedPerson.id === "resume-editor"
-                  ? "bg-blue-100"
-                  : "bg-green-100"
-            }`}
-          >
-            <selectedPerson.icon
-              className={`h-5 w-5 ${selectedPerson.color}`}
-            />
-          </div>
+          {selectedPerson.avatar ? (
+            <div className="w-10 h-10 overflow-hidden rounded-full">
+              <img
+                src={selectedPerson.avatar}
+                alt={selectedPerson.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div
+              className={`p-2 rounded-full ${
+                selectedPerson.isRealPerson
+                  ? "bg-green-100"
+                  : selectedPerson.id === "phd-mentor"
+                  ? "bg-purple-100"
+                  : selectedPerson.id === "resume-editor"
+                    ? "bg-blue-100"
+                    : "bg-green-100"
+              }`}
+            >
+              <selectedPerson.icon
+                className={`h-5 w-5 ${selectedPerson.color}`}
+              />
+            </div>
+          )}
           <div className="flex items-center gap-1">
             <h1 className="text-xl font-bold">{selectedPerson.name}</h1>
             <ChevronDown
@@ -93,9 +107,12 @@ export function ChatHeader({
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg py-2 w-48 overflow-hidden z-20"
+              className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg py-2 w-60 overflow-hidden z-20 max-h-96 overflow-y-auto"
             >
-              {chatPersons.map((person) => (
+              {/* Filter out resume-editor and group real mentors */}
+              {allChatPersons
+                .filter(person => person.id !== "resume-editor")
+                .map((person) => (
                 <button
                   key={person.id}
                   onClick={() => {
@@ -106,18 +123,28 @@ export function ChatHeader({
                     selectedPerson.id === person.id ? "bg-gray-50" : ""
                   }`}
                 >
-                  <div
-                    className={`p-1 rounded-full ${
-                      person.id === "phd-mentor"
-                        ? "bg-purple-100"
-                        : person.id === "resume-editor"
-                          ? "bg-blue-100"
-                          : "bg-green-100"
-                    }`}
-                  >
-                    <person.icon className={`h-4 w-4 ${person.color}`} />
-                  </div>
-                  <span className="text-sm font-medium">{person.name}</span>
+                  {person.avatar ? (
+                    <div className="w-8 h-8 overflow-hidden rounded-full">
+                      <img
+                        src={person.avatar}
+                        alt={person.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className={`p-1 rounded-full ${
+                        person.isRealPerson
+                          ? "bg-green-100"
+                          : person.id === "phd-mentor"
+                          ? "bg-purple-100"
+                          : "bg-blue-100"
+                      }`}
+                    >
+                      <person.icon className={`h-4 w-4 ${person.color}`} />
+                    </div>
+                  )}
+                  <span className="text-sm font-medium truncate">{person.name}</span>
                 </button>
               ))}
             </motion.div>

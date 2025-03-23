@@ -7,6 +7,9 @@ export interface Message {
   role: "user" | "assistant" | "system";
   timestamp: Date;
   resumeData?: any;
+  sender_id?: string;
+  sender_name?: string;
+  sender_avatar?: string;
 }
 
 export interface ChatPerson {
@@ -17,4 +20,6 @@ export interface ChatPerson {
   color: string;
   description: string;
   avatar?: string;
+  isRealPerson?: boolean;
+  welcomeMessage?: string;
 }

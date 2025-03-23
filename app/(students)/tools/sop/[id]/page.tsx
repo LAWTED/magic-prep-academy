@@ -9,7 +9,7 @@ import { useUserStore } from "@/store/userStore";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import SOPVersions from "../components/SOPVersions";
-import TextPreview from "@/app/(students)/tools/components/TextPreview";
+import TextPreview from "@/app/components/TextPreview";
 import { Document_METADATA, Document_VERSIONS_METADATA } from "@/app/types";
 
 type SOPDocument = {
@@ -189,10 +189,11 @@ export default function SOPVersionsPage() {
               whileTap={{ scale: 0.95 }}
               onClick={() => {
                 if (latestVersion?.metadata?.content) {
+                  console.log("latestVersion", latestVersion.metadata);
                   try {
                     // Create a prompt with the SOP data
                     const versionLabel = latestVersion.name || `Version ${latestVersion.version_number}`;
-                    const initialPrompt = `Please review my Statement of Purpose "${sopDocument?.name}" (${versionLabel}) for graduate school applications and provide feedback on how to improve it. Here is the SOP content:\n\n${latestVersion.metadata.content}`;
+                    const initialPrompt = `Please review my Statement of Purpose "${sopDocument?.name}" (${versionLabel}) for graduate school applications and provide feedback on how to improve it. Here is the SOP content:\n\n${JSON.stringify(latestVersion.metadata, null, 2)}`;
 
                     // Store in sessionStorage for the chat page to access
                     sessionStorage.setItem("sop_review_prompt", initialPrompt);

@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
 import { useUserStore } from "@/store/userStore";
-import TextEditor from "@/app/(students)/tools/components/TextEditor";
+import TextEditor from "@/app/components/TextEditor";
 
 export default function SOPEditPage() {
   const params = useParams();

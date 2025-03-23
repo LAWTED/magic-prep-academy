@@ -32,8 +32,24 @@ export const chatPersons: ChatPerson[] = [
     color: "text-purple-600",
     description:
       "Expert guidance on graduate-level research and academic publishing",
+    welcomeMessage: "Need help with advanced research, graduate school applications, or academic publishing? Feel free to ask!"
   },
 ];
+
+// Function to create a mentor chat person
+export function createMentorChatPerson(mentor: any): ChatPerson {
+  return {
+    id: mentor.id,
+    name: mentor.name,
+    icon: UserCheck,
+    systemPrompt: "", // Real mentors don't need system prompts
+    color: "text-green-600",
+    description: "Connect with your mentor for personalized guidance",
+    avatar: `/images/avatars/${mentor.avatar_name}.png`,
+    isRealPerson: true,
+    welcomeMessage: `Connect with ${mentor.name} for personalized guidance and advice.`
+  };
+}
 
 export const resumeEditor: ChatPerson = {
   id: "resume-editor",
@@ -62,4 +78,5 @@ export const resumeEditor: ChatPerson = {
   color: "text-blue-600",
   description:
     "Professional assistance with resume and cover letter development",
+  welcomeMessage: "Let me help you create a standout resume that showcases your skills and experiences."
 };

@@ -6,10 +6,15 @@ import {
   Users,
   Upload,
   BookMarked,
+  MessageCircle,
+  FileText,
+  BarChart,
 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
+import { formatDistanceToNow } from "date-fns";
+import LorRequestsList from "../lor/components/LorRequestsList";
 
 interface Subject {
   id: string;
@@ -21,10 +26,22 @@ interface Student {
   name: string;
   avatar_name: string;
   subjects: string[];
+  program?: string;
 }
 
 interface SubjectWithStudents extends Subject {
   students: Student[];
+}
+
+interface LorRequest {
+  id: string;
+  student_name: string;
+  student_avatar: string;
+  program_name: string;
+  school_name: string;
+  status: string;
+  created_at: string;
+  request_date: string;
 }
 
 export default async function MentorDashboard() {
@@ -83,119 +100,249 @@ export default async function MentorDashboard() {
     });
   }
 
+  // Fetch LoR requests for this mentor
+  const { data: requestsData, error: requestsError } = await supabase
+    .from("mentor_student_interactions")
+    .select(`
+      id,
+      student_id,
+      status,
+      created_at,
+      metadata,
+      users:student_id(name, avatar_name)
+    `)
+    .eq("mentor_id", profile.id)
+    .eq("type", "lor_request")
+    .order("created_at", { ascending: false })
+    .limit(3);
+
+  let lorRequests: LorRequest[] = [];
+
+  if (requestsData && !requestsError) {
+    lorRequests = requestsData.map((item: any) => ({
+      id: item.id,
+      student_name: item.users?.name || "Unknown Student",
+      student_avatar: item.users?.avatar_name || "",
+      program_name: item.metadata?.program_name || "Unknown Program",
+      school_name: item.metadata?.school_name || "Unknown School",
+      status: item.status,
+      created_at: item.created_at,
+      request_date: formatDistanceToNow(new Date(item.created_at), { addSuffix: true }),
+    }));
+  }
+
+  const pendingRequestsCount = lorRequests.filter(r => r.status === 'pending').length;
+
   // Get avatar path based on profile's avatar_name
   const avatarPath = `/images/avatars/${profile.avatar_name}.png`;
 
   return (
-    <div className="w-full min-h-screen bg-background">
-      {/* Header */}
-      <header className="w-full p-6 flex items-center justify-between border-b bg-card">
-        <div className="flex items-center gap-4">
-          <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary">
-            <Image
-              src={avatarPath}
-              alt={profile.name}
-              fill
-              className="object-cover"
-            />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">{profile.name}</h1>
-            <p className="text-muted-foreground">Mentor</p>
-          </div>
+    <div className="bg-background min-h-screen">
+      <main className="container py-6 max-w-6xl mx-auto space-y-10">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Mentor Dashboard</h1>
+          <div>{/* Profile actions could go here */}</div>
         </div>
 
-        <button className="text-gray-400 cursor-not-allowed" disabled>
-          <Cog size={24} />
-        </button>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto p-6 space-y-8">
-        {/* Learning Materials Upload Section */}
-        <section className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Upload className="w-5 h-5 text-primary" />
-            <h2 className="text-xl font-semibold">Learning Materials</h2>
-          </div>
-          <Link
-            href="/mentor/materials/upload"
-            className="block p-6 bg-card rounded-xl shadow-sm border hover:border-primary/50 transition-colors"
-          >
-            <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <h3 className="text-lg font-medium">Upload New Materials</h3>
-                <p className="text-sm text-muted-foreground">
-                  Upload textbooks, blogs, or academic articles to create
-                  interactive learning modules
-                </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Activities Section */}
+          <div className="md:col-span-2 space-y-6">
+            <section className="bg-card rounded-lg border shadow-sm overflow-hidden">
+              <div className="p-4 border-b flex items-center justify-between">
+                <h2 className="font-semibold text-lg">Activities</h2>
               </div>
-              <BookMarked className="w-8 h-8 text-primary" />
-            </div>
-          </Link>
-        </section>
+              <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Link
+                  href="/mentor/lor"
+                  className="group flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="bg-primary/10 text-primary p-2.5 rounded-md">
+                      <FileText size={20} />
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Recommendation Letters</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {pendingRequestsCount > 0 ?
+                          `${pendingRequestsCount} pending request${pendingRequestsCount !== 1 ? 's' : ''}` :
+                          'Manage recommendation letters'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight size={16} className="text-muted-foreground group-hover:text-foreground transition-colors" />
+                </Link>
 
-        {/* Students Section */}
-        <section className="space-y-6">
-          <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-primary" />
-            <h2 className="text-xl font-semibold">Your Students</h2>
-          </div>
+                <Link
+                  href="/mentor/chat"
+                  className="group flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="bg-blue-100 text-blue-700 p-2.5 rounded-md">
+                      <MessageCircle size={20} />
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Chat with Students</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Answer questions & provide guidance
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight size={16} className="text-muted-foreground group-hover:text-foreground transition-colors" />
+                </Link>
 
-          {subjectsWithStudents.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              No students assigned to you yet
-            </p>
-          ) : (
-            <div>
-              {subjectsWithStudents.map((subject) => (
-                <div key={subject.id} className="mb-6">
-                  {subject.students.length > 0 && (
-                    <div className="space-y-4">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        {subject.students.map((student) => (
-                          <Link
-                            key={student.id}
-                            href={`/mentor/student/${student.id}`}
-                            className="flex items-center gap-4 p-4 bg-card rounded-xl shadow-sm border hover:border-primary/50 transition-colors"
-                          >
-                            <div className="relative w-12 h-12 rounded-full overflow-hidden border">
+                <Link
+                  href="/mentor/materials/upload"
+                  className="group flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="bg-green-100 text-green-700 p-2.5 rounded-md">
+                      <Upload size={20} />
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Learning Materials</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Upload resources for students
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight size={16} className="text-muted-foreground group-hover:text-foreground transition-colors" />
+                </Link>
+
+                {/* Analytics link removed */}
+              </div>
+            </section>
+
+            {/* Subjects & Students Section */}
+            <section className="bg-card rounded-lg border shadow-sm overflow-hidden">
+              <div className="p-4 border-b flex items-center justify-between">
+                <h2 className="font-semibold text-lg">Your Students</h2>
+              </div>
+              <div>
+                {subjectsWithStudents.map((subject) => (
+                  <div key={subject.id} className="border-b last:border-0">
+                    <div className="px-4 pt-4 pb-2">
+                      <h3 className="font-medium text-sm flex items-center gap-2">
+                        <BookOpen size={16} className="text-muted-foreground" />
+                        <span>{subject.subject_name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          ({subject.students.length} student
+                          {subject.students.length !== 1 ? "s" : ""})
+                        </span>
+                      </h3>
+                    </div>
+
+                    <div className="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {subject.students.map((student) => (
+                        <Link
+                          key={student.id}
+                          href={`/mentor/student/${student.id}`}
+                          className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200">
+                            {student.avatar_name ? (
                               <Image
                                 src={`/images/avatars/${student.avatar_name}.png`}
-                                alt={student.name}
+                                alt=""
                                 fill
                                 className="object-cover"
                               />
-                            </div>
-                            <div className="flex-1 text-left">
-                              <h4 className="font-medium">{student.name}</h4>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">
-                                  {subject.subject_name}
-                                </span>
-                                <p className="text-xs text-muted-foreground">
-                                  View progress
-                                </p>
+                            ) : (
+                              <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">
+                                {student.name.charAt(0)}
                               </div>
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-gray-400" />
-                          </Link>
-                        ))}
-                      </div>
+                            )}
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium">{student.name}</h4>
+                            <p className="text-xs text-muted-foreground">
+                              {student.program || "Student"}
+                            </p>
+                          </div>
+                        </Link>
+                      ))}
                     </div>
-                  )}
-                </div>
-              ))}
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
 
-              {/* Flatten the students array to check if there are any students */}
-              {subjectsWithStudents.flatMap((s) => s.students).length === 0 && (
-                <p className="text-center text-muted-foreground py-8">
-                  No students enrolled yet
-                </p>
-              )}
-            </div>
-          )}
-        </section>
+          {/* Stats Section */}
+          <div className="space-y-6">
+            <section className="bg-card rounded-lg border shadow-sm overflow-hidden">
+              <div className="p-4 border-b">
+                <h2 className="font-semibold text-lg">Your Stats</h2>
+              </div>
+              <div className="p-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Users size={16} className="text-muted-foreground" />
+                      <span className="text-sm">Total Students</span>
+                    </div>
+                    <span className="font-semibold">{subjectsWithStudents.flatMap((s) => s.students).length}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <BookOpen size={16} className="text-muted-foreground" />
+                      <span className="text-sm">Subjects</span>
+                    </div>
+                    <span className="font-semibold">{subjectsWithStudents.length}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FileText size={16} className="text-muted-foreground" />
+                      <span className="text-sm">LoR Requests</span>
+                    </div>
+                    <span className="font-semibold">{lorRequests.length}</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Quick Links */}
+            <section className="bg-card rounded-lg border shadow-sm overflow-hidden">
+              <div className="p-4 border-b">
+                <h2 className="font-semibold text-lg">Quick Links</h2>
+              </div>
+              <div className="p-4">
+                <div className="space-y-3">
+                  <Link
+                    href="/mentor/profile"
+                    className="text-sm text-primary hover:underline flex items-center gap-1"
+                  >
+                    <ChevronRight size={14} />
+                    <span>Edit Profile</span>
+                  </Link>
+                  <Link
+                    href="/mentor/lor"
+                    className="text-sm text-primary hover:underline flex items-center gap-1"
+                  >
+                    <ChevronRight size={14} />
+                    <span>View All Recommendation Requests</span>
+                  </Link>
+                  <Link
+                    href="/mentor/chat"
+                    className="text-sm text-primary hover:underline flex items-center gap-1"
+                  >
+                    <ChevronRight size={14} />
+                    <span>Chat History</span>
+                  </Link>
+                  <Link
+                    href="/mentor/support"
+                    className="text-sm text-primary hover:underline flex items-center gap-1"
+                  >
+                    <ChevronRight size={14} />
+                    <span>Help & Support</span>
+                  </Link>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
       </main>
     </div>
   );

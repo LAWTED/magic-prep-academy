@@ -263,16 +263,27 @@ function ResumeEdit() {
           </div>
         )}
 
-        {isStreaming && <TypingIndicator streamingDots={streamingDots} />}
+        {isStreaming && (
+          <TypingIndicator
+            selectedPerson={selectedPerson}
+            dots={streamingDots}
+          />
+        )}
 
         <div ref={messagesEndRef} />
       </div>
 
-      <ChatInput
-        selectedPerson={selectedPerson}
-        isStreaming={isStreaming}
-        onSendMessage={handleSendMessage}
-      />
+      {!isLoading && (
+        <div className="sticky bottom-0 w-full bg-white border-t p-4">
+          <div className="max-w-3xl mx-auto">
+            <ChatInput
+              onSendMessage={handleSendMessage}
+              isDisabled={isStreaming}
+              placeholder={`发送消息给${selectedPerson.name}...`}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

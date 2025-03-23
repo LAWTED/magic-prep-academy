@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { Save, CheckCircle, Loader2 } from "lucide-react";
-import { useEditorStore } from "../store/editorStore";
+import { useEditorStore } from "../(students)/tools/store/editorStore";
 
 interface TextIslandProps {
   onSave: () => void;

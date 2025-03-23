@@ -12,9 +12,13 @@ import {
   TypingIndicator,
   WelcomeScreen,
   chatPersons,
+  createMentorChatPerson,
   type Message,
   type ChatPerson,
 } from "./components";
+import { createClient } from "@/utils/supabase/client";
+import { UserCheck } from "lucide-react";
+import Image from "next/image";
 
 function Chat() {
   const { user } = useUserStore();
@@ -26,23 +30,168 @@ function Chat() {
   const [isLoading, setIsLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasInitializedRef = useRef(false);
+  const supabase = createClient();
+
+  // State for real mentor chat
+  const [availableMentors, setAvailableMentors] = useState<any[]>([]);
+  const [allChatPersons, setAllChatPersons] = useState<ChatPerson[]>(chatPersons);
+  const [chatSessionId, setChatSessionId] = useState<string | null>(null);
+
+  // Fetch available mentors from the database
+  useEffect(() => {
+    async function fetchMentors() {
+      try {
+        const { data, error } = await supabase
+          .from('mentors')
+          .select('*')
+          .is('deleted_at', null);
+
+        if (error) {
+          console.error('Error fetching mentors:', error);
+          return;
+        }
+
+        if (data) {
+          // Convert mentors to chat persons and add to all chat persons
+          const mentorChatPersons = data.map(mentor => createMentorChatPerson(mentor));
+          setAvailableMentors(data);
+          setAllChatPersons([...chatPersons, ...mentorChatPersons]);
+        }
+      } catch (error) {
+        console.error('Error fetching mentors:', error);
+      }
+    }
+
+    fetchMentors();
+  }, [supabase]);
 
   // 找到指定的对话人，如果不存在，则使用默认的
   const getInitialPerson = () => {
     const personId = searchParams.get("person");
     if (personId) {
-      const person = chatPersons
+      const person = allChatPersons
         .filter((p) => p.id !== "resume-editor")
         .find((p) => p.id === personId);
       if (person) {
         return person;
       }
     }
-    return chatPersons[0]; // 默认使用第一个人物（现在是PhD Mentor）
+    return allChatPersons[0]; // 默认使用第一个人物（现在是PhD Mentor）
   };
 
   const [selectedPerson, setSelectedPerson] =
-    useState<ChatPerson>(getInitialPerson);
+    useState<ChatPerson>(() => getInitialPerson());
+
+  // Update selectedPerson when allChatPersons changes
+  useEffect(() => {
+    const personId = searchParams.get("person");
+    if (personId) {
+      const person = allChatPersons
+        .filter((p) => p.id !== "resume-editor")
+        .find((p) => p.id === personId);
+      if (person) {
+        setSelectedPerson(person);
+      }
+    }
+  }, [allChatPersons, searchParams]);
+
+  // Load existing chat session if available for real mentor
+  useEffect(() => {
+    if (selectedPerson.isRealPerson && user?.id) {
+      loadChatSession(selectedPerson.id);
+    }
+  }, [selectedPerson, user]);
+
+  // Set up real-time subscription for chat messages
+  useEffect(() => {
+    if (!chatSessionId) return;
+
+    // Subscribe to changes in the mentor_student_interactions table
+    const channel = supabase
+      .channel('chat-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'mentor_student_interactions',
+          filter: `id=eq.${chatSessionId}`,
+        },
+        (payload) => {
+          // The conversation has been updated
+          if (payload.new && payload.new.type === 'chat' && payload.new.metadata?.messages) {
+            // Replace our messages with the entire updated message history
+            setMessages(payload.new.metadata.messages);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [chatSessionId, supabase]);
+
+  // Load existing chat session if available
+  const loadChatSession = async (mentorId: string) => {
+    if (!user?.id) return;
+
+    try {
+      // Check if there's an existing chat session with this mentor
+      const { data, error } = await supabase
+        .from('mentor_student_interactions')
+        .select('*')
+        .eq('student_id', user.id)
+        .eq('mentor_id', mentorId)
+        .eq('type', 'chat')
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading chat session:', error);
+        return;
+      }
+
+      if (data) {
+        // Existing chat session found
+        setChatSessionId(data.id);
+
+        // Load previous messages
+        if (data.metadata?.messages) {
+          setMessages(data.metadata.messages);
+        }
+      } else {
+        // Create a new chat session
+        const { data: newSession, error: createError } = await supabase
+          .from('mentor_student_interactions')
+          .insert({
+            student_id: user.id,
+            mentor_id: mentorId,
+            type: 'chat',
+            status: 'active',
+            metadata: {
+              messages: []
+            },
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .select('id')
+          .single();
+
+        if (createError) {
+          console.error('Error creating chat session:', createError);
+          return;
+        }
+
+        setChatSessionId(newSession.id);
+        setMessages([]);
+      }
+
+      setIsLoading(false);
+
+    } catch (error) {
+      console.error('Error managing chat session:', error);
+    }
+  };
 
   // 检查URL中是否有初始提示
   const getInitialPrompt = () => {
@@ -63,6 +212,22 @@ function Chat() {
       }
     }
 
+    // 检查URL中的has_sop标记
+    const hasSop = searchParams.get("has_sop");
+    if (hasSop === "true") {
+      // 从sessionStorage读取SOP内容
+      try {
+        const sopPrompt = sessionStorage.getItem("sop_review_prompt");
+        if (sopPrompt) {
+          // 清除sessionStorage中的数据，避免重复使用
+          sessionStorage.removeItem("sop_review_prompt");
+          return sopPrompt;
+        }
+      } catch (e) {
+        console.error("Failed to read SOP from sessionStorage:", e);
+      }
+    }
+
     // 回退到直接从URL参数获取
     const initialPromptParam = searchParams.get("initialPrompt");
     if (initialPromptParam) {
@@ -80,14 +245,14 @@ function Chat() {
   useEffect(() => {
     const personId = searchParams.get("person");
     if (personId) {
-      const person = chatPersons
+      const person = allChatPersons
         .filter((p) => p.id !== "resume-editor")
         .find((p) => p.id === personId);
       if (person && person.id !== selectedPerson.id) {
         changePerson(person);
       }
     }
-  }, [searchParams]);
+  }, [searchParams, allChatPersons]);
 
   // 初始化，并处理初始提示
   useEffect(() => {
@@ -99,7 +264,7 @@ function Chat() {
 
       // 处理初始提示
       const initialPrompt = getInitialPrompt();
-      if (initialPrompt && selectedPerson) {
+      if (initialPrompt && selectedPerson && !selectedPerson.isRealPerson) {
         hasInitializedRef.current = true;
 
         // 自动发送初始提示
@@ -130,8 +295,13 @@ function Chat() {
   }, [isStreaming]);
 
   const clearChat = () => {
-    hasInitializedRef.current = false;
-    setMessages([]);
+    if (selectedPerson.isRealPerson && chatSessionId) {
+      setChatSessionId(null);
+      setMessages([]);
+    } else {
+      hasInitializedRef.current = false;
+      setMessages([]);
+    }
   };
 
   // 统一处理人物切换逻辑
@@ -140,6 +310,15 @@ function Chat() {
     setIsLoading(true);
     setMessages([]);
     hasInitializedRef.current = false;
+
+    if (person.isRealPerson) {
+      // If switching to real mentor, load the chat session
+      if (user?.id) {
+        loadChatSession(person.id);
+      }
+    } else {
+      setChatSessionId(null);
+    }
 
     // 短暂延迟后关闭加载状态
     setTimeout(() => {
@@ -165,9 +344,40 @@ function Chat() {
       content: inputValue,
       role: "user",
       timestamp: new Date(),
+      sender_id: user?.id,
+      sender_name: user?.name,
+      sender_avatar: user?.avatar_name,
     };
 
     setMessages((prev) => [...prev, userMessage]);
+
+    // Handle real mentor chat
+    if (selectedPerson.isRealPerson && chatSessionId) {
+      try {
+        // Save the message to the database
+        const updatedMessages = [...messages, userMessage];
+
+        const { error } = await supabase
+          .from('mentor_student_interactions')
+          .update({
+            metadata: {
+              messages: updatedMessages
+            },
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', chatSessionId);
+
+        if (error) {
+          console.error('Error saving message:', error);
+        }
+      } catch (error) {
+        console.error('Error sending message:', error);
+      }
+
+      return;
+    }
+
+    // Handle AI chat
     setIsStreaming(true);
 
     try {
@@ -232,101 +442,114 @@ function Chat() {
           } else if (
             "delta" in chunk.chunk &&
             chunk.chunk.delta &&
-            typeof chunk.chunk.delta === "string"
+            typeof chunk.chunk.delta.content === "string"
           ) {
-            chunkText = chunk.chunk.delta;
+            chunkText = chunk.chunk.delta.content;
           }
 
-          if (chunkText) {
-            // Check if this is a delta or a full replacement
-            if ("delta" in chunk.chunk) {
-              // For delta updates, just append the new text
-              accumulatedText += chunkText;
-            } else {
-              // For full content updates, replace the entire text
-              // This prevents duplication when the API sends complete content
-              accumulatedText = chunkText;
-            }
+          // Accumulate the text for a better user experience
+          accumulatedText += chunkText;
 
-            // Only update if the content has actually changed
-            if (accumulatedText !== lastProcessedText) {
-              lastProcessedText = accumulatedText;
-
-              // Update the message with accumulated text
-              setMessages((prev) =>
-                prev.map((msg) =>
-                  msg.id === assistantMessageId
-                    ? { ...msg, content: accumulatedText }
-                    : msg
-                )
-              );
-            }
+          // We only update the message if there are meaningful changes to avoid too many re-renders
+          if (
+            accumulatedText.length - lastProcessedText.length > 5 ||
+            accumulatedText.includes("\n") &&
+            !lastProcessedText.includes("\n")
+          ) {
+            lastProcessedText = accumulatedText;
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, content: accumulatedText }
+                  : msg
+              )
+            );
           }
         }
       });
-    } catch (error) {
-      console.error("Error in chat:", error);
 
-      // Add error message if the stream failed
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          content: "Sorry, I encountered an error. Please try again.",
-          role: "assistant",
-          timestamp: new Date(),
-        },
-      ]);
+      // Make sure the final text is set
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMessageId
+            ? { ...msg, content: accumulatedText }
+            : msg
+        )
+      );
+    } catch (error) {
+      console.error("Error calling chat API:", error);
+      // Handle the error - maybe add an error message to the chat
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.role === "assistant" && msg.content === ""
+            ? {
+                ...msg,
+                content:
+                  "Sorry, I encountered an error processing your request. Please try again.",
+              }
+            : msg
+        )
+      );
     } finally {
       setIsStreaming(false);
     }
   };
 
-  if (isLoading) {
-    return <LoadingState />;
-  }
-
   return (
-      <div className="flex flex-col h-[calc(100vh-4rem)]">
-        <ChatHeader
-          selectedPerson={selectedPerson}
-          onPersonChange={handleChangePerson}
-          onClearChat={clearChat}
-          messagesCount={messages.length}
+    <div className="flex flex-col h-[calc(100vh-4rem)]">
+      <ChatHeader
+        selectedPerson={selectedPerson}
+        onPersonChange={handleChangePerson}
+        onClearChat={clearChat}
+        messagesCount={messages.length}
+        allChatPersons={allChatPersons}
       />
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 relative">
-        {messages.length === 0 ? (
+      <div className="flex-1 flex flex-col overflow-y-auto">
+        {isLoading ? (
+          <LoadingState />
+        ) : messages.length === 0 ? (
           <WelcomeScreen selectedPerson={selectedPerson} />
         ) : (
-          <div className="space-y-2">
-            {messages.map((message) => (
-              <ChatMessage
-                key={message.id}
-                message={message}
-                selectedPerson={selectedPerson}
-              />
-            ))}
+          <div className="flex-1 pb-20 overflow-auto">
+            <div className="max-w-3xl mx-auto p-4 space-y-6">
+              {messages.map((message, index) => (
+                <ChatMessage
+                  key={message.id}
+                  message={message}
+                  selectedPerson={selectedPerson}
+                />
+              ))}
+              {isStreaming && (
+                <TypingIndicator
+                  selectedPerson={selectedPerson}
+                  dots={streamingDots}
+                />
+              )}
+              <div ref={messagesEndRef} />
+            </div>
           </div>
         )}
-
-        {isStreaming && <TypingIndicator streamingDots={streamingDots} />}
-
-        <div ref={messagesEndRef} />
       </div>
 
-      <ChatInput
-        selectedPerson={selectedPerson}
-        isStreaming={isStreaming}
-          onSendMessage={handleSendMessage}
-        />
-      </div>
+      {!isLoading && (
+        <div className="sticky bottom-0 w-full bg-white border-t p-4">
+          <div className="max-w-3xl mx-auto">
+            <ChatInput
+              onSendMessage={handleSendMessage}
+              isDisabled={isStreaming}
+              placeholder={`发送消息给${selectedPerson.name}...`}
+            />
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
 export default function ChatPage() {
   return (
-    <Suspense fallback={<div className="p-6">Loading...</div>}>
+    <Suspense fallback={<div>Loading...</div>}>
       <Chat />
     </Suspense>
   );

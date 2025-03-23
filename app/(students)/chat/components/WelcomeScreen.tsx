@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { ChatPerson } from "./types";
+import Image from "next/image";
 
 type WelcomeScreenProps = {
   selectedPerson: ChatPerson;
@@ -19,6 +20,10 @@ const welcomeVariants = {
 };
 
 export function WelcomeScreen({ selectedPerson }: WelcomeScreenProps) {
+  // Get welcome message or use default if not defined
+  const welcomeMessage = selectedPerson.welcomeMessage ||
+    "Feel free to ask me any questions. I'll do my best to provide professional guidance and advice.";
+
   return (
     <motion.div
       variants={welcomeVariants}
@@ -27,28 +32,43 @@ export function WelcomeScreen({ selectedPerson }: WelcomeScreenProps) {
       className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4 py-6"
     >
       <motion.div
-        whileHover={{ scale: 1.1, rotate: 5 }}
-        className={`mb-6 p-5 rounded-full ${
-          selectedPerson.id === "phd-mentor"
-            ? "bg-purple-100"
-            : selectedPerson.id === "resume-editor"
-              ? "bg-blue-100"
-              : "bg-green-100"
-        }`}
+        whileHover={{ scale: 1.05 }}
+        className="mb-6"
       >
-        <selectedPerson.icon size={40} className={selectedPerson.color} />
+        {selectedPerson.avatar ? (
+          <div className="w-20 h-20 overflow-hidden rounded-full border-2 border-primary">
+            <Image
+              src={selectedPerson.avatar}
+              alt={selectedPerson.name}
+              width={80}
+              height={80}
+              className="object-cover"
+            />
+          </div>
+        ) : (
+          <div className={`p-5 rounded-full ${
+            selectedPerson.id === "phd-mentor"
+              ? "bg-purple-100"
+              : selectedPerson.id === "resume-editor"
+                ? "bg-blue-100"
+                : "bg-green-100"
+          }`}>
+            <selectedPerson.icon size={40} className={selectedPerson.color} />
+          </div>
+        )}
       </motion.div>
+
       <h1 className="text-2xl font-bold mb-3">
         Chat with {selectedPerson.name}
       </h1>
-      <p className="text-gray-500 max-w-md text-center">
-        {selectedPerson.id === "phd-mentor" &&
-          "Need help with advanced research, graduate school applications, or academic publishing? Ask away!"}
-        {selectedPerson.id === "resume-editor" &&
-          "Let me help you create a standout resume that showcases your skills and experiences."}
-        {selectedPerson.id === "human-teacher" &&
-          "有任何学习上的疑问，都可以向我咨询。我会尽力提供专业的指导和建议。"}
+
+      <p className="text-gray-500 max-w-md text-center mb-6">
+        {welcomeMessage}
       </p>
+
+      <div className="text-sm text-gray-400 max-w-md">
+        <p>Send a message to start the conversation...</p>
+      </div>
     </motion.div>
   );
 }

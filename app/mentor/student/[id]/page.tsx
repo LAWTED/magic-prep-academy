@@ -4,6 +4,7 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
+  MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
@@ -134,6 +135,24 @@ export default async function StudentProgress(props: {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto p-6 space-y-8">
+        {/* Quick Actions */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Link
+            href={`/mentor/chat?userId=${studentId}`}
+            className="flex items-center gap-3 p-4 bg-card rounded-xl shadow-sm border hover:border-primary/50 transition-colors group"
+          >
+            <div className="p-3 rounded-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+              <MessageCircle size={20} />
+            </div>
+            <div>
+              <h3 className="font-medium">Chat with {student.name}</h3>
+              <p className="text-sm text-muted-foreground">
+                Send messages and provide guidance
+              </p>
+            </div>
+          </Link>
+        </section>
+
         {/* Learning Modules Progress */}
         <section className="space-y-6">
           <h2 className="text-xl font-semibold flex items-center gap-2">

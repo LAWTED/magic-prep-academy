@@ -3,13 +3,14 @@
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import TextIsland from "./TextIsland";
-import { useEditorStore } from "../store/editorStore";
+import { useEditorStore } from "../(students)/tools/store/editorStore";
 
 interface TextEditorProps {
   initialContent: string;
   onSave: (content: string) => Promise<void>;
   placeholder?: string;
   className?: string;
+  showIsland?: boolean;
 }
 
 export default function TextEditor({
@@ -17,6 +18,7 @@ export default function TextEditor({
   onSave,
   placeholder = "Start writing your content here...",
   className = "",
+  showIsland = true,
 }: TextEditorProps) {
   // Use the store for all state
   const {
@@ -68,7 +70,7 @@ export default function TextEditor({
 
   // Show the dynamic island when content changes
   useEffect(() => {
-    if (isDirty) {
+    if (isDirty && showIsland) {
       setShowDynamicIsland(true);
 
       // Clear any existing timeout
@@ -92,13 +94,15 @@ export default function TextEditor({
         useEditorStore.setState({ dynamicIslandTimeoutRef: null });
       }
     };
-  }, [content, isDirty, setShowDynamicIsland]);
+  }, [content, isDirty, setShowDynamicIsland, showIsland]);
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
     setContent(newContent);
     setIsDirty(newContent !== initialContent);
-    setShowDynamicIsland(true);
+    if (showIsland) {
+      setShowDynamicIsland(true);
+    }
   };
 
   const saveContent = async () => {
@@ -111,16 +115,18 @@ export default function TextEditor({
       setIsDirty(false);
 
       // Show the dynamic island with success state for 3 seconds
-      setShowDynamicIsland(true);
-      if (dynamicIslandTimeoutRef.current) {
-        clearTimeout(dynamicIslandTimeoutRef.current);
-      }
-      dynamicIslandTimeoutRef.current = setTimeout(() => {
-        setShowDynamicIsland(false);
-      }, 3000);
+      if (showIsland) {
+        setShowDynamicIsland(true);
+        if (dynamicIslandTimeoutRef.current) {
+          clearTimeout(dynamicIslandTimeoutRef.current);
+        }
+        dynamicIslandTimeoutRef.current = setTimeout(() => {
+          setShowDynamicIsland(false);
+        }, 3000);
 
-      // Store the timer reference in Zustand
-      useEditorStore.setState({ dynamicIslandTimeoutRef: dynamicIslandTimeoutRef.current });
+        // Store the timer reference in Zustand
+        useEditorStore.setState({ dynamicIslandTimeoutRef: dynamicIslandTimeoutRef.current });
+      }
     } catch (error) {
       console.error("Error saving content:", error);
       toast.error("Failed to save content");
@@ -137,11 +143,11 @@ export default function TextEditor({
         onChange={handleContentChange}
         placeholder={placeholder}
         className="w-full h-full p-4 font-serif text-base leading-relaxed resize-none focus:outline-none focus:ring-0"
-        onFocus={() => setShowDynamicIsland(true)}
-        onClick={() => setShowDynamicIsland(true)}
+        onFocus={() => showIsland && setShowDynamicIsland(true)}
+        onClick={() => showIsland && setShowDynamicIsland(true)}
       />
 
-      <TextIsland onSave={saveContent} />
+      {showIsland && <TextIsland onSave={saveContent} />}
     </div>
   );
 }

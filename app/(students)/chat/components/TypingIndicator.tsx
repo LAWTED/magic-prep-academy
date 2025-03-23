@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
+import { ChatPerson } from "./types";
 
 type TypingIndicatorProps = {
-  streamingDots: string;
+  selectedPerson: ChatPerson;
+  dots: string;
 };
 
 // Animation variants for typing
@@ -11,7 +13,7 @@ const typingVariants = {
   exit: { opacity: 0, transition: { duration: 0.2 } }
 };
 
-export function TypingIndicator({ streamingDots }: TypingIndicatorProps) {
+export function TypingIndicator({ selectedPerson, dots }: TypingIndicatorProps) {
   return (
     <motion.div
       variants={typingVariants}
@@ -21,7 +23,7 @@ export function TypingIndicator({ streamingDots }: TypingIndicatorProps) {
       className="flex justify-center my-2"
     >
       <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-        Generating response{streamingDots}
+        {selectedPerson.name} is typing{dots}
       </span>
     </motion.div>
   );

@@ -8,7 +8,7 @@ import { ArrowLeft, Edit, MessageCircle, Eye, Loader2, FileText } from "lucide-r
 import Link from "next/link";
 import { useUserStore } from "@/store/userStore";
 import SOPAnalysis from "../../components/SOPAnalysis";
-import TextPreview from "@/app/(students)/tools/components/TextPreview";
+import TextPreview from "@/app/components/TextPreview";
 import { toast } from "sonner";
 
 export default function SOPVersionDetailPage() {
@@ -85,7 +85,7 @@ export default function SOPVersionDetailPage() {
 
       // Create a prompt with the SOP data
       const versionLabel = versionName || `Version ${versionNumber || ""}`;
-      const initialPrompt = `Please review my Statement of Purpose "${documentName}" (${versionLabel}) for graduate school applications and provide feedback on how to improve it. Here is the SOP content:\n\n${sopData.content}`;
+      const initialPrompt = `Please review my Statement of Purpose "${documentName}" (${versionLabel}) for graduate school applications and provide feedback on how to improve it. Here is the SOP content:\n\n${JSON.stringify(sopData, null, 2)}`;
 
       // Store in sessionStorage for the chat page to access
       sessionStorage.setItem("sop_review_prompt", initialPrompt);

@@ -139,7 +139,7 @@ export default function MentorStudentSOPDetail() {
       return;
     }
 
-    router.push(`/mentor/student/${studentId}/sop/${sopId}/${targetVersionId}/feedback`);
+    router.push(`/mentor/student/${studentId}/sop/${sopId}/feedback`);
   };
 
   const formatDate = (dateString: string) => {
@@ -268,17 +268,6 @@ export default function MentorStudentSOPDetail() {
                       </p>
                     </div>
                   </div>
-
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleFeedbackChat(version.id);
-                    }}
-                    className="p-2 rounded-full hover:bg-gray-100"
-                  >
-                    <MessageCircle size={18} className="text-primary" />
-                  </motion.button>
                 </motion.div>
               ))}
             </div>

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
-import { ArrowLeft, MessageCircle, Loader2, FileText, Edit } from "lucide-react";
+import { ArrowLeft, Loader2, FileText } from "lucide-react";
 import Link from "next/link";
 import { useMentorStore } from "@/store/mentorStore";
 import TextPreview from "@/app/components/TextPreview";
@@ -27,7 +27,6 @@ export default function MentorSOPVersionDetailPage() {
   const [versionNumber, setVersionNumber] = useState<number | null>(null);
   const [versionName, setVersionName] = useState<string | null>(null);
   const [student, setStudent] = useState<any | null>(null);
-  const [hasFeedback, setHasFeedback] = useState(false);
 
   useEffect(() => {
     // Initialize mentor store if not already done
@@ -107,20 +106,6 @@ export default function MentorSOPVersionDetailPage() {
       setVersionNumber(versionData.version_number);
       setVersionName(versionData.name);
       setSOPData(versionData.metadata || {});
-
-      // Check if there's existing feedback
-      if (mentor?.id) {
-        const { data: existingFeedback, error: feedbackError } = await supabase
-          .from("document_feedback")
-          .select("id")
-          .eq("document_version_id", versionId)
-          .eq("mentor_id", mentor.id)
-          .single();
-
-        if (!feedbackError && existingFeedback) {
-          setHasFeedback(true);
-        }
-      }
     } catch (error) {
       console.error("Error fetching SOP version:", error);
       setError(
@@ -134,10 +119,6 @@ export default function MentorSOPVersionDetailPage() {
 
   const handleBack = () => {
     router.back();
-  };
-
-  const handleEditFeedback = () => {
-    router.push(`/mentor/student/${studentId}/sop/${sopId}/${versionId}/feedback`);
   };
 
   if (loading) {
@@ -189,25 +170,6 @@ export default function MentorSOPVersionDetailPage() {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto p-6 space-y-8">
-        {/* Provide Feedback Button */}
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={handleEditFeedback}
-          className="w-full bg-primary text-white py-3 px-4 rounded-lg flex items-center justify-center shadow-sm"
-        >
-          {hasFeedback ? (
-            <>
-              <Edit size={20} className="mr-2" />
-              Edit Feedback
-            </>
-          ) : (
-            <>
-              <MessageCircle size={20} className="mr-2" />
-              Provide Feedback
-            </>
-          )}
-        </motion.button>
-
         {/* SOP Content */}
         <div>
           <div className="flex items-center mb-4">

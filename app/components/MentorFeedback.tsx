@@ -8,10 +8,17 @@ import {
   X,
   Command,
   Loader2,
+  Sparkles,
+  Trash2,
+  CheckCircle,
+  ThumbsUp,
+  AlertCircle,
+  LightbulbIcon,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 // Types
 export type FeedbackItem = {
@@ -21,7 +28,7 @@ export type FeedbackItem = {
   timestamp: Date;
   type: "comment" | "suggestion";
   mentorId?: string;
-  documentVersionId?: string; // Added for database integration
+  documentId?: string; // Changed from documentVersionId to documentId
   status?: string; // Added for database integration
 };
 
@@ -40,8 +47,10 @@ interface MentorFeedbackProps {
   mentorId?: string;
   onApplySuggestion?: (originalText: string, newText: string) => void;
   commonSuggestions?: string[];
-  documentVersionId?: string; // Added for database integration
+  documentId?: string; // Changed from documentVersionId to documentId
   studentId?: string; // Added for database integration
+  onGenerateAIFeedback?: () => void;
+  isGenerating?: boolean;
 }
 
 export default function MentorFeedback({
@@ -60,43 +69,52 @@ export default function MentorFeedback({
     "Strengthen this argument with evidence",
     "Check grammar and sentence structure",
   ],
-  documentVersionId, // For database integration
+  documentId, // Changed from documentVersionId to documentId
   studentId, // For database integration
+  onGenerateAIFeedback,
+  isGenerating,
 }: MentorFeedbackProps) {
   const [newComment, setNewComment] = useState("");
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
-  const [feedbackType, setFeedbackType] = useState<"comment" | "suggestion">("comment");
+  const [feedbackType, setFeedbackType] = useState<"comment" | "suggestion">(
+    "comment"
+  );
   const [isLoading, setIsLoading] = useState(false);
   const supabase = createClient();
 
   // Fetch feedback from database on component mount
   useEffect(() => {
-    if (documentVersionId && mentorId && mentorId !== "mentor-123" && mentorId !== "ai") {
+    if (
+      documentId &&
+      mentorId &&
+      mentorId !== "mentor-123" &&
+      mentorId !== "ai"
+    ) {
       fetchFeedbackFromDatabase();
     }
-  }, [documentVersionId, mentorId]);
+  }, [documentId, mentorId]);
 
   // Fetch feedback from database
   const fetchFeedbackFromDatabase = async () => {
-    if (!documentVersionId) return;
+    if (!documentId) return;
 
     setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from('document_feedback')
-        .select('*')
-        .eq('document_version_id', documentVersionId)
-        .eq('mentor_id', mentorId);
+        .from("document_feedback")
+        .select("*")
+        .eq("document_id", documentId)
+        .eq("mentor_id", mentorId);
 
       if (error) {
-        console.error('Error fetching feedback:', error);
-        toast.error('Failed to load feedback');
+        console.error("Error fetching feedback:", error);
+        toast.error("Failed to load feedback");
         return;
       }
 
       if (data && data.length > 0) {
         // Convert database feedback to FeedbackItem format
-        const dbFeedbacks = data.map(item => {
+        const dbFeedbacks = data.map((item) => {
           const content = item.content;
           return {
             id: item.id,
@@ -105,22 +123,22 @@ export default function MentorFeedback({
             timestamp: new Date(item.created_at),
             type: content.type,
             mentorId: item.mentor_id,
-            documentVersionId: item.document_version_id,
-            status: item.status
+            documentId: item.document_id,
+            status: item.status,
           };
         });
 
         // Keep AI feedback and add database feedback
-        const aiFeedback = feedbacks.filter(f => f.mentorId === "ai");
+        const aiFeedback = feedbacks.filter((f) => f.mentorId === "ai");
         setFeedbacks([...dbFeedbacks, ...aiFeedback]);
       } else {
         // If no database feedback, keep only AI feedback
-        const aiFeedback = feedbacks.filter(f => f.mentorId === "ai");
+        const aiFeedback = feedbacks.filter((f) => f.mentorId === "ai");
         setFeedbacks(aiFeedback);
       }
     } catch (error) {
-      console.error('Error fetching feedback:', error);
-      toast.error('Failed to load feedback');
+      console.error("Error fetching feedback:", error);
+      toast.error("Failed to load feedback");
     } finally {
       setIsLoading(false);
     }
@@ -128,68 +146,68 @@ export default function MentorFeedback({
 
   // Save feedback to database
   const saveFeedbackToDatabase = async (feedback: FeedbackItem) => {
-    if (!documentVersionId || !mentorId || feedback.mentorId === "ai") return;
+    if (!documentId || !mentorId || feedback.mentorId === "ai") return;
 
     try {
       const { data, error } = await supabase
-        .from('document_feedback')
+        .from("document_feedback")
         .insert({
-          document_version_id: documentVersionId,
+          document_id: documentId,
           user_id: studentId,
           mentor_id: mentorId,
           content: {
             text: feedback.text,
             selectedText: feedback.selectedText,
-            type: feedback.type
+            type: feedback.type,
           },
           metadata: {},
-          status: 'active'
+          status: "active",
         })
         .select();
 
       if (error) {
-        console.error('Error saving feedback:', error);
-        toast.error('Failed to save feedback');
+        console.error("Error saving feedback:", error);
+        toast.error("Failed to save feedback");
         return false;
       }
 
       // Return the database ID if available
       return data && data.length > 0 ? data[0].id : true;
     } catch (error) {
-      console.error('Error saving feedback:', error);
-      toast.error('Failed to save feedback');
+      console.error("Error saving feedback:", error);
+      toast.error("Failed to save feedback");
       return false;
     }
   };
 
   // Delete feedback from database
   const deleteFeedbackFromDatabase = async (id: string) => {
-    if (!documentVersionId || !mentorId) return false;
+    if (!documentId || !mentorId) return false;
 
     try {
       const { error } = await supabase
-        .from('document_feedback')
+        .from("document_feedback")
         .delete()
-        .eq('id', id)
-        .eq('mentor_id', mentorId);
+        .eq("id", id)
+        .eq("mentor_id", mentorId);
 
       if (error) {
-        console.error('Error deleting feedback:', error);
-        toast.error('Failed to delete feedback');
+        console.error("Error deleting feedback:", error);
+        toast.error("Failed to delete feedback");
         return false;
       }
 
       return true;
     } catch (error) {
-      console.error('Error deleting feedback:', error);
-      toast.error('Failed to delete feedback');
+      console.error("Error deleting feedback:", error);
+      toast.error("Failed to delete feedback");
       return false;
     }
   };
 
   // Generate highlights for all comments and current selection
   const generateHighlights = (): FeedbackHighlight[] => {
-    const feedbackHighlights = feedbacks.map(feedback => {
+    const feedbackHighlights = feedbacks.map((feedback) => {
       const isActive = feedback.id === activeCommentId;
       const isSuggestion = feedback.type === "suggestion";
       const isAI = feedback.mentorId === "ai";
@@ -197,24 +215,25 @@ export default function MentorFeedback({
       if (isActive) {
         return {
           highlight: feedback.selectedText,
-          className: 'bg-blue-200/70'
+          className: "bg-blue-200/70",
         };
       } else if (isSuggestion) {
         return {
           highlight: feedback.selectedText,
-          className: isAI ? 'bg-emerald-100/60' : 'bg-violet-100/60'
+          className: isAI ? "bg-emerald-100/60" : "bg-violet-100/60",
         };
       } else {
         return {
           highlight: feedback.selectedText,
-          className: isAI ? 'bg-emerald-100/50' : 'bg-amber-100/50'
+          className: isAI ? "bg-emerald-100/50" : "bg-amber-100/50",
         };
       }
     });
 
-    const currentSelectionHighlight = selectedText && !activeCommentId ?
-      [{ highlight: selectedText, className: 'bg-blue-100/50' }] :
-      [];
+    const currentSelectionHighlight =
+      selectedText && !activeCommentId
+        ? [{ highlight: selectedText, className: "bg-blue-100/50" }]
+        : [];
 
     return [...feedbackHighlights, ...currentSelectionHighlight];
   };
@@ -230,7 +249,9 @@ export default function MentorFeedback({
     if (selectedText) {
       // Only clear active comment if this is a new selection, not when setting
       // selectedText programmatically via handleFeedbackClick
-      const matchingFeedback = feedbacks.find(c => c.selectedText === selectedText && c.id === activeCommentId);
+      const matchingFeedback = feedbacks.find(
+        (c) => c.selectedText === selectedText && c.id === activeCommentId
+      );
       if (!matchingFeedback) {
         setActiveCommentId(null);
       }
@@ -250,11 +271,11 @@ export default function MentorFeedback({
       timestamp: new Date(),
       type: feedbackType,
       mentorId: mentorId,
-      documentVersionId
+      documentId,
     };
 
     // If we have database integration, save to database
-    if (documentVersionId && mentorId !== "ai") {
+    if (documentId && mentorId !== "ai") {
       const savedId = await saveFeedbackToDatabase(newFeedback);
       if (!savedId) {
         setIsLoading(false);
@@ -262,11 +283,11 @@ export default function MentorFeedback({
       }
 
       // If we got a database ID back, use it to refresh the feedback list
-      if (typeof savedId === 'string') {
+      if (typeof savedId === "string") {
         // Create a new feedback item with the database ID
         const dbFeedback: FeedbackItem = {
           ...newFeedback,
-          id: savedId
+          id: savedId,
         };
         setFeedbacks([...feedbacks, dbFeedback]);
       } else {
@@ -287,7 +308,7 @@ export default function MentorFeedback({
   // Remove a comment - now also deletes from database if applicable
   const removeFeedback = async (id: string) => {
     // Check if this is an AI feedback item
-    const feedbackItem = feedbacks.find(f => f.id === id);
+    const feedbackItem = feedbacks.find((f) => f.id === id);
     if (!feedbackItem) return;
 
     if (feedbackItem.mentorId === "ai") {
@@ -295,9 +316,12 @@ export default function MentorFeedback({
       setFeedbacks(feedbacks.filter((feedback) => feedback.id !== id));
     } else {
       // For mentor feedback, try to delete from database if it's a UUID
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+      const isUUID =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          id
+        );
 
-      if (isUUID && documentVersionId) {
+      if (isUUID && documentId) {
         // It's a database item, delete from the database
         const success = await deleteFeedbackFromDatabase(id);
         if (!success) {
@@ -322,7 +346,7 @@ export default function MentorFeedback({
     "Concise",
     "Examples",
     "Evidence",
-    "Grammar"
+    "Grammar",
   ];
 
   // Add a new suggestion
@@ -345,7 +369,9 @@ export default function MentorFeedback({
   };
 
   // Find active comment
-  const activeFeedback = activeCommentId ? feedbacks.find(c => c.id === activeCommentId) : null;
+  const activeFeedback = activeCommentId
+    ? feedbacks.find((c) => c.id === activeCommentId)
+    : null;
 
   // Apply AI suggestion - Now converts to a mentor suggestion
   const applyAISuggestion = async (feedback: FeedbackItem) => {
@@ -357,11 +383,6 @@ export default function MentorFeedback({
     const suggestedText = feedback.text;
     const originalText = feedback.selectedText;
 
-    // Call the handler if provided
-    if (onApplySuggestion) {
-      onApplySuggestion(originalText, suggestedText);
-    }
-
     // Create a mentor suggestion (now from the mentor, not AI)
     const mentorSuggestion: FeedbackItem = {
       id: Date.now().toString(), // Temporary ID
@@ -370,11 +391,11 @@ export default function MentorFeedback({
       timestamp: new Date(),
       type: "suggestion",
       mentorId: mentorId, // Use mentor's ID instead of AI
-      documentVersionId
+      documentId,
     };
 
     // Save to database if we have integration
-    if (documentVersionId && mentorId !== "ai") {
+    if (documentId && mentorId !== "ai") {
       const savedId = await saveFeedbackToDatabase(mentorSuggestion);
       if (!savedId) {
         setIsLoading(false);
@@ -382,14 +403,14 @@ export default function MentorFeedback({
       }
 
       // Filter out the AI suggestion
-      const updatedFeedbacks = feedbacks.filter(c => c.id !== feedback.id);
+      const updatedFeedbacks = feedbacks.filter((c) => c.id !== feedback.id);
 
       // If we got a database ID back, use it
-      if (typeof savedId === 'string') {
+      if (typeof savedId === "string") {
         // Create a new feedback item with the database ID
         const dbFeedback: FeedbackItem = {
           ...mentorSuggestion,
-          id: savedId
+          id: savedId,
         };
         setFeedbacks([...updatedFeedbacks, dbFeedback]);
       } else {
@@ -398,7 +419,7 @@ export default function MentorFeedback({
       }
     } else {
       // Remove the original AI suggestion
-      const updatedFeedbacks = feedbacks.filter(c => c.id !== feedback.id);
+      const updatedFeedbacks = feedbacks.filter((c) => c.id !== feedback.id);
       // Add the new mentor suggestion
       setFeedbacks([...updatedFeedbacks, mentorSuggestion]);
     }
@@ -422,11 +443,11 @@ export default function MentorFeedback({
       timestamp: new Date(),
       type: "comment",
       mentorId: mentorId, // Use mentor's ID instead of AI
-      documentVersionId
+      documentId,
     };
 
     // Save to database if we have integration
-    if (documentVersionId && mentorId !== "ai") {
+    if (documentId && mentorId !== "ai") {
       const savedId = await saveFeedbackToDatabase(mentorComment);
       if (!savedId) {
         setIsLoading(false);
@@ -434,14 +455,14 @@ export default function MentorFeedback({
       }
 
       // Filter out the AI comment
-      const updatedFeedbacks = feedbacks.filter(c => c.id !== feedback.id);
+      const updatedFeedbacks = feedbacks.filter((c) => c.id !== feedback.id);
 
       // If we got a database ID back, use it
-      if (typeof savedId === 'string') {
+      if (typeof savedId === "string") {
         // Create a new feedback item with the database ID
         const dbFeedback: FeedbackItem = {
           ...mentorComment,
-          id: savedId
+          id: savedId,
         };
         setFeedbacks([...updatedFeedbacks, dbFeedback]);
       } else {
@@ -450,7 +471,7 @@ export default function MentorFeedback({
       }
     } else {
       // Remove the original AI comment
-      const updatedFeedbacks = feedbacks.filter(c => c.id !== feedback.id);
+      const updatedFeedbacks = feedbacks.filter((c) => c.id !== feedback.id);
       // Add the new mentor comment
       setFeedbacks([...updatedFeedbacks, mentorComment]);
     }
@@ -485,11 +506,6 @@ export default function MentorFeedback({
     const suggestedText = feedback.text;
     const originalText = feedback.selectedText;
 
-    // Call the handler if provided
-    if (onApplySuggestion) {
-      onApplySuggestion(originalText, suggestedText);
-    }
-
     // Create a confirmation comment
     const confirmFeedback: FeedbackItem = {
       id: Date.now().toString(),
@@ -498,14 +514,14 @@ export default function MentorFeedback({
       timestamp: new Date(),
       type: "comment",
       mentorId: mentorId,
-      documentVersionId
+      documentId,
     };
 
     // Remove the original suggestion
     await removeFeedback(feedback.id);
 
     // Save to database if we have integration
-    if (documentVersionId && mentorId !== "ai") {
+    if (documentId && mentorId !== "ai") {
       const savedId = await saveFeedbackToDatabase(confirmFeedback);
       if (!savedId) {
         setIsLoading(false);
@@ -513,20 +529,26 @@ export default function MentorFeedback({
       }
 
       // If we got a database ID back, use it
-      if (typeof savedId === 'string') {
+      if (typeof savedId === "string") {
         // Create a new feedback item with the database ID
         const dbFeedback: FeedbackItem = {
           ...confirmFeedback,
-          id: savedId
+          id: savedId,
         };
-        setFeedbacks([...feedbacks.filter(c => c.id !== feedback.id), dbFeedback]);
+        setFeedbacks([
+          ...feedbacks.filter((c) => c.id !== feedback.id),
+          dbFeedback,
+        ]);
       } else {
         // Otherwise just refresh from the database
         await fetchFeedbackFromDatabase();
       }
     } else {
       // Just update local state if no database
-      setFeedbacks([...feedbacks.filter(c => c.id !== feedback.id), confirmFeedback]);
+      setFeedbacks([
+        ...feedbacks.filter((c) => c.id !== feedback.id),
+        confirmFeedback,
+      ]);
     }
 
     // Clear active comment
@@ -627,7 +649,10 @@ export default function MentorFeedback({
                 {!selectedText && !activeCommentId && (
                   <div className="p-3 bg-muted/30 rounded-md border border-dashed text-sm flex items-center justify-center h-full">
                     <p className="text-muted-foreground text-center flex flex-col items-center gap-2">
-                      <MessageSquare size={20} className="text-muted-foreground/70" />
+                      <MessageSquare
+                        size={20}
+                        className="text-muted-foreground/70"
+                      />
                       <span>Select text from the document to add feedback</span>
                     </p>
                   </div>
@@ -641,9 +666,11 @@ export default function MentorFeedback({
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder={feedbackType === "comment"
-                    ? "Add your comment here..."
-                    : "Add your suggested replacement text..."}
+                  placeholder={
+                    feedbackType === "comment"
+                      ? "Add your comment here..."
+                      : "Add your suggested replacement text..."
+                  }
                   className={`w-full p-3 border rounded-md flex-1 resize-none focus:outline-none focus:ring-1 ${
                     feedbackType === "suggestion"
                       ? "focus:ring-violet-400 border-violet-200"
@@ -698,119 +725,150 @@ export default function MentorFeedback({
 
       {/* Right Column - Feedback List */}
       <div className="w-full lg:w-[325px] lg:flex-shrink-0 flex flex-col bg-card rounded-lg border shadow-sm overflow-hidden">
-        <div className="p-4 border-b flex items-center shrink-0">
-          <MessageSquare className="text-primary mr-3" size={18} />
-          <h2 className="font-medium">Feedback</h2>
-          <span className="ml-2 text-xs bg-muted px-2 py-0.5 rounded-full">
-            {feedbacks.length}
-          </span>
+        <div className="p-4 border-b flex items-center justify-between">
+          <div className="flex items-center">
+            <MessageSquare className="h-5 w-5 text-primary mr-3" />
+            <h2 className="font-medium">Feedback</h2>
+            <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+              {feedbacks.length}
+            </span>
+          </div>
+          <button
+            onClick={() => onGenerateAIFeedback && onGenerateAIFeedback()}
+            disabled={isGenerating}
+            className="flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-800 py-1 px-2 rounded-full bg-emerald-50 hover:bg-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isGenerating ? (
+              <Loader2 size={12} className="animate-spin" />
+            ) : (
+              <MessageSquare size={12} />
+            )}
+            <span>AI Feedback</span>
+          </button>
         </div>
         <div className="p-2 overflow-y-auto flex-1 relative">
-          {isLoading && (
-            <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-10">
-              <Loader2 size={24} className="animate-spin text-primary" />
+          {(isLoading || isGenerating) && (
+            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center z-10">
+              <div className="flex flex-col items-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  {isLoading ? "Saving..." : "Generating AI Feedback..."}
+                </p>
+              </div>
             </div>
           )}
 
           {feedbacks.length > 0 ? (
             <ul className="divide-y">
-              {[...feedbacks].sort((a, b) => {
-                // Sort AI comments first
-                if (a.mentorId === "ai" && b.mentorId !== "ai") return -1;
-                if (a.mentorId !== "ai" && b.mentorId === "ai") return 1;
-                // Then sort by timestamp (newest first)
-                return b.timestamp.getTime() - a.timestamp.getTime();
-              }).map((feedback) => (
-                <li
-                  key={feedback.id}
-                  className={`py-3 px-4 ${
-                    feedback.id === activeCommentId
-                      ? 'bg-blue-50 border border-blue-200 rounded-md'
-                      : ''
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs text-muted-foreground">
-                        {feedback.timestamp.toLocaleString()}
-                      </span>
-                      {feedback.mentorId === "ai" && (
-                        <span className="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-sm font-medium">
-                          AI
+              {[...feedbacks]
+                .sort((a, b) => {
+                  // Sort AI comments first
+                  if (a.mentorId === "ai" && b.mentorId !== "ai") return -1;
+                  if (a.mentorId !== "ai" && b.mentorId === "ai") return 1;
+                  // Then sort by timestamp (newest first)
+                  return b.timestamp.getTime() - a.timestamp.getTime();
+                })
+                .map((feedback) => (
+                  <li
+                    key={feedback.id}
+                    className={`py-3 px-4 ${
+                      feedback.id === activeCommentId
+                        ? "bg-blue-50 border border-blue-200 rounded-md"
+                        : ""
+                    }`}
+                  >
+                    <div className="flex justify-between items-start mb-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-muted-foreground">
+                          {feedback.timestamp.toLocaleString()}
                         </span>
-                      )}
-                      {feedback.type === "suggestion" && (
-                        <span className="text-xs bg-violet-100 text-violet-800 px-1.5 py-0.5 rounded-sm font-medium">
-                          Suggestion
-                        </span>
-                      )}
+                        {feedback.mentorId === "ai" && (
+                          <span className="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-sm font-medium">
+                            AI
+                          </span>
+                        )}
+                        {feedback.type === "suggestion" && (
+                          <span className="text-xs bg-violet-100 text-violet-800 px-1.5 py-0.5 rounded-sm font-medium">
+                            Suggestion
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => removeFeedback(feedback.id)}
+                        className="text-muted-foreground hover:text-red-500 p-1"
+                        disabled={isLoading}
+                      >
+                        <X size={14} />
+                      </button>
                     </div>
-                    <button
-                      onClick={() => removeFeedback(feedback.id)}
-                      className="text-muted-foreground hover:text-red-500 p-1"
-                      disabled={isLoading}
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                  {feedback.selectedText && (
-                    <div
-                      className={`mb-2 p-2 ${
-                        feedback.id === activeCommentId
-                          ? 'bg-blue-100/70'
-                          : feedback.type === "suggestion"
-                            ? feedback.mentorId === "ai"
-                              ? 'bg-emerald-50 border border-emerald-100'
-                              : 'bg-violet-50 border border-violet-100'
-                            : feedback.mentorId === "ai"
-                              ? 'bg-emerald-50/30 border border-emerald-100'
-                              : 'bg-muted/30'
-                      } rounded text-xs italic cursor-pointer hover:bg-blue-50`}
-                      onClick={() => handleFeedbackClick(feedback)}
-                    >
-                      "{feedback.selectedText}"
-                    </div>
-                  )}
-                  <p className={`text-sm ${
-                    feedback.type === "suggestion"
-                      ? feedback.mentorId === "ai" ? 'text-emerald-900' : 'text-violet-900'
-                      : feedback.mentorId === "ai" ? 'text-emerald-800' : ''
-                  }`}>
-                    {feedback.type === "suggestion" ? (
-                      <>
-                        <span className="text-gray-400">→</span>
-                        <span className="font-medium ml-1.5">{feedback.text}</span>
-                      </>
-                    ) : (
-                      feedback.text
+                    {feedback.selectedText && (
+                      <div
+                        className={`mb-2 p-2 ${
+                          feedback.id === activeCommentId
+                            ? "bg-blue-100/70"
+                            : feedback.type === "suggestion"
+                              ? feedback.mentorId === "ai"
+                                ? "bg-emerald-50 border border-emerald-100"
+                                : "bg-violet-50 border border-violet-100"
+                              : feedback.mentorId === "ai"
+                                ? "bg-emerald-50/30 border border-emerald-100"
+                                : "bg-muted/30"
+                        } rounded text-xs italic cursor-pointer hover:bg-blue-50`}
+                        onClick={() => handleFeedbackClick(feedback)}
+                      >
+                        "{feedback.selectedText}"
+                      </div>
                     )}
-                  </p>
+                    <p
+                      className={`text-sm ${
+                        feedback.type === "suggestion"
+                          ? feedback.mentorId === "ai"
+                            ? "text-emerald-900"
+                            : "text-violet-900"
+                          : feedback.mentorId === "ai"
+                            ? "text-emerald-800"
+                            : ""
+                      }`}
+                    >
+                      {feedback.type === "suggestion" ? (
+                        <>
+                          <span className="text-gray-400">→</span>
+                          <span className="font-medium ml-1.5">
+                            {feedback.text}
+                          </span>
+                        </>
+                      ) : (
+                        feedback.text
+                      )}
+                    </p>
 
-                  {/* AI Feedback Actions - Both comment and suggestion types get Accept/Reject */}
-                  {feedback.mentorId === "ai" && (
-                    <div className="flex justify-end gap-2 mt-2">
-                      <button
-                        onClick={() => rejectAIFeedback(feedback)}
-                        className="flex items-center gap-1 text-xs text-red-600 hover:text-red-800 py-1 px-2 rounded-full bg-red-50 hover:bg-red-100"
-                        disabled={isLoading}
-                      >
-                        <X size={12} />
-                        <span>Reject</span>
-                      </button>
-                      <button
-                        onClick={() => feedback.type === "suggestion"
-                          ? applyAISuggestion(feedback)
-                          : acceptAIComment(feedback)}
-                        className="flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-800 py-1 px-2 rounded-full bg-emerald-50 hover:bg-emerald-100"
-                        disabled={isLoading}
-                      >
-                        <Check size={12} />
-                        <span>Accept</span>
-                      </button>
-                    </div>
-                  )}
-                </li>
-              ))}
+                    {/* AI Feedback Actions - Both comment and suggestion types get Accept/Reject */}
+                    {feedback.mentorId === "ai" && (
+                      <div className="flex justify-end gap-2 mt-2">
+                        <button
+                          onClick={() => rejectAIFeedback(feedback)}
+                          className="flex items-center gap-1 text-xs text-red-600 hover:text-red-800 py-1 px-2 rounded-full bg-red-50 hover:bg-red-100"
+                          disabled={isLoading}
+                        >
+                          <X size={12} />
+                          <span>Reject</span>
+                        </button>
+                        <button
+                          onClick={() =>
+                            feedback.type === "suggestion"
+                              ? applyAISuggestion(feedback)
+                              : acceptAIComment(feedback)
+                          }
+                          className="flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-800 py-1 px-2 rounded-full bg-emerald-50 hover:bg-emerald-100"
+                          disabled={isLoading}
+                        >
+                          <Check size={12} />
+                          <span>Accept</span>
+                        </button>
+                      </div>
+                    )}
+                  </li>
+                ))}
             </ul>
           ) : (
             <div className="text-center py-8">

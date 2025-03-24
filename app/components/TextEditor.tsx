@@ -18,6 +18,7 @@ interface TextEditorProps {
   >;
   onSelectionChange?: (selection: string) => void;
   activeHighlight?: string;
+  readOnly?: boolean;
 }
 
 export default function TextEditor({
@@ -29,6 +30,7 @@ export default function TextEditor({
   highlights = [],
   onSelectionChange,
   activeHighlight,
+  readOnly = false,
 }: TextEditorProps) {
   // Use the store for all state
   const {
@@ -248,6 +250,7 @@ export default function TextEditor({
         highlight={processedHighlights}
         onFocus={() => showIsland && setShowDynamicIsland(true)}
         onBlur={() => {}}
+        readOnly={readOnly}
       />
 
       {showIsland && <TextIsland onSave={saveContent} />}

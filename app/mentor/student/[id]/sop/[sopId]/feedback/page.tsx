@@ -4,14 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
-import {
-  ArrowLeft,
-  Loader2,
-  FileText,
-  X,
-} from "lucide-react";
+import { ArrowLeft, Loader2, FileText, X } from "lucide-react";
 import TextEditor from "@/app/components/TextEditor";
-import MentorFeedback, { FeedbackItem, FeedbackHighlight } from "@/app/components/MentorFeedback";
+import MentorFeedback, {
+  FeedbackItem,
+  FeedbackHighlight,
+} from "@/app/components/MentorFeedback";
+import { toast } from "sonner";
 
 export default function SOPFeedbackPage() {
   const params = useParams();
@@ -20,7 +19,6 @@ export default function SOPFeedbackPage() {
 
   const studentId = params.id as string;
   const sopId = params.sopId as string;
-  const versionId = params.versionId as string;
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,28 +26,13 @@ export default function SOPFeedbackPage() {
   const [documentName, setDocumentName] = useState<string>("");
   const [versionNumber, setVersionNumber] = useState<number | null>(null);
   const [versionName, setVersionName] = useState<string | null>(null);
+  const [versionId, setVersionId] = useState<string>("");
   const [student, setStudent] = useState<any | null>(null);
   const [mentorId, setMentorId] = useState<string>("mentor-123"); // Default mentor ID
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Feedback state - using frontend state only
-  const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>([
-    {
-      id: "1",
-      text: "Delete this section",
-      selectedText: "Statement of Purpose",
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-      type: "comment",
-      mentorId: "ai"
-    },
-    {
-      id: "2",
-      text: ", and contributing to solving challenges.",
-      selectedText: ", and contributing to solving real-world challenges.",
-      timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-      type: "suggestion",
-      mentorId: "ai"
-    }
-  ]);
+  const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>([]);
   const [selectedText, setSelectedText] = useState("");
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
 
@@ -63,11 +46,11 @@ export default function SOPFeedbackPage() {
   ];
 
   useEffect(() => {
-    if (studentId && sopId && versionId) {
+    if (studentId && sopId) {
       fetchData();
       fetchCurrentUser();
     }
-  }, [studentId, sopId, versionId]);
+  }, [studentId, sopId]);
 
   const fetchData = async () => {
     try {
@@ -103,26 +86,29 @@ export default function SOPFeedbackPage() {
         return;
       }
 
-      // Fetch version details
-      const { data: versionData, error: versionError } = await supabase
+      setDocumentName(documentData.name);
+
+      // Fetch latest version
+      const { data: latestVersionData, error: latestVersionError } = await supabase
         .from("document_versions")
         .select("*")
-        .eq("id", versionId)
         .eq("document_id", sopId)
+        .order("version_number", { ascending: false })
+        .limit(1)
         .single();
 
-      if (versionError) {
-        setError("Version not found");
+      if (latestVersionError) {
+        setError("No versions found");
         setLoading(false);
         return;
       }
 
-      setDocumentName(documentData.name);
-      setVersionNumber(versionData.version_number);
-      setVersionName(versionData.name);
+      setVersionId(latestVersionData.id);
+      setVersionNumber(latestVersionData.version_number);
+      setVersionName(latestVersionData.name);
 
       // Set SOP content
-      const content = versionData.metadata?.content || "";
+      const content = latestVersionData.metadata?.content || "";
       setSOPContent(content);
 
       // Comments are now in local state, no need to fetch from database
@@ -139,7 +125,9 @@ export default function SOPFeedbackPage() {
   // Fetch current user (mentor)
   const fetchCurrentUser = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         // Get the mentor record that corresponds to this auth user
         const { data: mentorData, error: mentorError } = await supabase
@@ -168,9 +156,11 @@ export default function SOPFeedbackPage() {
   // Generate highlights for content from feedback component
   const generateHighlights = () => {
     // Find active feedback
-    const activeFeedback = activeCommentId ? feedbacks.find(c => c.id === activeCommentId) : null;
+    const activeFeedback = activeCommentId
+      ? feedbacks.find((c) => c.id === activeCommentId)
+      : null;
 
-    const feedbackHighlights = feedbacks.map(feedback => {
+    const feedbackHighlights = feedbacks.map((feedback) => {
       const isActive = feedback.id === activeCommentId;
       const isSuggestion = feedback.type === "suggestion";
       const isAI = feedback.mentorId === "ai";
@@ -178,24 +168,25 @@ export default function SOPFeedbackPage() {
       if (isActive) {
         return {
           highlight: feedback.selectedText,
-          className: 'bg-blue-200/70'
+          className: "bg-blue-200/70",
         };
       } else if (isSuggestion) {
         return {
           highlight: feedback.selectedText,
-          className: isAI ? 'bg-emerald-100/60' : 'bg-violet-100/60'
+          className: isAI ? "bg-emerald-100/60" : "bg-violet-100/60",
         };
       } else {
         return {
           highlight: feedback.selectedText,
-          className: isAI ? 'bg-emerald-100/50' : 'bg-amber-100/50'
+          className: isAI ? "bg-emerald-100/50" : "bg-amber-100/50",
         };
       }
     });
 
-    const currentSelectionHighlight = selectedText && !activeCommentId ?
-      [{ highlight: selectedText, className: 'bg-blue-100/50' }] :
-      [];
+    const currentSelectionHighlight =
+      selectedText && !activeCommentId
+        ? [{ highlight: selectedText, className: "bg-blue-100/50" }]
+        : [];
 
     return [...feedbackHighlights, ...currentSelectionHighlight];
   };
@@ -204,6 +195,55 @@ export default function SOPFeedbackPage() {
   const handleApplySuggestion = (originalText: string, newText: string) => {
     const updatedContent = sopContent.replace(originalText, newText);
     setSOPContent(updatedContent);
+  };
+
+  // Generate AI feedback based on current document content
+  const handleGenerateAIFeedback = () => {
+    if (!sopContent) {
+      toast.error("Document content is required for AI feedback");
+      return;
+    }
+
+    setIsGenerating(true);
+
+    // Call the feedback API to generate AI feedback
+    fetch("/api/feedback", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        content: sopContent,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success && data.feedback) {
+          // Convert timestamp strings to Date objects if needed
+          const aiFeedback = data.feedback.map((item: any) => ({
+            ...item,
+            timestamp: new Date(item.timestamp),
+          }));
+
+          // Filter out any existing AI feedback
+          const existingFeedback = feedbacks.filter((f) => f.mentorId !== "ai");
+
+          // Add the new AI feedback
+          setFeedbacks([...existingFeedback, ...aiFeedback]);
+          toast.success("AI feedback generated successfully");
+        } else {
+          throw new Error(data.error || "Failed to generate AI feedback");
+        }
+      })
+      .catch((error) => {
+        console.error("Error generating AI feedback:", error);
+        toast.error(
+          `Failed to generate AI feedback: ${error instanceof Error ? error.message : "Unknown error"}`
+        );
+      })
+      .finally(() => {
+        setIsGenerating(false);
+      });
   };
 
   if (loading) {
@@ -279,9 +319,7 @@ export default function SOPFeedbackPage() {
               </p>
             </div>
           </div>
-          <div
-            className="flex-1 p-6 overflow-y-auto"
-          >
+          <div className="flex-1 p-6 overflow-y-auto">
             <div className="prose max-w-none">
               {sopContent ? (
                 <TextEditor
@@ -293,7 +331,13 @@ export default function SOPFeedbackPage() {
                   showIsland={false}
                   highlights={generateHighlights()}
                   onSelectionChange={setSelectedText}
-                  activeHighlight={activeCommentId ? feedbacks.find(f => f.id === activeCommentId)?.selectedText : undefined}
+                  readOnly={true}
+                  activeHighlight={
+                    activeCommentId
+                      ? feedbacks.find((f) => f.id === activeCommentId)
+                          ?.selectedText
+                      : undefined
+                  }
                 />
               ) : (
                 <div className="text-center py-8">
@@ -317,8 +361,10 @@ export default function SOPFeedbackPage() {
           mentorId={mentorId}
           onApplySuggestion={handleApplySuggestion}
           commonSuggestions={commonSuggestions}
-          documentVersionId={versionId}
+          documentId={sopId}
           studentId={studentId}
+          onGenerateAIFeedback={() => handleGenerateAIFeedback()}
+          isGenerating={isGenerating}
         />
       </main>
     </div>

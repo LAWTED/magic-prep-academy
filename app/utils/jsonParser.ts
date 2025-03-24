@@ -61,6 +61,23 @@ export function parseAIGeneratedJson<T>(
 }
 
 /**
+ * Type for validator names
+ */
+export type ValidatorName =
+  | "multipleChoice"
+  | "fillInTheBlank"
+  | "dialogue"
+  | "matching"
+  | "eligibilityResults"
+  | "moduleMetadata"
+  | "resumeContentAnalysis"
+  | "resumeAnalysis"
+  | "apaResume"
+  | "sopExtract"
+  | "sopContentAnalysis"
+  | "aiFeedback";
+
+/**
  * Common JSON validation functions
  */
 export const validators = {
@@ -257,6 +274,30 @@ export const validators = {
       Array.isArray(json.actionableSteps) &&
       json.actionableSteps.length > 0 &&
       json.actionableSteps.every((item: any) => typeof item === "string")
+    );
+  },
+
+  /**
+   * Validates AI feedback JSON structure
+   */
+  aiFeedback: (json: any): boolean => {
+    // Check if json is an array
+    if (!Array.isArray(json)) return false;
+
+    // Make sure there's at least one item
+    if (json.length === 0) return false;
+
+    // Check each feedback item has the required properties
+    return json.every(
+      (item) =>
+        item &&
+        typeof item === "object" &&
+        typeof item.id === "string" &&
+        typeof item.text === "string" &&
+        typeof item.selectedText === "string" &&
+        (typeof item.timestamp === "string" || item.timestamp instanceof Date) &&
+        (item.type === "comment" || item.type === "suggestion") &&
+        (!item.mentorId || typeof item.mentorId === "string")
     );
   },
 };

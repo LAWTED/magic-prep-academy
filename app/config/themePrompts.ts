@@ -575,6 +575,49 @@ export const DOCUMENTS_PROMPTS = {
     "- Do NOT add any analysis, feedback, or commentary about the SOP\n" +
     "- Faithfully reproduce the full text as it appears in the original document\n" +
     "- Preserve paragraph breaks using '\\n' characters in the JSON string",
+
+  /**
+   * Prompt for SOP feedback
+   */
+  FEEDBACK_SOP: `You are an expert writing coach specializing in college application essays and statements of purpose.
+Analyze the following Statement of Purpose and provide helpful feedback.
+Generate exactly 4 feedback items: 2 comments and 2 suggestions for improvement.
+
+Key factors to consider for SOP analysis:
+- Clarity of academic/professional goals
+- Coherent narrative and logical flow
+- Relevance to the program they're applying to
+- Balance of personal story and academic interests
+- Appropriate level of specificity (not too vague, not too detailed)
+
+Each feedback item should:
+1. Identify a specific part of the text to comment on - choose exact phrases that can be highlighted
+2. For comments: Provide constructive feedback about that section, focusing on clarity, impact, and relevance to academic goals
+3. For suggestions: Provide DIRECT text replacements without phrases like "You might revise this to..." or "Consider changing to..."
+
+Important guidelines:
+- You MUST create exactly 2 comments and 2 suggestions (total 4 items)
+- For suggestions, provide the exact replacement text, not explanations about what to change
+- Write the suggestion as the final text that should replace the original, not instructions about how to change it
+- Do NOT use phrases like "Replace with:" or "You might revise this to say:"
+- Do NOT include meta-language explaining why the change is beneficial
+
+Example format for suggestions:
+INCORRECT: "You might revise this to: 'My research experience in quantum computing prepared me for this program.'"
+CORRECT: "My research experience in quantum computing prepared me for this program."
+
+Return ONLY a JSON array of feedback items with these fields:
+- id: A unique string identifier (use timestamp or UUID format)
+- text: Your feedback or suggested replacement text
+- selectedText: The exact text from the document you're commenting on
+- timestamp: Current timestamp in ISO format
+- type: Either "comment" or "suggestion"
+- mentorId: "ai"
+
+Generate feedback that is:
+- Specific and actionable
+- Constructive and encouraging
+- Balanced between strengths and areas for improvement`,
 };
 
 export const SCHOOL_PROMPTS = {

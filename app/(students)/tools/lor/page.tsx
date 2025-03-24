@@ -3,7 +3,6 @@
 import { ArrowLeft, CheckCircle, Clock, FileCheck } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useUserStore } from "@/store/userStore";
@@ -34,25 +33,10 @@ interface RequestData {
 }
 
 export default function LoRPage() {
-  const searchParams = useSearchParams();
-  const [showSuccess, setShowSuccess] = useState(false);
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useUserStore();
   const supabase = createClient();
-
-  useEffect(() => {
-    if (searchParams.get('success') === 'true') {
-      setShowSuccess(true);
-
-      // Clear success message after 5 seconds
-      const timer = setTimeout(() => {
-        setShowSuccess(false);
-      }, 5000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [searchParams]);
 
   useEffect(() => {
     async function fetchRequests() {
@@ -131,21 +115,6 @@ export default function LoRPage() {
       </div>
 
       <div className="space-y-6">
-        {showSuccess && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center"
-          >
-            <CheckCircle className="text-green-500 mr-3" size={24} />
-            <div>
-              <h3 className="font-medium text-green-800">Request Submitted!</h3>
-              <p className="text-green-700 text-sm">Your recommendation letter request has been sent to your mentor.</p>
-            </div>
-          </motion.div>
-        )}
-
         <div className="rounded-xl bg-purple-50 p-6 shadow-sm">
           <h2 className="text-xl font-semibold mb-2">Request a Letter</h2>
           <p className="text-gray-700 mb-4">
@@ -158,6 +127,15 @@ export default function LoRPage() {
               className="mt-4 w-full py-3 rounded-lg font-semibold bg-purple-600 text-white"
             >
               Find a Mentor
+            </motion.button>
+          </Link>
+
+          <Link href="/chat?person=phd-mentor">
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              className="mt-3 w-full py-3 rounded-lg font-semibold bg-indigo-600 text-white"
+            >
+              Ask a PhD Mentor
             </motion.button>
           </Link>
         </div>

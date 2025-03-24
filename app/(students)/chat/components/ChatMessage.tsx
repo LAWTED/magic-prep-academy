@@ -3,7 +3,8 @@ import { Copy, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { ChatPerson, Message } from "./types";
 import { useMessageContentParser } from "./content-parsers";
-import { ResumePreview, SOPPreview } from "./previews";
+import { ResumePreview, SOPPreview, LoRRequestPreview } from "./previews";
+import { usePathname } from "next/navigation";
 
 interface ChatMessageProps {
   message: Message;
@@ -19,9 +20,22 @@ export function ChatMessage({
   documentId = null
 }: ChatMessageProps) {
   const [copied, setCopied] = useState(false);
-  const { cleanContent, resumeData, sopContent } = useMessageContentParser(message);
+  const { cleanContent, resumeData, sopContent, lorRequestInfo } = useMessageContentParser(message);
+  const pathname = usePathname();
 
-  const isUser = message.role === "user";
+  // Determine if we're in mentor view
+  const isMentorView = pathname.startsWith('/mentor');
+
+  // In student view: user messages are from the student ("You")
+  // In mentor view: user messages are from the student (show student name)
+  const isUserMessage = message.role === "user";
+
+  // In student view: align user messages right, others left
+  // In mentor view: align mentor messages right, student messages left
+  const isCurrentUserMessage = isMentorView
+    ? message.role === "assistant" && message.sender_id // Mentor's messages in mentor view
+    : isUserMessage; // Student's messages in student view
+
   // Check if this is a message from a real person (mentor)
   const isRealMentor = selectedPerson.isRealPerson && message.role === "assistant" && message.sender_id;
 
@@ -31,20 +45,35 @@ export function ChatMessage({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Get the name to display
+  const getSenderName = () => {
+    if (isMentorView) {
+      // In mentor view
+      return isUserMessage
+        ? message.sender_name || selectedPerson.name // Student name for student messages
+        : "You"; // "You" for mentor's own messages
+    } else {
+      // In student view (original behavior)
+      return isUserMessage
+        ? "You"
+        : isRealMentor ? message.sender_name : selectedPerson.name;
+    }
+  };
+
   return (
-    <div className={`flex flex-col mb-4 ${isUser ? "items-end" : "items-start"}`}>
+    <div className={`flex flex-col mb-4 ${isCurrentUserMessage ? "items-end" : "items-start"}`}>
       <div
         className={`max-w-[90%] md:max-w-[80%] px-4 py-3 rounded-xl ${
-          isUser
+          isCurrentUserMessage
             ? "bg-blue-100 text-blue-900"
             : "bg-white border border-gray-200 shadow-sm"
         }`}
       >
         <div className="flex items-center gap-2 mb-1">
           <span className="font-medium text-sm">
-            {isUser ? "You" : isRealMentor ? message.sender_name : selectedPerson.name}
+            {getSenderName()}
           </span>
-          {!isUser && (
+          {!isCurrentUserMessage && (
             <button
               onClick={copyToClipboard}
               className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-500"
@@ -76,7 +105,6 @@ export function ChatMessage({
           {resumeData && (
             <ResumePreview
               resumeData={resumeData}
-              isUser={isUser}
               documentId={documentId}
             />
           )}
@@ -85,7 +113,15 @@ export function ChatMessage({
           {sopContent && (
             <SOPPreview
               content={sopContent}
-              isUser={isUser}
+            />
+          )}
+
+          {/* LoR Request Preview */}
+          {lorRequestInfo && (
+            <LoRRequestPreview
+              requestId={lorRequestInfo.requestId}
+              programName={lorRequestInfo.programName}
+              schoolName={lorRequestInfo.schoolName}
             />
           )}
 

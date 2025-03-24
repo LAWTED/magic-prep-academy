@@ -5,6 +5,7 @@ import {
   CheckCircle,
   AlertCircle,
   MessageCircle,
+  FileText,
 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
@@ -74,6 +75,16 @@ export default async function StudentProgress(props: {
     .select("*")
     .eq("user_id", studentId)
     .in("module_id", modules?.map((m) => m.id) || []);
+
+  // Check if student has any SOPs
+  const { data: sops } = await supabase
+    .from("documents")
+    .select("id")
+    .eq("user_id", studentId)
+    .eq("type", "sop")
+    .limit(1);
+
+  const hasSOPs = sops && sops.length > 0;
 
   // Organize data by subject for display
   const subjectsWithProgress =
@@ -148,6 +159,21 @@ export default async function StudentProgress(props: {
               <h3 className="font-medium">Chat with {student.name}</h3>
               <p className="text-sm text-muted-foreground">
                 Send messages and provide guidance
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            href={`/mentor/student/${studentId}/sop`}
+            className="flex items-center gap-3 p-4 bg-card rounded-xl shadow-sm border hover:border-primary/50 transition-colors group"
+          >
+            <div className="p-3 rounded-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+              <FileText size={20} />
+            </div>
+            <div>
+              <h3 className="font-medium">View SOPs</h3>
+              <p className="text-sm text-muted-foreground">
+                {hasSOPs ? "Review and provide feedback on SOPs" : "Student has no SOPs yet"}
               </p>
             </div>
           </Link>

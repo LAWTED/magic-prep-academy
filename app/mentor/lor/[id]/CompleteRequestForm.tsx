@@ -1,42 +1,96 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import TextEditor from "@/app/components/TextEditor";
+import React, { useState, useEffect } from "react";
+import { AutocompleteTextbox } from "react-ghost-text";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/utils/supabase/client";
-import { Tag } from "lucide-react";
 import { useEditorStore } from "@/app/(students)/tools/store/editorStore";
+import { LOR_PROMPTS } from "@/app/config/themePrompts";
 
 interface CompleteRequestFormProps {
   requestId: string;
 }
 
-export default function CompleteRequestForm({ requestId }: CompleteRequestFormProps) {
+export default function CompleteRequestForm({
+  requestId,
+}: CompleteRequestFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [studentInfo, setStudentInfo] = useState<{
     program_name?: string;
+    program_details?: any;
     school_name?: string;
     student_name?: string;
+    student_notes?: string;
+    mentor_name?: string;
   }>({});
-  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const supabase = createClient();
 
   // Get content and setter from editorStore
   const { content, setContent } = useEditorStore();
 
-  // Fetch student info for the tags
+  // Function to get text suggestion from API
+  const fetchSuggestion = async (text: string): Promise<string> => {
+    try {
+      // Format the input text using the extracted function
+      const formattedInput = LOR_PROMPTS.FORMAT_CONTINUATION_INPUT(text);
+
+      // Get the instructions using the extracted function
+      const instructions = LOR_PROMPTS.SUGGESTION_PROMPT(studentInfo);
+
+      const response = await fetch("/api/suggestion", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: formattedInput,
+          instructions: instructions,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to get suggestion");
+      }
+
+      const data = await response.json();
+      return data.suggestion || "";
+    } catch (error) {
+      console.error("Error getting suggestion:", error);
+      return "";
+    }
+  };
+
+  // Fetch student info for the recommendation context
   useEffect(() => {
     async function fetchRequestDetails() {
       try {
+        // Get current user (mentor) info
+        const { data: userSession, error: userError } =
+          await supabase.auth.getUser();
+        if (userError) throw userError;
+
+        // Get mentor name
+        const { data: mentorData, error: mentorError } = await supabase
+          .from("mentors")
+          .select("name")
+          .eq("auth_id", userSession.user.id)
+          .single();
+
+        if (mentorError)
+          console.error("Error fetching mentor data:", mentorError);
+
+        // Get student and request data
         const { data, error } = await supabase
           .from("mentor_student_interactions")
-          .select(`
+          .select(
+            `
             metadata,
             users:student_id(name)
-          `)
+          `
+          )
           .eq("id", requestId)
           .single();
 
@@ -44,10 +98,32 @@ export default function CompleteRequestForm({ requestId }: CompleteRequestFormPr
 
         if (data) {
           const userData = data.users as any;
+          const programId = data.metadata?.program_id;
+          let programDetails = null;
+
+          // Fetch program details if programId exists
+          if (programId) {
+            const { data: programData, error: programError } = await supabase
+              .from("programs")
+              .select("content")
+              .eq("id", programId)
+              .single();
+
+            if (programError) {
+              console.error("Error fetching program data:", programError);
+            } else {
+              programDetails = programData;
+            }
+          }
+
           setStudentInfo({
             program_name: data.metadata?.program_name || "",
+            program_details: programDetails,
             school_name: data.metadata?.school_name || "",
-            student_name: userData?.name || ""
+            student_name: userData?.name || "",
+            student_notes:
+              data.metadata?.notes || data.metadata?.student_notes || "",
+            mentor_name: mentorData?.name || "",
           });
         }
       } catch (error) {
@@ -58,48 +134,27 @@ export default function CompleteRequestForm({ requestId }: CompleteRequestFormPr
     fetchRequestDetails();
   }, [requestId, supabase]);
 
-  // Get reference to the textarea after component mounts
-  useEffect(() => {
-    // Find the textarea after the component has mounted
-    const textarea = document.querySelector('textarea');
-    if (textarea) {
-      textAreaRef.current = textarea;
-    }
-  }, []);
-
-  const insertTag = (tagContent: string) => {
-    // Option 1: Try to use the textarea ref directly
-    if (textAreaRef.current) {
-      const textarea = textAreaRef.current;
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-
-      // Create new content with the tag inserted
-      const newContent =
-        content.substring(0, start) +
-        tagContent +
-        content.substring(end);
-
-      // Update the zustand store content
-      setContent(newContent);
-
-      // Set focus and cursor position
-      setTimeout(() => {
-        if (textarea) {
-          textarea.focus();
-          const newPosition = start + tagContent.length;
-          textarea.setSelectionRange(newPosition, newPosition);
-        }
-      }, 0);
-    } else {
-      // Fallback: Just append the tag to the current content
-      setContent(content + tagContent);
-      toast.success(`Inserted: ${tagContent}`);
-    }
+  /**
+   * Helper function to convert HTML with divs to plain text with newlines
+   */
+  const convertDivsToNewlines = (html: string): string => {
+    // Replace <div><br></div> with a newline
+    let content = html.replace(/<div><br><\/div>/gi, "\n");
+    // Replace &nbsp; with a space
+    content = content.replace(/&nbsp;/gi, " ");
+    // Replace opening div tags with newlines (except the first one)
+    content = content.replace(/<div(?:\s[^>]*)?>/gi, "\n");
+    // Remove all closing div tags
+    content = content.replace(/<\/div>/gi, "");
+    // Remove any remaining HTML tags
+    content = content.replace(/<[^>]+>/g, "");
+    return content;
   };
 
   const handleSave = async (content: string) => {
-    if (!content.trim()) {
+    const cleanedContent = convertDivsToNewlines(content);
+
+    if (!cleanedContent.trim()) {
       toast.error("Letter content cannot be empty");
       return;
     }
@@ -128,7 +183,7 @@ export default function CompleteRequestForm({ requestId }: CompleteRequestFormPr
           status: "completed",
           metadata: {
             ...request.metadata,
-            letter_content: content,
+            letter_content: cleanedContent,
             completed_at: new Date().toISOString(),
           },
           updated_at: new Date().toISOString(),
@@ -145,8 +200,12 @@ export default function CompleteRequestForm({ requestId }: CompleteRequestFormPr
       router.refresh();
     } catch (error) {
       console.error("Error saving letter:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to submit letter");
-      setError(error instanceof Error ? error.message : "Failed to submit letter");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to submit letter"
+      );
+      setError(
+        error instanceof Error ? error.message : "Failed to submit letter"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -160,51 +219,15 @@ export default function CompleteRequestForm({ requestId }: CompleteRequestFormPr
         </div>
       )}
 
-      {/* Tags section */}
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <div className="flex items-center text-sm text-gray-500">
-          <Tag size={16} className="mr-1" /> Click to insert:
-        </div>
-
-        {studentInfo.student_name && (
-          <button
-            onClick={() => insertTag(studentInfo.student_name || "")}
-            className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-sm hover:bg-indigo-100 transition-colors"
-          >
-            {studentInfo.student_name}
-          </button>
-        )}
-
-        {studentInfo.program_name && (
-          <button
-            onClick={() => insertTag(studentInfo.program_name || "")}
-            className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm hover:bg-green-100 transition-colors"
-          >
-            {studentInfo.program_name}
-          </button>
-        )}
-
-        {studentInfo.school_name && (
-          <button
-            onClick={() => insertTag(studentInfo.school_name || "")}
-            className="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-sm hover:bg-purple-100 transition-colors"
-          >
-            {studentInfo.school_name}
-          </button>
-        )}
-      </div>
-
-      <div className="flex-grow border border-gray-300 rounded-md overflow-hidden min-h-[450px]">
-        <TextEditor
-          initialContent=""
-          onSave={handleSave}
-          placeholder="Dear Admissions Committee,
-
-I am writing to strongly recommend [Student Name] for admission to your [Program Name] program. As [Student's] mentor at Magic Prep Academy, I have had the pleasure of working closely with them and have been consistently impressed by their..."
-          className="h-full"
-          showIsland={false}
-        />
-      </div>
+      <AutocompleteTextbox
+        value={`Dear Admissions Committee,`}
+        className="flex-grow border border-gray-300 rounded-md overflow-hidden min-h-[450px] w-full h-full p-4 font-serif text-base leading-relaxed resize-none focus:outline-none focus:ring-0"
+        onContentChange={(content) => {
+          console.log("content", content);
+          setContent(content);
+        }}
+        getSuggestion={fetchSuggestion}
+      />
 
       <div className="flex justify-end mt-4">
         <button

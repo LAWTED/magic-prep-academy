@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { format, isPast, formatDistanceToNow } from "date-fns";
 import Image from "next/image";
 import CompleteRequestForm from "./CompleteRequestForm";
+import TextPreview from "@/app/components/TextPreview";
 
 export default async function RecommendationRequestPage({
   params,
@@ -272,9 +273,7 @@ export default async function RecommendationRequestPage({
             {request.status === "completed" && metadata.letter_content && (
               <div className="bg-card rounded-xl border shadow-sm p-6 space-y-4 min-h-[600px]">
                 <h3 className="text-lg font-semibold">Recommendation Letter</h3>
-                <div className="p-4 bg-gray-50 rounded-lg whitespace-pre-wrap min-h-[500px]">
-                  {metadata.letter_content}
-                </div>
+                <TextPreview content={metadata.letter_content} />
               </div>
             )}
 

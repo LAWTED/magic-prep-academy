@@ -7,7 +7,7 @@ Font.registerHyphenationCallback(word => [word]);
 const styles = StyleSheet.create({
   page: {
     padding: 30,
-    // fontFamily: "Times-Roman",
+    fontFamily: "Times-Roman",
     fontSize: 12,
   },
   content: {

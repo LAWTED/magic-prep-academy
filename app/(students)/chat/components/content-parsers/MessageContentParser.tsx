@@ -8,11 +8,17 @@ export interface ParsedContent {
   cleanContent: string;
   resumeData: any | null;
   sopContent: string | null;
+  lorRequestInfo: {
+    requestId: string;
+    programName: string;
+    schoolName: string;
+  } | null;
 }
 
 export default function useMessageContentParser(message: Message): ParsedContent {
   const [resumeData, setResumeData] = useState<any>(null);
   const [sopContent, setSopContent] = useState<string | null>(null);
+  const [lorRequestInfo, setLorRequestInfo] = useState<ParsedContent['lorRequestInfo']>(null);
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -51,6 +57,14 @@ export default function useMessageContentParser(message: Message): ParsedContent
           else if (jsonContent.format === "text" && jsonContent.content) {
             setSopContent(jsonContent.content);
           }
+          // Check if this looks like LoR request data
+          else if (jsonContent.type === "lor_request" && jsonContent.requestId) {
+            setLorRequestInfo({
+              requestId: jsonContent.requestId,
+              programName: jsonContent.programName || '',
+              schoolName: jsonContent.schoolName || ''
+            });
+          }
         }
       } catch (error) {
         // Silent fail - not all messages will contain valid JSON
@@ -67,12 +81,23 @@ export default function useMessageContentParser(message: Message): ParsedContent
           }
         }
       }
+
+      // Check for LoR request in plain text
+      const lorRegex = /I am applying for (.*?) at (.*?)\..*requestId[=:]\s*["']?([a-f0-9-]+)["']?/i;
+      const lorMatch = message.content.match(lorRegex);
+      if (lorMatch && lorMatch.length >= 4) {
+        setLorRequestInfo({
+          requestId: lorMatch[3],
+          programName: lorMatch[1],
+          schoolName: lorMatch[2]
+        });
+      }
     }
   }, [message.content, searchParams]);
 
   // Function to get message content without JSON metadata
   const getCleanMessageContent = (): string => {
-    if (resumeData || sopContent) {
+    if (resumeData || sopContent || lorRequestInfo) {
       // If we found structured data, render the message without the JSON part
       let cleanContent = message.content;
 
@@ -93,6 +118,7 @@ export default function useMessageContentParser(message: Message): ParsedContent
   return {
     cleanContent: getCleanMessageContent(),
     resumeData,
-    sopContent
+    sopContent,
+    lorRequestInfo
   };
 }

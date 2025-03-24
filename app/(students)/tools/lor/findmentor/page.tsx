@@ -212,8 +212,90 @@ export default function FindMentorPage() {
         throw error;
       }
 
-      // Navigate back to the LOR page with success flag
-      router.push('/tools/lor?success=true');
+      // Store the request ID
+      const requestId = data[0].id;
+
+      // Get student name from user store
+      const studentName = user.name || user.email || 'your student';
+      const mentorName = mentors.find(m => m.id === selectedMentor)?.name || 'mentor';
+
+      // Prepare message content with requestId included for LoR button detection
+      const message = `Hello ${mentorName}, I am ${studentName}, I am applying for ${program?.name} at ${school?.name}. ${notes}
+
+\`\`\`json
+{
+  "type": "lor_request",
+  "requestId": "${requestId}",
+  "programName": "${program?.name}",
+  "schoolName": "${school?.name}"
+}
+\`\`\``;
+
+      // Check if a chat interaction already exists with this mentor
+      const { data: existingChat, error: chatQueryError } = await supabase
+        .from('mentor_student_interactions')
+        .select('*')
+        .eq('student_id', user.id)
+        .eq('mentor_id', selectedMentor)
+        .eq('type', 'chat')
+        .maybeSingle();
+
+      if (chatQueryError) {
+        console.error('Error checking existing chat:', chatQueryError);
+      }
+
+      const newMessage = {
+        id: Date.now().toString(),
+        content: message,
+        role: 'user',
+        timestamp: new Date(),
+        sender_id: user.id,
+        sender_name: user.name,
+        sender_avatar: user.avatar_name
+      };
+
+      if (existingChat) {
+        // Add message to existing chat
+        const existingMessages = existingChat.metadata?.messages || [];
+        const updatedMessages = [...existingMessages, newMessage];
+
+        const { error: updateError } = await supabase
+          .from('mentor_student_interactions')
+          .update({
+            metadata: {
+              ...existingChat.metadata,
+              messages: updatedMessages
+            },
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingChat.id);
+
+        if (updateError) {
+          console.error('Error updating chat with message:', updateError);
+        }
+      } else {
+        // Create a new chat interaction with the message
+        const { error: createChatError } = await supabase
+          .from('mentor_student_interactions')
+          .insert({
+            student_id: user.id,
+            mentor_id: selectedMentor,
+            type: 'chat',
+            status: 'active',
+            metadata: {
+              messages: [newMessage]
+            },
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+        if (createChatError) {
+          console.error('Error creating chat with message:', createChatError);
+        }
+      }
+
+      // Navigate to the mentor's chat window instead of the LOR page
+      router.push(`/chat?person=${selectedMentor}`);
 
     } catch (error) {
       console.error('Error submitting request:', error);

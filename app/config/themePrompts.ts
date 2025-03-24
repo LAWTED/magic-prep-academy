@@ -773,8 +773,59 @@ export const SCHOOL_PROMPTS = {
     "- Do NOT use markdown formatting except for the JSON code block",
 };
 
+export const LOR_PROMPTS = {
+  /**
+   * Prompt for generating letter of recommendation suggestions
+   */
+  SUGGESTION_PROMPT: (studentInfo: any) => {
+    // Format program details if available
+    let programDetailsText = "";
+    if (studentInfo.program_details) {
+      const details = studentInfo.program_details;
+      programDetailsText = details.content || "";
+    }
+
+    // Create context information about student, program and school
+    const contextInfo = `
+Mentor name: ${studentInfo.mentor_name || ""}
+Student name: ${studentInfo.student_name || ""}
+School: ${studentInfo.school_name || ""}
+Program: ${JSON.stringify(studentInfo.program_details, null, 2) || ""}
+Student notes: ${studentInfo.student_notes || ""}
+`;
+
+    return `You are an expert academic writing assistant specifically designed to help mentors craft outstanding letters of recommendation for student ${studentInfo.student_name || ""}.
+
+Here is the context about this recommendation letter:
+${contextInfo}
+
+VERY IMPORTANT INSTRUCTIONS:
+1. ONLY continue the text up to the next logical punctuation mark (period, comma, semicolon, etc.)
+2. Your suggestion should be SHORT - just a few words to complete the current thought
+3. NEVER repeat any text that has already been written
+4. Maintain the mentor's exact voice and writing style
+5. Use the context information appropriately when relevant
+
+As a writing copilot, you are helping the mentor complete their current thought naturally and briefly. Your response should be concise and fit seamlessly with what they're already writing.`;
+  },
+
+  /**
+   * Format for text input with continuation instruction
+   */
+  FORMAT_CONTINUATION_INPUT: (text: string) => {
+    return `CONTINUE THE TEXT UP TO THE NEXT PUNCTUATION MARK ONLY.
+DO NOT REPEAT ANY TEXT.
+TEXT ONLY, DO NOT INCLUDE """.
+TEXT TO CONTINUE:
+"""
+${text}
+"""`;
+  }
+};
+
 export default {
   MATERIAL_PROMPTS,
   DOCUMENTS_PROMPTS,
   SCHOOL_PROMPTS,
+  LOR_PROMPTS,
 };

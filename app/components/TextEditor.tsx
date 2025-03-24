@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { toast } from "sonner";
 import TextIsland from "./TextIsland";
 import { useEditorStore } from "../(students)/tools/store/editorStore";
+import { HighlightWithinTextarea } from "react-highlight-within-textarea";
+import type { Editor } from "draft-js";
 
 interface TextEditorProps {
   initialContent: string;
@@ -11,6 +13,11 @@ interface TextEditorProps {
   placeholder?: string;
   className?: string;
   showIsland?: boolean;
+  highlights?: Array<
+    string | RegExp | { highlight: string | RegExp; className?: string }
+  >;
+  onSelectionChange?: (selection: string) => void;
+  activeHighlight?: string;
 }
 
 export default function TextEditor({
@@ -19,6 +26,9 @@ export default function TextEditor({
   placeholder = "Start writing your content here...",
   className = "",
   showIsland = true,
+  highlights = [],
+  onSelectionChange,
+  activeHighlight,
 }: TextEditorProps) {
   // Use the store for all state
   const {
@@ -31,11 +41,42 @@ export default function TextEditor({
     setIsSaving,
     setLastSaved,
     showDynamicIsland,
-    setShowDynamicIsland
+    setShowDynamicIsland,
   } = useEditorStore();
 
-  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const editorRef = useRef<Editor>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const dynamicIslandTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Process highlights to apply special styling to activeHighlight
+  const processedHighlights = useMemo(() => {
+    if (!activeHighlight) return highlights;
+
+    // Create a processed list of highlights where activeHighlight gets special styling
+    const processed = [...highlights].filter((h) => {
+      // Filter out any highlights that match activeHighlight (we'll re-add it with special styling)
+      if (typeof h === "string") {
+        return h !== activeHighlight;
+      } else if (h instanceof RegExp) {
+        return true; // Keep regexp highlights
+      } else {
+        // For object highlights, filter out if the highlight matches activeHighlight
+        return (
+          typeof h.highlight === "string" && h.highlight !== activeHighlight
+        );
+      }
+    });
+
+    // Add the activeHighlight with special styling
+    if (activeHighlight) {
+      processed.push({
+        highlight: activeHighlight,
+        className: "active-highlight",
+      });
+    }
+
+    return processed;
+  }, [highlights, activeHighlight]);
 
   // Initialize the editor with the initial content
   useEffect(() => {
@@ -58,15 +99,15 @@ export default function TextEditor({
         useEditorStore.setState({ dynamicIslandTimeoutRef: null });
       }
     };
-  }, [initialContent, setContent, setInitialContent, setIsDirty, setIsSaving, setLastSaved, setShowDynamicIsland]);
-
-  // Auto-resize the textarea as content changes
-  useEffect(() => {
-    if (textAreaRef.current) {
-      textAreaRef.current.style.height = "auto";
-      textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
-    }
-  }, [content]);
+  }, [
+    initialContent,
+    setContent,
+    setInitialContent,
+    setIsDirty,
+    setIsSaving,
+    setLastSaved,
+    setShowDynamicIsland,
+  ]);
 
   // Show the dynamic island when content changes
   useEffect(() => {
@@ -84,7 +125,9 @@ export default function TextEditor({
       }, 5000);
 
       // Store the timer reference in Zustand
-      useEditorStore.setState({ dynamicIslandTimeoutRef: dynamicIslandTimeoutRef.current });
+      useEditorStore.setState({
+        dynamicIslandTimeoutRef: dynamicIslandTimeoutRef.current,
+      });
     }
 
     // Cleanup on unmount
@@ -96,12 +139,66 @@ export default function TextEditor({
     };
   }, [content, isDirty, setShowDynamicIsland, showIsland]);
 
-  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newContent = e.target.value;
+  // Scroll to active highlight when it changes
+  useEffect(() => {
+    if (activeHighlight && containerRef.current) {
+      // Use setTimeout to ensure the editor has rendered the highlights
+      setTimeout(() => {
+        try {
+          // First try to find by exact text content
+          const highlightElements =
+            containerRef.current?.querySelectorAll(".active-highlight");
+
+          if (highlightElements && highlightElements.length > 0) {
+            // First try to find exact match
+            for (let i = 0; i < highlightElements.length; i++) {
+              const element = highlightElements[i];
+              if (element.textContent === activeHighlight) {
+                element.scrollIntoView({
+                  behavior: "smooth",
+                  block: "center",
+                });
+                return; // Exit if found
+              }
+            }
+
+            // If no exact match found, try to find containing text
+            for (let i = 0; i < highlightElements.length; i++) {
+              const element = highlightElements[i];
+              if (
+                element.textContent &&
+                element.textContent.includes(activeHighlight)
+              ) {
+                element.scrollIntoView({
+                  behavior: "smooth",
+                  block: "center",
+                });
+                return; // Exit if found
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error scrolling to highlight:", error);
+        }
+      }, 300); // Give a bit more time for the editor to render
+    }
+  }, [activeHighlight]);
+
+  const handleContentChange = (newContent: string) => {
     setContent(newContent);
     setIsDirty(newContent !== initialContent);
     if (showIsland) {
       setShowDynamicIsland(true);
+    }
+  };
+
+  // Handle text selection
+  const handleMouseUp = () => {
+    if (onSelectionChange) {
+      const selection = window.getSelection();
+      if (selection && selection.toString().trim().length > 0) {
+        onSelectionChange(selection.toString().trim());
+      }
     }
   };
 
@@ -125,7 +222,9 @@ export default function TextEditor({
         }, 3000);
 
         // Store the timer reference in Zustand
-        useEditorStore.setState({ dynamicIslandTimeoutRef: dynamicIslandTimeoutRef.current });
+        useEditorStore.setState({
+          dynamicIslandTimeoutRef: dynamicIslandTimeoutRef.current,
+        });
       }
     } catch (error) {
       console.error("Error saving content:", error);
@@ -136,15 +235,19 @@ export default function TextEditor({
   };
 
   return (
-    <div className={`relative w-full h-full ${className}`}>
-      <textarea
-        ref={textAreaRef}
+    <div
+      ref={containerRef}
+      className={`relative w-full h-full ${className}`}
+      onMouseUp={handleMouseUp}
+    >
+      <HighlightWithinTextarea
+        ref={editorRef}
         value={content}
         onChange={handleContentChange}
         placeholder={placeholder}
-        className="w-full h-full p-4 font-serif text-base leading-relaxed resize-none focus:outline-none focus:ring-0"
+        highlight={processedHighlights}
         onFocus={() => showIsland && setShowDynamicIsland(true)}
-        onClick={() => showIsland && setShowDynamicIsland(true)}
+        onBlur={() => {}}
       />
 
       {showIsland && <TextIsland onSave={saveContent} />}

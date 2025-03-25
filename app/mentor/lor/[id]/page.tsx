@@ -10,10 +10,10 @@ import TextPreview from "@/app/components/TextPreview";
 export default async function RecommendationRequestPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  // Ensure params is awaited before use
-  const { id } = await Promise.resolve(params);
+  // Remove the await Promise.resolve(params) since params is already properly typed
+  const { id } = await params;
 
   const supabase = await createClient();
 

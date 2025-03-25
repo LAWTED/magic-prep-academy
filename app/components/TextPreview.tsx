@@ -46,7 +46,7 @@ export default function TextPreview({
   return (
     <div className="relative">
       {/* Header with download button */}
-      <div className="mb-4 flex justify-end">
+      <div className="flex justify-end">
         <motion.button
           whileTap={{ scale: 0.95 }}
           className="p-2 rounded-full hover:bg-gray-100"
@@ -54,7 +54,10 @@ export default function TextPreview({
           onClick={handleDownloadPDF}
           disabled={isDownloading}
         >
-          <Download size={18} className={isDownloading ? "text-gray-400 animate-pulse" : ""} />
+          <Download
+            size={18}
+            className={isDownloading ? "text-gray-400 animate-pulse" : ""}
+          />
         </motion.button>
       </div>
 

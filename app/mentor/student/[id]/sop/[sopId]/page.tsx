@@ -209,7 +209,7 @@ export default function MentorStudentSOPDetail() {
             <div className="p-4 border-b flex justify-between items-center">
               <div className="flex items-center">
                 <FileText className="h-5 w-5 text-primary mr-3" />
-                <h2 className="font-medium">Latest Version ({latestVersion.version_number})</h2>
+                <h2 className="font-medium">Latest Version ({latestVersion.name})</h2>
               </div>
               <span className="text-sm text-muted-foreground">
                 {formatDate(latestVersion.created_at)}

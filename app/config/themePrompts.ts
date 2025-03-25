@@ -598,6 +598,7 @@ Each feedback item should:
 Important guidelines:
 - You MUST create exactly 2 comments and 2 suggestions (total 4 items)
 - For suggestions, provide the exact replacement text, not explanations about what to change
+- For comments, provide concise and constructive feedback do not repeat the text
 - Write the suggestion as the final text that should replace the original, not instructions about how to change it
 - Do NOT use phrases like "Replace with:" or "You might revise this to say:"
 - Do NOT include meta-language explaining why the change is beneficial

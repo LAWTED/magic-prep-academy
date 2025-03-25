@@ -45,11 +45,13 @@ export default function SOPVersionsPage() {
   const [latestVersion, setLatestVersion] = useState<SOPVersion | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [feedbackCount, setFeedbackCount] = useState<number>(0);
 
   useEffect(() => {
     if (documentId && user) {
       fetchSOPDocument();
       fetchLatestVersion();
+      fetchFeedbackCount();
     }
   }, [documentId, user]);
 
@@ -73,7 +75,7 @@ export default function SOPVersionsPage() {
     } catch (error) {
       console.error("Error fetching SOP document:", error);
       setError(
-        "Failed to load SOP. It might not exist or you may not have permission to view it."
+        "Failed to load SOP. It might not exist or you may not have permission to view it.",
       );
       toast.error("Failed to load SOP document");
     } finally {
@@ -103,6 +105,24 @@ export default function SOPVersionsPage() {
       }
     } catch (error) {
       console.error("Error fetching latest version:", error);
+    }
+  };
+
+  const fetchFeedbackCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from("document_feedback")
+        .select("id", { count: "exact" })
+        .eq("document_id", documentId);
+
+      if (error) {
+        console.error("Error fetching feedback count:", error);
+        return;
+      }
+
+      setFeedbackCount(count || 0);
+    } catch (error) {
+      console.error("Error fetching feedback count:", error);
     }
   };
 
@@ -192,7 +212,9 @@ export default function SOPVersionsPage() {
                   console.log("latestVersion", latestVersion.metadata);
                   try {
                     // Create a prompt with the SOP data
-                    const versionLabel = latestVersion.name || `Version ${latestVersion.version_number}`;
+                    const versionLabel =
+                      latestVersion.name ||
+                      `Version ${latestVersion.version_number}`;
                     const initialPrompt = `Please review my Statement of Purpose "${sopDocument?.name}" (${versionLabel}) for graduate school applications and provide feedback on how to improve it. Here is the SOP content:\n\n${JSON.stringify(latestVersion.metadata, null, 2)}`;
 
                     // Store in sessionStorage for the chat page to access
@@ -206,7 +228,9 @@ export default function SOPVersionsPage() {
                   }
                 } else {
                   // If there's no SOP content
-                  toast.info("No SOP content available to share with the mentor");
+                  toast.info(
+                    "No SOP content available to share with the mentor",
+                  );
                 }
               }}
               className="flex items-center gap-1 py-2 px-4 bg-purple-100 text-purple-600 rounded-full font-medium"
@@ -214,6 +238,16 @@ export default function SOPVersionsPage() {
               <MessageCircle size={16} />
               <span>Chat with PhD</span>
             </motion.button>
+
+            <div className="flex items-center ml-auto">
+              <div className="flex items-center gap-1 py-1 px-3 bg-emerald-100 text-emerald-700 rounded-full">
+                <MessageCircle size={14} />
+                <span className="text-sm font-medium">
+                  {feedbackCount}{" "}
+                  {feedbackCount === 1 ? "Feedback" : "Feedbacks"}
+                </span>
+              </div>
+            </div>
           </div>
 
           {renderPreview()}

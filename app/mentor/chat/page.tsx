@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, Suspense } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 import {
@@ -19,7 +19,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ChatMessage } from "@/app/(students)/chat/components/ChatMessage";
 import { ChatInput } from "@/app/(students)/chat/components/ChatInput";
 import { motion } from "framer-motion";
-import { ChatPerson, Message as ChatMessageType } from "@/app/(students)/chat/components/types";
+import {
+  ChatPerson,
+  Message as ChatMessageType,
+} from "@/app/(students)/chat/components/types";
 
 interface Message {
   id: string;
@@ -71,7 +74,7 @@ const WelcomeScreen = ({ studentName }: { studentName: string }) => {
   );
 };
 
-export default function MentorChat() {
+function MentorChat() {
   const supabase = createClient();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -191,7 +194,7 @@ export default function MentorChat() {
         // Check if there's a userId in the URL and select that chat
         if (userIdParam) {
           const chatSession = formattedSessions.find(
-            session => session.student_id === userIdParam
+            (session) => session.student_id === userIdParam
           );
           if (chatSession) {
             selectChat(chatSession.id);
@@ -214,11 +217,13 @@ export default function MentorChat() {
     setSelectedChatId(chatId);
 
     // Find the selected chat session to get student ID
-    const selectedSession = chatSessions.find(session => session.id === chatId);
+    const selectedSession = chatSessions.find(
+      (session) => session.id === chatId
+    );
     if (selectedSession) {
       // Update URL with the student ID without refreshing the page
       const newUrl = `/mentor/chat?userId=${selectedSession.student_id}`;
-      window.history.pushState({}, '', newUrl);
+      window.history.pushState({}, "", newUrl);
     }
 
     try {
@@ -344,32 +349,37 @@ export default function MentorChat() {
   const currentStudent = chatSessions.find((s) => s.id === selectedChatId);
 
   // Create a chat person object for the selected student
-  const studentChatPerson: ChatPerson = currentStudent ? {
-    id: currentStudent.student_id,
-    name: currentStudent.student_name,
-    avatar: `/images/avatars/${currentStudent?.student_avatar || "default"}.png`,
-    isRealPerson: true,
-    systemPrompt: "",
-    icon: UserCheck,
-    color: "text-green-600",
-    description: "Chat with your student"
-  } : {
-    id: "default-student",
-    name: "Student",
-    avatar: "/images/avatars/default.png",
-    isRealPerson: true,
-    systemPrompt: "",
-    icon: UserCheck,
-    color: "text-green-600",
-    description: "Chat with your student"
-  };
+  const studentChatPerson: ChatPerson = currentStudent
+    ? {
+        id: currentStudent.student_id,
+        name: currentStudent.student_name,
+        avatar: `/images/avatars/${currentStudent?.student_avatar || "default"}.png`,
+        isRealPerson: true,
+        systemPrompt: "",
+        icon: UserCheck,
+        color: "text-green-600",
+        description: "Chat with your student",
+      }
+    : {
+        id: "default-student",
+        name: "Student",
+        avatar: "/images/avatars/default.png",
+        isRealPerson: true,
+        systemPrompt: "",
+        icon: UserCheck,
+        color: "text-green-600",
+        description: "Chat with your student",
+      };
 
   return (
     <div className="w-full min-h-screen bg-background">
       {/* Fixed Header for both mobile and desktop */}
       <header className="w-full p-6 flex items-center justify-between border-b bg-card">
         <div className="flex items-center">
-          <Link href="/mentor/dashboard" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
+          <Link
+            href="/mentor/dashboard"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+          >
             <ArrowLeft size={20} />
             <span className="md:inline hidden">Back to Dashboard</span>
           </Link>
@@ -473,7 +483,7 @@ export default function MentorChat() {
                         content: message.content,
                         timestamp: new Date(message.createdAt),
                         sender_id: message.sender_id,
-                        sender_name: message.sender_name
+                        sender_name: message.sender_name,
                       }}
                       selectedPerson={studentChatPerson}
                     />
@@ -513,5 +523,13 @@ export default function MentorChat() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function MentorChatPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <MentorChat />
+    </Suspense>
   );
 }

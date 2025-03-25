@@ -533,7 +533,7 @@ function Chat() {
       </div>
 
       {!isLoading && (
-        <div className="sticky bottom-0 w-full bg-white border-t p-4">
+        <div className="sticky bottom-0 w-full bg-white border-t p-4 safe-bottom">
           <div className="max-w-3xl mx-auto">
             <ChatInput
               onSendMessage={handleSendMessage}

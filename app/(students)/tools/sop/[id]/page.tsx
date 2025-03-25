@@ -148,7 +148,7 @@ export default function SOPVersionsPage() {
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold flex items-center">
             <Eye size={18} className="mr-2 text-gray-500" />
-            Latest Preview ({latestVersion.name})
+            Latest Preview ({latestVersion.name || "Version " + latestVersion.version_number})
           </h2>
           <span className="text-sm text-gray-500">
             {new Date(latestVersion.created_at).toLocaleDateString()}

@@ -149,7 +149,81 @@ export default function SOPFeedbackPage() {
     }
   };
 
-  const handleBack = () => {
+  const handleBack = async () => {
+    if (feedbacks.length > 0) {
+      try {
+        // Count comments and suggestions
+        const commentsCount = feedbacks.filter(f => f.type !== "suggestion").length;
+        const suggestionsCount = feedbacks.filter(f => f.type === "suggestion").length;
+
+        // Create message content with JSON structure
+        const messageContent = {
+          type: "sop_feedback",
+          sopContent: {
+            sopId: sopId,
+            documentName: documentName,
+            feedbackCount: feedbacks.length,
+            mentorName: "Your Mentor",
+            commentsCount,
+            suggestionsCount
+          }
+        };
+
+        // Create the message with both friendly text and structured data
+        const newMessage = {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: `I've reviewed your ${documentName} and added ${commentsCount} comment${commentsCount > 1 ? 's' : ''} and ${suggestionsCount} suggestion${suggestionsCount > 1 ? 's' : ''}. Please check them out!\n\n${JSON.stringify(messageContent)}`,
+          createdAt: new Date().toISOString(),
+          sender_id: mentorId,
+          sender_name: "Your Mentor",
+        };
+
+        // Check if a chat interaction already exists with this student
+        const { data: existingChat, error: chatQueryError } = await supabase
+          .from('mentor_student_interactions')
+          .select('*')
+          .eq('student_id', studentId)
+          .eq('mentor_id', mentorId)
+          .eq('type', 'chat')
+          .maybeSingle();
+
+        if (existingChat) {
+          // Add message to existing chat
+          const existingMessages = existingChat.metadata?.messages || [];
+          const updatedMessages = [...existingMessages, newMessage];
+
+          await supabase
+            .from('mentor_student_interactions')
+            .update({
+              metadata: {
+                ...existingChat.metadata,
+                messages: updatedMessages
+              },
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingChat.id);
+        } else {
+          // Create a new chat interaction with the message
+          await supabase
+            .from('mentor_student_interactions')
+            .insert({
+              student_id: studentId,
+              mentor_id: mentorId,
+              type: 'chat',
+              status: 'active',
+              metadata: {
+                messages: [newMessage]
+              },
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+        }
+      } catch (error) {
+        console.error('Error sending feedback notification:', error);
+        toast.error('Failed to send feedback notification');
+      }
+    }
     router.back();
   };
 

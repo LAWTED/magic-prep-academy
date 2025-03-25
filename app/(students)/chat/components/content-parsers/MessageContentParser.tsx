@@ -13,12 +13,21 @@ export interface ParsedContent {
     programName: string;
     schoolName: string;
   } | null;
+  sopFeedback: {
+    sopId: string;
+    documentName: string;
+    feedbackCount: number;
+    mentorName: string;
+    commentsCount: number;
+    suggestionsCount: number;
+  } | null;
 }
 
 export default function useMessageContentParser(message: Message): ParsedContent {
   const [resumeData, setResumeData] = useState<any>(null);
   const [sopContent, setSopContent] = useState<string | null>(null);
   const [lorRequestInfo, setLorRequestInfo] = useState<ParsedContent['lorRequestInfo']>(null);
+  const [sopFeedback, setSopFeedback] = useState<ParsedContent['sopFeedback']>(null);
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -65,6 +74,17 @@ export default function useMessageContentParser(message: Message): ParsedContent
               schoolName: jsonContent.schoolName || ''
             });
           }
+          // Check if this is SOP feedback data
+          else if (jsonContent.sopContent && jsonContent.sopContent.sopId) {
+            setSopFeedback({
+              sopId: jsonContent.sopContent.sopId,
+              documentName: jsonContent.sopContent.documentName,
+              feedbackCount: jsonContent.sopContent.feedbackCount,
+              mentorName: jsonContent.sopContent.mentorName,
+              commentsCount: jsonContent.sopContent.commentsCount,
+              suggestionsCount: jsonContent.sopContent.suggestionsCount
+            });
+          }
         }
       } catch (error) {
         // Silent fail - not all messages will contain valid JSON
@@ -97,7 +117,7 @@ export default function useMessageContentParser(message: Message): ParsedContent
 
   // Function to get message content without JSON metadata
   const getCleanMessageContent = (): string => {
-    if (resumeData || sopContent || lorRequestInfo) {
+    if (resumeData || sopContent || lorRequestInfo || sopFeedback) {
       // If we found structured data, render the message without the JSON part
       let cleanContent = message.content;
 
@@ -119,6 +139,7 @@ export default function useMessageContentParser(message: Message): ParsedContent
     cleanContent: getCleanMessageContent(),
     resumeData,
     sopContent,
-    lorRequestInfo
+    lorRequestInfo,
+    sopFeedback
   };
 }

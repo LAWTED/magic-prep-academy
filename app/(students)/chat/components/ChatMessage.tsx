@@ -3,7 +3,7 @@ import { Copy, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { ChatPerson, Message } from "./types";
 import { useMessageContentParser } from "./content-parsers";
-import { ResumePreview, SOPPreview, LoRRequestPreview } from "./previews";
+import { ResumePreview, SOPPreview, LoRRequestPreview, FeedbackPreview } from "./previews";
 import { usePathname } from "next/navigation";
 
 interface ChatMessageProps {
@@ -20,7 +20,7 @@ export function ChatMessage({
   documentId = null
 }: ChatMessageProps) {
   const [copied, setCopied] = useState(false);
-  const { cleanContent, resumeData, sopContent, lorRequestInfo } = useMessageContentParser(message);
+  const { cleanContent, resumeData, sopContent, lorRequestInfo, sopFeedback } = useMessageContentParser(message);
   const pathname = usePathname();
 
   // Determine if we're in mentor view
@@ -122,6 +122,18 @@ export function ChatMessage({
               requestId={lorRequestInfo.requestId}
               programName={lorRequestInfo.programName}
               schoolName={lorRequestInfo.schoolName}
+            />
+          )}
+
+          {/* Feedback Preview */}
+          {sopFeedback && (
+            <FeedbackPreview
+              sopId={sopFeedback.sopId}
+              documentName={sopFeedback.documentName}
+              feedbackCount={sopFeedback.feedbackCount}
+              mentorName={sopFeedback.mentorName}
+              commentsCount={sopFeedback.commentsCount}
+              suggestionsCount={sopFeedback.suggestionsCount}
             />
           )}
 

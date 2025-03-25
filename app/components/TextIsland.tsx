@@ -1,12 +1,20 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Save, CheckCircle, Loader2, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Save,
+  CheckCircle,
+  Loader2,
+  MessageCircle,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { useEditorStore } from "../(students)/tools/store/editorStore";
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { type FeedbackItem } from "./MentorFeedback";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
+import Image from "next/image";
 
 interface TextIslandProps {
   onSave: () => void;
@@ -18,6 +26,12 @@ interface TextIslandProps {
   onRejectFeedback?: (feedback: FeedbackItem) => void;
   onMarkAsRead?: (feedback: FeedbackItem) => void;
   onFeedbackRemoved?: (feedbackId: string) => void;
+}
+
+interface MentorInfo {
+  id: string;
+  name: string;
+  avatarName: string;
 }
 
 export default function TextIsland({
@@ -41,8 +55,62 @@ export default function TextIsland({
     setContent,
   } = useEditorStore();
 
-  const [currentIndex, setCurrentIndex] = useState(-1); // -1 represents save button, 0+ represents feedback
+  const [currentIndex, setCurrentIndex] = useState(-1);
+  const [mentorsInfo, setMentorsInfo] = useState<Record<string, MentorInfo>>(
+    {}
+  );
   const supabase = createClient();
+
+  useEffect(() => {
+    if (feedbacks.length > 0) {
+      fetchMentorsInfo();
+    }
+  }, [feedbacks]);
+
+  const fetchMentorsInfo = async () => {
+    try {
+      // Get unique mentor IDs (excluding AI)
+      const mentorIds = Array.from(
+        new Set(
+          feedbacks
+            .filter((f) => f.mentorId !== "ai")
+            .map((f) => f.mentorId)
+            .filter((id): id is string => id !== undefined)
+        )
+      );
+
+      if (mentorIds.length === 0) return;
+
+      const { data, error } = await supabase
+        .from("mentors")
+        .select("id, name, avatar_name")
+        .in("id", mentorIds);
+
+      if (error) {
+        console.error("Error fetching mentors info:", error);
+        return;
+      }
+
+      if (data) {
+        // Create a map of mentor info by ID
+        const mentorsMap = data.reduce(
+          (acc, mentor) => ({
+            ...acc,
+            [mentor.id]: {
+              id: mentor.id,
+              name: mentor.name,
+              avatarName: mentor.avatar_name,
+            },
+          }),
+          {}
+        );
+
+        setMentorsInfo(mentorsMap);
+      }
+    } catch (error) {
+      console.error("Error fetching mentors info:", error);
+    }
+  };
 
   const handleHover = () => {
     // Clear any existing timeout when user hovers
@@ -64,15 +132,11 @@ export default function TextIsland({
   };
 
   const handlePrev = () => {
-    setCurrentIndex((prev) =>
-      prev > -1 ? prev - 1 : feedbacks.length - 1
-    );
+    setCurrentIndex((prev) => (prev > -1 ? prev - 1 : feedbacks.length - 1));
   };
 
   const handleNext = () => {
-    setCurrentIndex((prev) =>
-      prev < feedbacks.length - 1 ? prev + 1 : -1
-    );
+    setCurrentIndex((prev) => (prev < feedbacks.length - 1 ? prev + 1 : -1));
   };
 
   const handleDeleteFeedback = async (feedback: FeedbackItem) => {
@@ -90,8 +154,8 @@ export default function TextIsland({
       onFeedbackRemoved?.(feedback.id);
 
       // Move to the previous feedback or save button if this was the last one
-      setCurrentIndex(prev =>
-        prev > 0 ? prev - 1 : (feedbacks.length > 1 ? 0 : -1)
+      setCurrentIndex((prev) =>
+        prev > 0 ? prev - 1 : feedbacks.length > 1 ? 0 : -1
       );
 
       // Update local state through callbacks
@@ -141,7 +205,10 @@ export default function TextIsland({
           <div className="flex-1 flex items-center justify-center w-full">
             {isSaving ? (
               <div className="flex items-center">
-                <Loader2 size={16} className="text-blue-400 animate-spin mr-2" />
+                <Loader2
+                  size={16}
+                  className="text-blue-400 animate-spin mr-2"
+                />
                 <span className="text-sm">Saving...</span>
               </div>
             ) : lastSaved && !isDirty ? (
@@ -177,19 +244,40 @@ export default function TextIsland({
 
     // Show feedback content
     const feedback = feedbacks[currentIndex];
+    const mentorInfo =
+      feedback?.mentorId && feedback.mentorId !== "ai"
+        ? mentorsInfo[feedback.mentorId]
+        : null;
+
     return (
       <motion.div
         key={feedback.id}
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -20 }}
-        className="flex flex-col px-4 min-w-[300px]"
+        className="flex flex-col min-w-[300px] max-w-[80dvw]"
       >
         <div
           className="flex-1 cursor-pointer hover:opacity-90 transition-opacity"
           onClick={() => onFeedbackClick?.(feedback)}
         >
           <div className="flex items-center gap-1.5 mb-0.5">
+            {/* Mentor info header */}
+            {mentorInfo && (
+              <div className="flex items-center gap-2">
+                <div className="relative w-5 h-5 rounded-full overflow-hidden">
+                  <Image
+                    src={`/images/avatars/${mentorInfo.avatarName || "default"}.png`}
+                    alt={mentorInfo.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <span className="text-sm font-medium text-gray-300">
+                  {mentorInfo.name}
+                </span>
+              </div>
+            )}
             {feedback.type === "suggestion" ? (
               <span className="text-[10px] bg-violet-400/20 text-violet-300 px-1.5 rounded-sm font-medium">
                 Suggestion
@@ -197,16 +285,6 @@ export default function TextIsland({
             ) : (
               <span className="text-[10px] bg-amber-400/20 text-amber-300 px-1.5 rounded-sm font-medium">
                 Comment
-              </span>
-            )}
-            {feedback.status === "accepted" && (
-              <span className="text-[10px] bg-green-400/20 text-green-300 px-1.5 rounded-sm font-medium">
-                Accepted
-              </span>
-            )}
-            {feedback.status === "thanked" && (
-              <span className="text-[10px] bg-blue-400/20 text-blue-300 px-1.5 rounded-sm font-medium">
-                Thanked
               </span>
             )}
           </div>

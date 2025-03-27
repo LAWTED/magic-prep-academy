@@ -65,7 +65,7 @@ export default function StudentHeader() {
   const isDataLoading = userLoading || loading;
 
   return (
-    <header className="w-screen border-b bg-background">
+    <header className="w-full border-b bg-background">
       <div className="mx-auto w-full max-w-screen-md px-4 py-4 flex items-center justify-between">
         <div className="flex flex-wrap items-center gap-3">
           {isDataLoading || !user ? (

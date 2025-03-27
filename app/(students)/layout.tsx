@@ -39,18 +39,28 @@ export default function StudentsLayout({
 
   return (
     <UserProvider>
-      <div className="min-h-[100dvh] flex flex-col bg-background w-full">
-        {shouldShowHeader && <StudentHeader />}
+      <div className="flex flex-col h-full w-full bg-background overflow-hidden">
+        {shouldShowHeader && (
+          <div className="flex-none sticky top-0 z-10">
+            <StudentHeader />
+          </div>
+        )}
+
         <main
           className={cn(
-            "flex-1 flex flex-col w-full mx-auto",
-            shouldShowNavigation && "pb-16",
+            "flex-1 w-full mx-auto overflow-y-auto scrollbar-none",
             !isProfilePage && "max-w-screen-md"
           )}
         >
           {children}
         </main>
-        {shouldShowNavigation && <BottomNavigation />}
+
+        {shouldShowNavigation && (
+          <div className="flex-none sticky bottom-0 z-10">
+            <BottomNavigation />
+          </div>
+        )}
+
         <Toaster
           position="bottom-center"
           richColors

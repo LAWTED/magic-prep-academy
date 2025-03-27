@@ -17,6 +17,7 @@ firebase.initializeApp(firebaseConfig);
 
 const messaging = firebase.messaging();
 
+// 处理后台通知
 messaging.onBackgroundMessage((payload) => {
   console.log(
     "[firebase-messaging-sw.js] Received background message ",
@@ -31,37 +32,51 @@ messaging.onBackgroundMessage((payload) => {
   const notificationOptions = {
     body: payload.notification.body,
     icon: "./logo.png",
-    data: { url: link },
+    data: { url: link || '/' },
+    tag: `chat-notification-${Date.now()}`, // 使用唯一标签，避免通知堆积
+    requireInteraction: true, // 通知会持续显示，直到用户与之交互
   };
+
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
+// 处理通知点击事件
 self.addEventListener("notificationclick", function (event) {
-  console.log("[firebase-messaging-sw.js] Notification click received.");
+  console.log("[firebase-messaging-sw.js] Notification click received.", event.notification);
 
+  // 关闭通知
   event.notification.close();
 
-  // This checks if the client is already open and if it is, it focuses on the tab. If it is not open, it opens a new tab with the URL passed in the notification payload
+  // 获取通知中的链接URL
+  const url = event.notification.data.url;
+  if (!url) return;
+
+  // 使用URL来导航
   event.waitUntil(
     clients
-      // https://developer.mozilla.org/en-US/docs/Web/API/Clients/matchAll
       .matchAll({ type: "window", includeUncontrolled: true })
       .then(function (clientList) {
-        const url = event.notification.data.url;
-
-        if (!url) return;
-
-        // If relative URL is passed in firebase console or API route handler, it may open a new window as the client.url is the full URL i.e. https://example.com/ and the url is /about whereas if we passed in the full URL, it will focus on the existing tab i.e. https://example.com/about
+        // 尝试找到一个已打开的窗口/标签
         for (const client of clientList) {
-          if (client.url === url && "focus" in client) {
+          const clientUrl = new URL(client.url);
+          const targetUrl = new URL(url, self.location.origin);
+
+          // 如果目标URL的路径与客户端URL的路径相同，则聚焦该客户端
+          if (clientUrl.pathname === targetUrl.pathname) {
+            // 找到匹配的客户端，聚焦它
+            console.log("[SW] Found matching client, focusing:", client.url);
             return client.focus();
           }
         }
 
+        // 没有找到匹配的客户端，打开新窗口
         if (clients.openWindow) {
-          console.log("OPENWINDOW ON CLIENT");
+          console.log("[SW] Opening new window for URL:", url);
           return clients.openWindow(url);
         }
+      })
+      .catch(function(error) {
+        console.error("[SW] Error handling notification click:", error);
       })
   );
 });

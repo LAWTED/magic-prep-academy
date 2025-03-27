@@ -1,5 +1,5 @@
 import { getApp, getApps, initializeApp } from "firebase/app";
-import { getMessaging, getToken, isSupported } from "firebase/messaging";
+import { getMessaging, getToken, isSupported, onMessage as firebaseOnMessage } from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAbFKUxYhB4kPFvEaytRhjF8R4OPkF7yHY",
@@ -33,5 +33,7 @@ export const fetchToken = async () => {
     return null;
   }
 };
+
+export const onMessage = firebaseOnMessage;
 
 export { app, messaging };

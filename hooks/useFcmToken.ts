@@ -5,6 +5,11 @@ import { getToken, onMessage, Unsubscribe } from "firebase/messaging";
 import { fetchToken, messaging } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useUserStore } from "@/store/userStore";
+import { createClient } from "@/utils/supabase/client";
+
+// 设置时间戳标记全局通知服务是否已初始化
+let globalNotificationSetupTimestamp = 0;
 
 async function getNotificationPermissionAndToken() {
   // Step 1: Check if Notifications are supported in the browser.
@@ -37,6 +42,104 @@ const useFcmToken = () => {
   const [token, setToken] = useState<string | null>(null); // State to store the FCM token.
   const retryLoadToken = useRef(0); // Ref to keep track of retry attempts.
   const isLoading = useRef(false); // Ref to keep track if a token fetch is currently in progress.
+  const { user } = useUserStore();
+  const supabase = createClient();
+  const hasSavedToken = useRef(false);
+
+  // 全局消息监听器设置
+  const setupGlobalMessageListener = async (fcmToken: string) => {
+    // 检查是否已经设置过全局监听器（避免重复设置）
+    const currentTime = Date.now();
+    if (currentTime - globalNotificationSetupTimestamp < 60000) {
+      // 如果在1分钟内已经设置过，则跳过
+      return;
+    }
+
+    try {
+      const messagingInstance = await messaging();
+      if (!messagingInstance) return;
+
+      console.log("Setting up global FCM listener for all pages");
+
+      // 设置消息监听器
+      onMessage(messagingInstance, (payload) => {
+        console.log("FCM message received from global listener:", payload);
+
+        // 处理通知
+        const link = payload.fcmOptions?.link || payload.data?.link;
+
+        if (link) {
+          toast.info(
+            `${payload.notification?.title}: ${payload.notification?.body}`,
+            {
+              action: {
+                label: "View",
+                onClick: () => {
+                  if (typeof window !== 'undefined') {
+                    window.location.href = link;
+                  }
+                },
+              },
+              duration: 8000,
+            }
+          );
+        } else {
+          toast.info(
+            `${payload.notification?.title}: ${payload.notification?.body}`,
+            { duration: 8000 }
+          );
+        }
+      });
+
+      // 更新时间戳标记
+      globalNotificationSetupTimestamp = currentTime;
+      console.log("Global notification listener set up successfully");
+    } catch (error) {
+      console.error("Error setting up global notification listener:", error);
+    }
+  };
+
+  const saveTokenToDatabase = async (fcmToken: string) => {
+    if (!user?.id || hasSavedToken.current) return;
+
+    try {
+      console.log("Attempting to save FCM token to database for user:", user.id);
+      console.log("User role:", user.role);
+      console.log("Token (first 10 chars):", fcmToken.substring(0, 10) + "...");
+
+      // Check if user is a student (in profiles table) or mentor
+      if (user.role === 'mentor') {
+        const { error } = await supabase
+          .from('mentors')
+          .update({ fcm_token: fcmToken })
+          .eq('id', user.id);
+
+        if (error) {
+          console.error("Error saving FCM token to mentors table:", error);
+          return;
+        }
+        console.log("FCM token saved successfully to mentors table");
+      } else {
+        const { error } = await supabase
+          .from('users')
+          .update({ fcm_token: fcmToken })
+          .eq('id', user.id);
+
+        if (error) {
+          console.error("Error saving FCM token to users table:", error);
+          return;
+        }
+        console.log("FCM token saved successfully to users table");
+      }
+
+      hasSavedToken.current = true;
+
+      // 设置全局消息监听器，确保在任何页面都能接收通知
+      await setupGlobalMessageListener(fcmToken);
+    } catch (error) {
+      console.error('Error saving FCM token to database:', error);
+    }
+  };
 
   const loadToken = async () => {
     // Step 4: Prevent multiple fetches if already fetched or in progress.
@@ -79,6 +182,14 @@ const useFcmToken = () => {
     // Step 7: Set the fetched token and mark as fetched.
     setNotificationPermissionStatus(Notification.permission);
     setToken(token);
+
+    // 除了保存token到数据库，还要设置全局监听器
+    if (token && user?.id) {
+      await saveTokenToDatabase(token);
+      // 设置全局消息监听器
+      await setupGlobalMessageListener(token);
+    }
+
     isLoading.current = false;
   };
 
@@ -88,6 +199,13 @@ const useFcmToken = () => {
       loadToken();
     }
   }, []);
+
+  // When user changes, update the token in database
+  useEffect(() => {
+    if (token && user?.id && !hasSavedToken.current) {
+      saveTokenToDatabase(token);
+    }
+  }, [token, user]);
 
   useEffect(() => {
     const setupListener = async () => {

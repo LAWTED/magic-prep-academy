@@ -141,7 +141,15 @@ export default async function MentorDashboard() {
       <main className="container py-6 max-w-6xl mx-auto space-y-10">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Mentor Dashboard</h1>
-          <div>{/* Profile actions could go here */}</div>
+          <div>
+            <Link
+              href="/mentor/settings"
+              className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors p-2 rounded-full hover:bg-gray-100"
+            >
+              <Cog size={20} />
+              <span className="sr-only">Settings</span>
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

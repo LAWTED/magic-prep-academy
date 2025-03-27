@@ -19,6 +19,7 @@ import {
 import { createClient } from "@/utils/supabase/client";
 import { UserCheck } from "lucide-react";
 import Image from "next/image";
+import useFcmToken from "@/hooks/useFcmToken";
 
 function Chat() {
   const { user } = useUserStore();
@@ -31,11 +32,13 @@ function Chat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasInitializedRef = useRef(false);
   const supabase = createClient();
+  const { token: userFcmToken } = useFcmToken();
 
   // State for real mentor chat
   const [availableMentors, setAvailableMentors] = useState<any[]>([]);
   const [allChatPersons, setAllChatPersons] = useState<ChatPerson[]>(chatPersons);
   const [chatSessionId, setChatSessionId] = useState<string | null>(null);
+  const [mentorFcmToken, setMentorFcmToken] = useState<string | null>(null);
 
   // Fetch available mentors from the database
   useEffect(() => {
@@ -106,9 +109,15 @@ function Chat() {
   useEffect(() => {
     if (!chatSessionId) return;
 
+    console.log("Setting up realtime subscription for chat ID:", chatSessionId);
+
+    // 创建一个唯一的频道名称
+    const channelId = `student-chat-${chatSessionId}-${Date.now()}`;
+    console.log("Creating channel with ID:", channelId);
+
     // Subscribe to changes in the mentor_student_interactions table
     const channel = supabase
-      .channel('chat-changes')
+      .channel(channelId)
       .on(
         'postgres_changes',
         {
@@ -118,16 +127,24 @@ function Chat() {
           filter: `id=eq.${chatSessionId}`,
         },
         (payload) => {
+          console.log("Received real-time update:", payload);
           // The conversation has been updated
           if (payload.new && payload.new.type === 'chat' && payload.new.metadata?.messages) {
+            console.log("Updating messages from real-time event");
             // Replace our messages with the entire updated message history
             setMessages(payload.new.metadata.messages);
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log(`Subscription status for chat ${chatSessionId}:`, status);
+        if (status !== 'SUBSCRIBED') {
+          console.error(`Failed to subscribe to updates for chat ${chatSessionId}`);
+        }
+      });
 
     return () => {
+      console.log(`Removing channel for chat ${chatSessionId}`);
       supabase.removeChannel(channel);
     };
   }, [chatSessionId, supabase]);
@@ -149,6 +166,17 @@ function Chat() {
       if (error) {
         console.error('Error loading chat session:', error);
         return;
+      }
+
+      // Also fetch mentor's FCM token for notifications
+      const { data: mentorData, error: mentorError } = await supabase
+        .from('mentors')
+        .select('fcm_token')
+        .eq('id', mentorId)
+        .single();
+
+      if (!mentorError && mentorData?.fcm_token) {
+        setMentorFcmToken(mentorData.fcm_token);
       }
 
       if (data) {
@@ -349,18 +377,38 @@ function Chat() {
       sender_avatar: user?.avatar_name,
     };
 
+    // 更新本地消息列表（立即显示用户消息）
     setMessages((prev) => [...prev, userMessage]);
 
     // Handle real mentor chat
     if (selectedPerson.isRealPerson && chatSessionId) {
       try {
-        // Save the message to the database
-        const updatedMessages = [...messages, userMessage];
+        console.log("Sending message to real mentor, chat ID:", chatSessionId);
 
+        // 获取当前消息列表（确保获取最新状态）
+        const { data: currentData, error: fetchError } = await supabase
+          .from('mentor_student_interactions')
+          .select('metadata')
+          .eq('id', chatSessionId)
+          .single();
+
+        if (fetchError) {
+          console.error("Error fetching current chat data:", fetchError);
+          return;
+        }
+
+        // 合并现有消息和新消息
+        const currentMessages = currentData?.metadata?.messages || [];
+        const updatedMessages = [...currentMessages, userMessage];
+
+        console.log("Updating chat with new message, total messages:", updatedMessages.length);
+
+        // 更新数据库
         const { error } = await supabase
           .from('mentor_student_interactions')
           .update({
             metadata: {
+              ...currentData?.metadata,
               messages: updatedMessages
             },
             updated_at: new Date().toISOString()
@@ -368,7 +416,32 @@ function Chat() {
           .eq('id', chatSessionId);
 
         if (error) {
-          console.error('Error saving message:', error);
+          console.error("Error saving message:", error);
+        } else {
+          console.log("Message saved successfully");
+        }
+
+        // Send notification to mentor if they have a token
+        if (mentorFcmToken && selectedPerson.id) {
+          try {
+            console.log("Sending notification to mentor");
+            await fetch("/api/chat-notification", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                receiverId: selectedPerson.id,
+                senderId: user?.id,
+                senderName: user?.name,
+                token: mentorFcmToken,
+                message: inputValue,
+                chatSessionId: chatSessionId
+              }),
+            });
+          } catch (notifyError) {
+            console.error("Error sending notification:", notifyError);
+          }
         }
       } catch (error) {
         console.error('Error sending message:', error);

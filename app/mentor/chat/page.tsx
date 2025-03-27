@@ -23,6 +23,7 @@ import {
   ChatPerson,
   Message as ChatMessageType,
 } from "@/app/(students)/chat/components/types";
+import useFcmToken from "@/hooks/useFcmToken";
 
 interface Message {
   id: string;
@@ -86,6 +87,8 @@ function MentorChat() {
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { token: mentorFcmToken } = useFcmToken();
+  const [studentFcmToken, setStudentFcmToken] = useState<string | null>(null);
 
   // Handle URL parameter changes
   useEffect(() => {
@@ -216,32 +219,44 @@ function MentorChat() {
   const selectChat = async (chatId: string) => {
     setSelectedChatId(chatId);
 
-    // Find the selected chat session to get student ID
-    const selectedSession = chatSessions.find(
-      (session) => session.id === chatId
-    );
-    if (selectedSession) {
-      // Update URL with the student ID without refreshing the page
-      const newUrl = `/mentor/chat?userId=${selectedSession.student_id}`;
-      window.history.pushState({}, "", newUrl);
-    }
+    // Update the URL to include the selected chat
+    router.push(`/mentor/chat?chat=${chatId}`, {
+      scroll: false,
+    });
 
     try {
-      const { data, error } = await supabase
-        .from("mentor_student_interactions")
-        .select("metadata")
-        .eq("id", chatId)
-        .single();
+      // Find the selected chat session
+      const selectedSession = chatSessions.find((s) => s.id === chatId);
 
-      if (error) {
-        console.error("Error loading chat:", error);
-        return;
-      }
+      if (selectedSession) {
+        // Load messages for this chat - fetch the latest data to ensure we have metadata
+        const { data, error } = await supabase
+          .from("mentor_student_interactions")
+          .select("metadata")
+          .eq("id", chatId)
+          .single();
 
-      if (data && data.metadata?.messages) {
-        setMessages(data.metadata.messages);
-      } else {
-        setMessages([]);
+        if (!error && data && data.metadata?.messages) {
+          setMessages(data.metadata.messages);
+        } else {
+          setMessages([]);
+        }
+
+        // Fetch student's FCM token for notifications
+        if (selectedSession.student_id) {
+          const { data: studentData, error: studentError } = await supabase
+            .from('users')
+            .select('fcm_token')
+            .eq('id', selectedSession.student_id)
+            .single();
+
+          if (!studentError && studentData?.fcm_token) {
+            setStudentFcmToken(studentData.fcm_token);
+            console.log("Student FCM token fetched:", studentData.fcm_token.substring(0, 10) + "...");
+          } else {
+            console.log("Could not fetch student FCM token:", studentError);
+          }
+        }
       }
     } catch (error) {
       console.error("Error selecting chat:", error);
@@ -252,9 +267,15 @@ function MentorChat() {
   useEffect(() => {
     if (!selectedChatId || !mentorProfile) return;
 
+    console.log("Setting up realtime subscription for chat ID:", selectedChatId);
+
+    // 创建一个唯一的频道名称
+    const channelId = `mentor-chat-${selectedChatId}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    console.log("Creating channel with ID:", channelId);
+
     // Subscribe to changes in the selected chat
     const channel = supabase
-      .channel(`chat-${selectedChatId}`)
+      .channel(channelId)
       .on(
         "postgres_changes",
         {
@@ -264,23 +285,32 @@ function MentorChat() {
           filter: `id=eq.${selectedChatId}`,
         },
         (payload) => {
+          console.log("Received real-time update in mentor chat:", payload);
           if (
             payload.new &&
             payload.new.type === "chat" &&
             payload.new.metadata?.messages
           ) {
+            console.log("Updating mentor chat messages from real-time event");
             setMessages(payload.new.metadata.messages);
 
             // Refresh the chat list to update last message preview
             if (mentorProfile) {
+              console.log("Reloading chat sessions for mentor:", mentorProfile.id);
               loadChatSessions(mentorProfile.id);
             }
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log(`Subscription status for mentor chat ${selectedChatId}:`, status);
+        if (status !== 'SUBSCRIBED') {
+          console.error(`Failed to subscribe to updates for mentor chat ${selectedChatId}`);
+        }
+      });
 
     return () => {
+      console.log(`Removing channel for mentor chat ${selectedChatId}`);
       supabase.removeChannel(channel);
     };
   }, [selectedChatId, mentorProfile, supabase]);
@@ -293,6 +323,8 @@ function MentorChat() {
   // Send a message
   const sendMessage = async (inputText: string) => {
     if (!inputText.trim() || !selectedChatId || !mentorProfile) return;
+
+    console.log("Mentor sending message in chat:", selectedChatId);
 
     // Create the message object
     const newMessage: Message = {
@@ -309,7 +341,7 @@ function MentorChat() {
       // Get current messages
       const { data, error } = await supabase
         .from("mentor_student_interactions")
-        .select("metadata")
+        .select("metadata, student_id")
         .eq("id", selectedChatId)
         .single();
 
@@ -320,9 +352,10 @@ function MentorChat() {
 
       // Add the new message
       const updatedMessages = [...(data.metadata?.messages || []), newMessage];
+      console.log("Updating chat with new message, total messages:", updatedMessages.length);
 
       // Update the database
-      await supabase
+      const updateResult = await supabase
         .from("mentor_student_interactions")
         .update({
           metadata: {
@@ -332,6 +365,44 @@ function MentorChat() {
           updated_at: new Date().toISOString(),
         })
         .eq("id", selectedChatId);
+
+      if (updateResult.error) {
+        console.error("Error updating chat:", updateResult.error);
+      } else {
+        console.log("Chat updated successfully");
+
+        // 本地更新消息列表（立即显示）
+        setMessages(updatedMessages);
+
+        // 刷新聊天列表显示
+        if (mentorProfile) {
+          console.log("Reloading chat sessions for updated last message");
+          loadChatSessions(mentorProfile.id);
+        }
+      }
+
+      // Send notification to student if they have a token
+      if (studentFcmToken && data.student_id) {
+        try {
+          console.log("Sending notification to student");
+          await fetch("/api/chat-notification", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              receiverId: data.student_id,
+              senderId: mentorProfile.id,
+              senderName: mentorProfile.name,
+              token: studentFcmToken,
+              message: inputText,
+              chatSessionId: selectedChatId
+            }),
+          });
+        } catch (notifyError) {
+          console.error("Error sending notification:", notifyError);
+        }
+      }
     } catch (error) {
       console.error("Error sending message:", error);
     }

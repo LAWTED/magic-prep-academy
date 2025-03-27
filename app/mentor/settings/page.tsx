@@ -2,47 +2,63 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  BookOpen,
-  GraduationCap,
-  User,
-  Settings,
-  Bell,
-} from "lucide-react";
+import { ArrowLeft, Bell, Settings, Info } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
-import Link from "next/link";
 import Image from "next/image";
-import { useUserStore } from "@/store/userStore";
 import useFcmToken from "@/hooks/useFcmToken";
 import { toast } from "sonner";
 
-export default function ProfilePage() {
+export default function MentorSettingsPage() {
   const router = useRouter();
   const supabase = createClient();
-  const { user, isLoading } = useUserStore();
   const [loading, setLoading] = useState(true);
+  const [mentorProfile, setMentorProfile] = useState<any>(null);
   const { token, notificationPermissionStatus } = useFcmToken();
   const [showNotificationModal, setShowNotificationModal] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && !user) {
-      router.push("/sign-in");
-    } else if (!isLoading) {
+    fetchMentorProfile();
+  }, []);
+
+  const fetchMentorProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.push("/mentor/sign-in");
+        return;
+      }
+
+      const { data: profile, error } = await supabase
+        .from("mentors")
+        .select("*")
+        .eq("auth_id", user.id)
+        .single();
+
+      if (error || !profile) {
+        console.error("Error fetching mentor profile:", error);
+        router.push("/mentor/onboarding");
+        return;
+      }
+
+      setMentorProfile(profile);
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
       setLoading(false);
     }
-  }, [isLoading, router, user]);
+  };
 
   // 保存FCM token到数据库
   const saveFcmTokenToDb = async () => {
-    if (!token || !user?.id) return;
+    if (!token || !mentorProfile?.id) return;
 
     try {
       const { error } = await supabase
-        .from('users')
+        .from('mentors')
         .update({ fcm_token: token })
-        .eq('id', user.id);
+        .eq('id', mentorProfile.id);
 
       if (error) {
         console.error("Error saving FCM token:", error);
@@ -83,36 +99,26 @@ export default function ProfilePage() {
   };
 
   // Get avatar path based on profile's avatar_name
-  const avatarPath = user ? `/images/avatars/${user.avatar_name}.png` : "";
+  const avatarPath = mentorProfile ? `/images/avatars/${mentorProfile.avatar_name}.png` : "";
 
-  const profileOptions = [
-    {
-      name: "Academic Information",
-      description: "GPA, test scores, and language proficiency",
-      href: "/profile/academic",
-      icon: GraduationCap,
-      color: "bg-blue-100 text-blue-600",
-    },
-    {
-      name: "Personal Information",
-      description: "Your profile details and preferences",
-      href: "#",
-      icon: User,
-      color: "bg-green-100 text-green-600",
-      disabled: true,
-    },
+  const settingsOptions = [
     {
       name: "Notifications",
-      description: "Enable push notifications for messages and updates",
-      href: "#",
+      description: "Enable push notifications for student messages and updates",
       icon: Bell,
       color: "bg-yellow-100 text-yellow-600",
       onClick: () => setShowNotificationModal(true),
     },
     {
-      name: "Settings",
-      description: "Application preferences and account settings",
-      href: "#",
+      name: "Account Information",
+      description: "Update your profile and account details",
+      icon: Info,
+      color: "bg-blue-100 text-blue-600",
+      disabled: true,
+    },
+    {
+      name: "Preferences",
+      description: "Customize your mentor dashboard experience",
       icon: Settings,
       color: "bg-purple-100 text-purple-600",
       disabled: true,
@@ -126,12 +132,12 @@ export default function ProfilePage() {
         <div className="flex items-center gap-3">
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => router.push("/homepage")}
+            onClick={() => router.push("/mentor/dashboard")}
             className="focus:outline-none"
           >
             <ArrowLeft className="h-6 w-6" />
           </motion.button>
-          <h1 className="text-xl font-bold">Profile</h1>
+          <h1 className="text-xl font-bold">Settings</h1>
         </div>
       </header>
 
@@ -142,48 +148,42 @@ export default function ProfilePage() {
             <div className="h-24 bg-gray-200 animate-pulse rounded-xl"></div>
             <div className="h-16 bg-gray-200 animate-pulse rounded-xl"></div>
             <div className="h-16 bg-gray-200 animate-pulse rounded-xl"></div>
-            <div className="h-16 bg-gray-200 animate-pulse rounded-xl"></div>
           </div>
         ) : (
           <div className="space-y-6">
-            {/* User info card */}
+            {/* Mentor info card */}
             <div className="bg-white rounded-xl p-6 shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-primary">
                   <Image
                     src={avatarPath}
-                    alt={user?.name || "User"}
-                    fill
+                    alt={mentorProfile?.name || "Mentor"}
+                    width={64}
+                    height={64}
                     className="object-cover"
                   />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold">{user?.name}</h2>
-                  <p className="text-gray-600">
-                    {user?.region || "No location set"}
-                  </p>
+                  <h2 className="text-xl font-bold">{mentorProfile?.name}</h2>
+                  <p className="text-gray-600">{mentorProfile?.email}</p>
                 </div>
               </div>
             </div>
 
-            {/* Profile options */}
+            {/* Settings options */}
             <div className="space-y-4">
-              {profileOptions.map((option) => (
+              {settingsOptions.map((option) => (
                 <motion.div
                   key={option.name}
                   whileTap={{ scale: 0.98 }}
                   className="relative"
                 >
-                  <Link
-                    href={option.disabled ? "#" : (option.href || "#")}
-                    className={`block bg-white rounded-xl p-4 shadow-sm ${
+                  <div
+                    className={`block bg-white rounded-xl p-4 shadow-sm cursor-pointer ${
                       option.disabled ? "opacity-50 cursor-not-allowed" : ""
                     }`}
-                    onClick={(e) => {
-                      if (option.disabled) {
-                        e.preventDefault();
-                      } else if (option.onClick) {
-                        e.preventDefault();
+                    onClick={() => {
+                      if (!option.disabled && option.onClick) {
                         option.onClick();
                       }
                     }}
@@ -209,7 +209,7 @@ export default function ProfilePage() {
                         </span>
                       )}
                     </div>
-                  </Link>
+                  </div>
                 </motion.div>
               ))}
             </div>
@@ -223,7 +223,7 @@ export default function ProfilePage() {
           <div className="bg-white rounded-xl p-6 max-w-md w-full">
             <h3 className="text-xl font-bold mb-4">Enable Notifications</h3>
             <p className="mb-4">
-              Get notified about new messages, updates, and reminders from your mentors.
+              Get notified about new messages and updates from your students. This helps you respond quickly to student inquiries.
             </p>
             <div className="flex items-center justify-between mt-6">
               <button

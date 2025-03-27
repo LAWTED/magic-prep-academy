@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Sparkles, Star, Check, Calendar } from "lucide-react";
@@ -23,7 +23,20 @@ const getTimeframe = (startDate: string, endDate: string) => {
   const start = new Date(startDate);
   const end = new Date(endDate);
 
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
   const startMonth = monthNames[start.getMonth()];
   const endMonth = monthNames[end.getMonth()];
 
@@ -58,16 +71,19 @@ interface ProgramDetails {
   content: any;
 }
 
-export default function SchoolCelebrationPage() {
+function SchoolCelebration() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const schoolName = searchParams.get("name") || "the school";
-  const schoolId = searchParams.get("id");
+  const schoolName = searchParams?.get("name") || "the school";
+  const schoolId = searchParams?.get("id");
   const [animationComplete, setAnimationComplete] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [programDetails, setProgramDetails] = useState<ProgramDetails | null>(null);
-  const [programDeadlineEvent, setProgramDeadlineEvent] = useState<TimelineEvent | null>(null);
+  const [programDetails, setProgramDetails] = useState<ProgramDetails | null>(
+    null
+  );
+  const [programDeadlineEvent, setProgramDeadlineEvent] =
+    useState<TimelineEvent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useUserStore();
   const supabase = createClient();
@@ -80,9 +96,9 @@ export default function SchoolCelebrationPage() {
       try {
         setIsLoading(true);
         const { data, error } = await supabase
-          .from('programs')
-          .select('id, name, content')
-          .eq('id', schoolId)
+          .from("programs")
+          .select("id, name, content")
+          .eq("id", schoolId)
           .single();
 
         if (error) {
@@ -114,11 +130,13 @@ export default function SchoolCelebrationPage() {
               description: "Application submission deadline for this program",
               start_date: deadlineDate,
               end_date: deadlineDate,
-              action_type: "submit_application"
+              action_type: "submit_application",
             });
           } else {
             // Use fallback date only for development
-            console.warn("No valid deadline found, using fallback for development only");
+            console.warn(
+              "No valid deadline found, using fallback for development only"
+            );
 
             const today = new Date();
             const fallbackDate = `${today.getFullYear() + 1}-12-15`; // Next year Dec 15
@@ -126,10 +144,11 @@ export default function SchoolCelebrationPage() {
             setProgramDeadlineEvent({
               id: 3,
               title: "Submit Deadline (estimated)",
-              description: "Estimated application deadline - please check official program website",
+              description:
+                "Estimated application deadline - please check official program website",
               start_date: fallbackDate,
               end_date: fallbackDate,
-              action_type: "submit_application"
+              action_type: "submit_application",
             });
           }
         }
@@ -162,13 +181,15 @@ export default function SchoolCelebrationPage() {
   // Get the full application timeline
   const getFullApplicationTimeline = () => {
     // Use common timeline events from themeConfig
-    const additionalEvents: TimelineEvent[] = Object.entries(themeConfig.commonTimelineEvents).map(([action_type, event]) => ({
+    const additionalEvents: TimelineEvent[] = Object.entries(
+      themeConfig.commonTimelineEvents
+    ).map(([action_type, event]) => ({
       id: event.id,
       title: event.title,
       description: event.description,
       start_date: event.start_date,
       end_date: event.end_date,
-      action_type: action_type
+      action_type: action_type,
     }));
 
     // Add the deadline event if available
@@ -190,11 +211,11 @@ export default function SchoolCelebrationPage() {
     try {
       // First, delete any existing timeline events for this user and program
       const { error: deleteError } = await supabase
-        .from('user_program_event')
+        .from("user_program_event")
         .delete()
         .match({
           user_id: user.id,
-          program_id: schoolId
+          program_id: schoolId,
         });
 
       if (deleteError) {
@@ -212,12 +233,17 @@ export default function SchoolCelebrationPage() {
         end_date: programDeadlineEvent.end_date,
         title: programDeadlineEvent.title,
         description: programDeadlineEvent.description,
-        content: { timeframe: getTimeframe(programDeadlineEvent.start_date, programDeadlineEvent.end_date) }
+        content: {
+          timeframe: getTimeframe(
+            programDeadlineEvent.start_date,
+            programDeadlineEvent.end_date
+          ),
+        },
       };
 
       // Insert the event
       const { error } = await supabase
-        .from('user_program_event')
+        .from("user_program_event")
         .insert([eventToInsert]);
 
       if (error) {
@@ -273,7 +299,9 @@ export default function SchoolCelebrationPage() {
 
   // Get theme for action type
   const getThemeForAction = (action_type: string) => {
-    return themeConfig.actionThemes[action_type as keyof typeof themeConfig.actionThemes];
+    return themeConfig.actionThemes[
+      action_type as keyof typeof themeConfig.actionThemes
+    ];
   };
 
   return (
@@ -319,7 +347,8 @@ export default function SchoolCelebrationPage() {
           </h1>
 
           <p className="text-gray-600 mb-6">
-            Great choice! We'll help you prepare and track your application progress for {schoolName}.
+            Great choice! We'll help you prepare and track your application
+            progress for {schoolName}.
           </p>
 
           <motion.div
@@ -329,7 +358,7 @@ export default function SchoolCelebrationPage() {
           >
             <motion.button
               whileTap={{ scale: 0.95 }}
-              className={`bg-primary text-white py-3 px-6 rounded-lg font-medium flex items-center justify-center gap-2 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`bg-primary text-white py-3 px-6 rounded-lg font-medium flex items-center justify-center gap-2 ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""}`}
               onClick={handleContinue}
               disabled={isSubmitting}
             >
@@ -338,11 +367,11 @@ export default function SchoolCelebrationPage() {
               ) : (
                 <Check size={20} />
               )}
-              {isSubmitting ? 'Processing...' : 'Continue'}
+              {isSubmitting ? "Processing..." : "Continue"}
             </motion.button>
 
             <button
-              className={`text-gray-500 py-2 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`text-gray-500 py-2 ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""}`}
               onClick={() => router.push("/school")}
               disabled={isSubmitting}
             >
@@ -379,7 +408,7 @@ export default function SchoolCelebrationPage() {
               const IconComponent = theme.icon;
               const colorClass = theme.color;
               const timeframe = getTimeframe(item.start_date, item.end_date);
-              const isDeadlineEvent = item.action_type === 'submit_application';
+              const isDeadlineEvent = item.action_type === "submit_application";
 
               return (
                 <motion.div
@@ -390,13 +419,21 @@ export default function SchoolCelebrationPage() {
                   className="relative pl-10 pb-8 last:pb-0"
                 >
                   {/* Circle dot */}
-                  <div className={`absolute left-0 top-0 w-8 h-8 rounded-full ${colorClass} flex items-center justify-center z-10`}>
+                  <div
+                    className={`absolute left-0 top-0 w-8 h-8 rounded-full ${colorClass} flex items-center justify-center z-10`}
+                  >
                     <IconComponent size={16} />
                   </div>
 
                   <div className="mb-1 flex justify-between items-center flex-wrap gap-1">
-                    <h3 className="font-bold text-sm md:text-base">{item.title}</h3>
-                    <span className={`text-xs whitespace-nowrap px-2 py-0.5 rounded-full ${isDeadlineEvent ? 'bg-green-100 text-green-700 font-medium' : 'bg-gray-100 text-gray-600'}`}>{timeframe}</span>
+                    <h3 className="font-bold text-sm md:text-base">
+                      {item.title}
+                    </h3>
+                    <span
+                      className={`text-xs whitespace-nowrap px-2 py-0.5 rounded-full ${isDeadlineEvent ? "bg-green-100 text-green-700 font-medium" : "bg-gray-100 text-gray-600"}`}
+                    >
+                      {timeframe}
+                    </span>
                   </div>
                   <p className="text-sm text-gray-600">{item.description}</p>
                 </motion.div>
@@ -406,5 +443,13 @@ export default function SchoolCelebrationPage() {
         )}
       </motion.div>
     </div>
+  );
+}
+
+export default async function SchoolCelebrationPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SchoolCelebration />
+    </Suspense>
   );
 }

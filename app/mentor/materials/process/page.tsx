@@ -19,7 +19,7 @@ const STEPS = {
 function ProcessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const vectorStoreId = searchParams.get("vectorStoreId");
+  const vectorStoreId = searchParams?.get("vectorStoreId");
   const [currentStep, setCurrentStep] = useState(STEPS.SAVE_MODULE);
   const [moduleId, setModuleId] = useState<string>("");
 
@@ -29,9 +29,9 @@ function ProcessContent() {
     setCurrentStep(STEPS.CREATE_SESSIONS);
 
     // Update URL with moduleId
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("moduleId", savedModuleId);
-    router.push(`/mentor/materials/process?${params.toString()}`);
+    const params = new URLSearchParams(searchParams?.toString());
+    params?.set("moduleId", savedModuleId);
+    router.push(`/mentor/materials/process?${params?.toString()}`);
   };
 
   return (
@@ -79,22 +79,22 @@ function ProcessContent() {
           <div className="space-y-8">
             <MultipleChoiceGenerator
               vectorStoreId={vectorStoreId}
-              moduleId={moduleId || searchParams.get("moduleId") || ""}
+              moduleId={moduleId || searchParams?.get("moduleId") || ""}
             />
 
             <MatchingGenerator
               vectorStoreId={vectorStoreId}
-              moduleId={moduleId || searchParams.get("moduleId") || ""}
+              moduleId={moduleId || searchParams?.get("moduleId") || ""}
             />
 
             <FillInTheBlankGenerator
               vectorStoreId={vectorStoreId}
-              moduleId={moduleId || searchParams.get("moduleId") || ""}
+              moduleId={moduleId || searchParams?.get("moduleId") || ""}
             />
 
             <DialogueGenerator
               vectorStoreId={vectorStoreId}
-              moduleId={moduleId || searchParams.get("moduleId") || ""}
+              moduleId={moduleId || searchParams?.get("moduleId") || ""}
             />
 
             <div className="flex justify-center mt-12">

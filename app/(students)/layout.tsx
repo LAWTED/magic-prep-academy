@@ -19,11 +19,11 @@ export default function StudentsLayout({
     pathname === "/homepage" ||
     pathname === "/awards" ||
     pathname === "/school" ||
-    pathname.startsWith("/school/") ||
+    pathname?.startsWith("/school/") ||
     pathname === "/tools" ||
-    pathname.startsWith("/tools/") ||
+    pathname?.startsWith("/tools/") ||
     pathname === "/chat" ||
-    pathname.startsWith("/chat/") ||
+    pathname?.startsWith("/chat/") ||
     pathname === "/cal";
 
   // Check if the current path should have the header
@@ -35,7 +35,7 @@ export default function StudentsLayout({
     pathname === "/cal";
 
   const isProfilePage =
-    pathname === "/profile" || pathname.startsWith("/profile/");
+    pathname === "/profile" || pathname?.startsWith("/profile/");
 
   return (
     <UserProvider>

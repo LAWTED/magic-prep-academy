@@ -1,12 +1,10 @@
-import { AppProps } from 'next/app';
-import { useRouter } from 'next/router';
-import { useEffect } from 'react';
-import '../styles/globals.css';
-import { messaging, onMessage } from '../firebase';
-import { toast } from 'sonner';
+"use client";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { toast } from "sonner";
+import { messaging, onMessage } from "@/firebase";
 
-// Global notification listener component
-function NotificationListener() {
+export function NotificationListener() {
   const router = useRouter();
 
   useEffect(() => {
@@ -17,10 +15,13 @@ function NotificationListener() {
         const messagingInstance = await messaging();
         if (!messagingInstance) return;
 
-        console.log('Setting up global notification listener');
+        console.log("Setting up global notification listener");
 
         unsubscribe = onMessage(messagingInstance, (payload) => {
-          console.log('Foreground message received in global listener:', payload);
+          console.log(
+            "Foreground message received in global listener:",
+            payload
+          );
 
           const link = payload.fcmOptions?.link || payload.data?.link;
 
@@ -29,7 +30,7 @@ function NotificationListener() {
               `${payload.notification?.title}: ${payload.notification?.body}`,
               {
                 action: {
-                  label: 'View',
+                  label: "View",
                   onClick: () => router.push(link),
                 },
                 duration: 5000,
@@ -43,7 +44,7 @@ function NotificationListener() {
           }
         });
       } catch (error) {
-        console.error('Error setting up global notification listener:', error);
+        console.error("Error setting up global notification listener:", error);
       }
     };
 
@@ -58,14 +59,3 @@ function NotificationListener() {
 
   return null;
 }
-
-function MyApp({ Component, pageProps }: AppProps) {
-  return (
-    <>
-      <NotificationListener />
-      <Component {...pageProps} />
-    </>
-  );
-}
-
-export default MyApp;

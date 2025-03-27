@@ -22,8 +22,8 @@ export default function ResumeVersionDetailPage() {
   const [versionName, setVersionName] = useState<string | null>(null);
 
   useEffect(() => {
-    if (params.id && params.versionId) {
-      fetchResumeVersion(params.id as string, params.versionId as string);
+    if (params?.id && params?.versionId) {
+      fetchResumeVersion(params?.id as string, params?.versionId as string);
     }
   }, [params]);
 

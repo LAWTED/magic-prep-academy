@@ -24,8 +24,8 @@ export default function SOPVersionDetailPage() {
   const [versionName, setVersionName] = useState<string | null>(null);
 
   useEffect(() => {
-    if (params.id && params.versionId) {
-      fetchSOPVersion(params.id as string, params.versionId as string);
+    if (params?.id && params?.versionId) {
+      fetchSOPVersion(params?.id as string, params?.versionId as string);
     }
   }, [params]);
 

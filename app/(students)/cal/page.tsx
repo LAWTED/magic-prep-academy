@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
@@ -82,11 +82,11 @@ function ProgramName({ programId }: { programId: string }) {
   );
 }
 
-export default function CalendarPage() {
+function Calendar() {
   const today = new Date();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const dateParam = searchParams.get("date");
+  const dateParam = searchParams?.get("date");
 
   // 一次性初始化日期，不要在useEffect中设置初始状态
   const getInitialDate = () => {
@@ -475,5 +475,13 @@ export default function CalendarPage() {
         </motion.div>
       )}
     </div>
+  );
+}
+
+export default function CalendarPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Calendar />
+    </Suspense>
   );
 }

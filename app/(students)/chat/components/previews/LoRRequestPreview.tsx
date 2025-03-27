@@ -24,7 +24,7 @@ export default function LoRRequestPreview({
   const pathname = usePathname();
 
   // Check if we're in the mentor section of the app
-  const isMentorView = pathname.startsWith('/mentor');
+  const isMentorView = pathname?.startsWith('/mentor');
 
   useEffect(() => {
     // Fetch the current status when component mounts

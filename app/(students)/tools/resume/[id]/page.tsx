@@ -34,7 +34,7 @@ export default function ResumeVersionsPage() {
   const { user } = useUserStore();
   const params = useParams();
   const router = useRouter();
-  const documentId = params.id as string;
+  const documentId = params?.id as string;
 
   const [resumeDocument, setResumeDocument] = useState<ResumeDocument | null>(
     null

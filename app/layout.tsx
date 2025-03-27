@@ -3,6 +3,8 @@ import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { Toaster } from 'sonner'
+import { NotificationListener } from '@/components/NotificationListener'
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -11,7 +13,7 @@ const defaultUrl = process.env.VERCEL_URL
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
   title: "Magic Prep Academy",
-  description: "学习魔法的预备学院",
+  description: "Learn magic with fun!",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -57,6 +59,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={geistSans.className} suppressHydrationWarning>
       <body className="bg-background text-foreground overscroll-y-contain">
+        <NotificationListener />
+        <Toaster />
         {/* <ThemeProvider
           attribute="class"
           defaultTheme="system"

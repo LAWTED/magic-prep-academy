@@ -24,7 +24,7 @@ export function ChatMessage({
   const pathname = usePathname();
 
   // Determine if we're in mentor view
-  const isMentorView = pathname.startsWith('/mentor');
+  const isMentorView = pathname?.startsWith('/mentor') ?? false;
 
   // In student view: user messages are from the student ("You")
   // In mentor view: user messages are from the student (show student name)

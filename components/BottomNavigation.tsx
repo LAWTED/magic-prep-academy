@@ -54,7 +54,7 @@ export default function BottomNavigation() {
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-1 safe-bottom flex justify-around items-center">
       {navItems.map((item) => {
-        const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+        const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
 
         return (
           <Link

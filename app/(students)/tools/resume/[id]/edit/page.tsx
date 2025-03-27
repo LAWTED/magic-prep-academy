@@ -22,7 +22,7 @@ function ResumeEdit() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const params = useParams();
-  const documentId = params.id as string;
+  const documentId = params?.id as string;
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingDots, setStreamingDots] = useState("");
@@ -36,7 +36,7 @@ function ResumeEdit() {
   // 检查URL中是否有初始提示
   const getInitialPrompt = () => {
     // 检查URL中的has_resume标记
-    const hasResume = searchParams.get("has_resume");
+    const hasResume = searchParams?.get("has_resume");
 
     if (hasResume === "true") {
       // 从sessionStorage读取简历内容
@@ -53,7 +53,7 @@ function ResumeEdit() {
     }
 
     // 回退到直接从URL参数获取
-    const initialPromptParam = searchParams.get("initialPrompt");
+    const initialPromptParam = searchParams?.get("initialPrompt");
     if (initialPromptParam) {
       try {
         return decodeURIComponent(initialPromptParam);

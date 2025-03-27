@@ -7,7 +7,7 @@ import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
 
 interface MatchingGeneratorProps {
-  vectorStoreId: string | null;
+  vectorStoreId: string | null | undefined;
   moduleId?: string;
 }
 

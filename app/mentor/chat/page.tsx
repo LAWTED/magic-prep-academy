@@ -79,7 +79,7 @@ function MentorChat() {
   const supabase = createClient();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const userIdParam = searchParams.get("userId");
+  const userIdParam = searchParams?.get("userId");
   const [mentorProfile, setMentorProfile] = useState<any>(null);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);

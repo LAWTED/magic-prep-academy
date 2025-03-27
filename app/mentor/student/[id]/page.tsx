@@ -17,7 +17,7 @@ export default async function StudentProgress(props: {
   params: Promise<{ id: string }>;
 }) {
   const params = await props.params;
-  const studentId = params.id;
+  const studentId = params?.id;
   const supabase = await createClient();
 
   // Authenticate mentor

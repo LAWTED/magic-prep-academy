@@ -37,13 +37,13 @@ export default function SOPEditPage() {
   const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>([]);
 
   useEffect(() => {
-    if (params.id && user) {
-      setDocumentId(params.id as string);
-      fetchSOPDocument(params.id as string);
-      fetchFeedbackCount(params.id as string);
-      fetchFeedbacks(params.id as string);
+    if (params?.id && user) {
+      setDocumentId(params?.id as string);
+      fetchSOPDocument(params?.id as string);
+      fetchFeedbackCount(params?.id as string);
+      fetchFeedbacks(params?.id as string);
     }
-  }, [params.id, user]);
+  }, [params?.id, user]);
 
   // 显示灵动岛
   useEffect(() => {

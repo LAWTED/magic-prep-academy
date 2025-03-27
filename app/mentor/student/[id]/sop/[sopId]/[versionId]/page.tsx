@@ -16,9 +16,9 @@ export default function MentorSOPVersionDetailPage() {
   const supabase = createClient();
   const { auth, mentor, fetchMentorData, isMentor, initialized } = useMentorStore();
 
-  const studentId = params.id as string;
-  const sopId = params.sopId as string;
-  const versionId = params.versionId as string;
+  const studentId = params?.id as string;
+  const sopId = params?.sopId as string;
+  const versionId = params?.versionId as string;
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

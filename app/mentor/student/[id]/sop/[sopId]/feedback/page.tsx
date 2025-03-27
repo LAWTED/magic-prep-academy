@@ -17,8 +17,8 @@ export default function SOPFeedbackPage() {
   const router = useRouter();
   const supabase = createClient();
 
-  const studentId = params.id as string;
-  const sopId = params.sopId as string;
+  const studentId = params?.id as string;
+  const sopId = params?.sopId as string;
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

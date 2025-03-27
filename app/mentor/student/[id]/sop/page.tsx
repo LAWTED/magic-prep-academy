@@ -24,7 +24,7 @@ export default function MentorStudentSOPList() {
   const { auth, mentor, fetchMentorData, isMentor, initialized } = useMentorStore();
   const params = useParams();
   const router = useRouter();
-  const studentId = params.id as string;
+  const studentId = params?.id as string;
 
   const [loading, setLoading] = useState(true);
   const [student, setStudent] = useState<any | null>(null);

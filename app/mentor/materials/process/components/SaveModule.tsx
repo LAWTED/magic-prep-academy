@@ -11,7 +11,7 @@ interface Subject {
 }
 
 interface SaveModuleProps {
-  vectorStoreId: string | null;
+  vectorStoreId: string | null | undefined;
   onModuleSaved?: (moduleId: string, summary: string) => void;
 }
 

@@ -49,6 +49,11 @@ export default function Home() {
             Login
           </Button>
         </Link>
+        <Link href="/test-notification" className="w-full">
+          <Button className="bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-md w-full">
+            Test Notification
+          </Button>
+        </Link>
       </main>
     </div>
   );

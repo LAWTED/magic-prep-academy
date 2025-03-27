@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "magic-prep-academy",
+  "private_key_id": "d70abbd3bbe94978c0f1437a811fa2a6f55fb7ab",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDF+QZ2b2NCRiEe\ndAqF8jYczJNICuVxvxQLLQfwWl5xt130a2bZdY5n94nikeDG7AsfkOjPjdH6W3iQ\ndu1mTjC3/z7rLYC2PEr3wtT8Y0Lts7KhYtAibvsdCZ4UeH3B3MPh4fmc8eY9fvP0\n7bPsD1XN7EX/HBFBNQYev2YsO8iOZNZAyMA0jBv5HhHHpuS0taD0H2tXrIfuf+dR\nOeasnU7KCtbzDr1bqczZS5KPal7eUD5uT6bROaLR+d2t19ZJgjg85dSgv3EiI5I6\nlTsgeQaBXXfOLqIShqxd3Y73RMDGTftNccbPtYGbBYl53E4IJkv8GYlwNpZD0pv2\nV+6SNyFPAgMBAAECggEAESPQRWy7YT+FGofdaV9hA/lKPxCCcOikKZuKdmq8hofj\noIez7dvZqnKqA22x0kcZZ3A6V83lghFtTMSfJR5b5XI51k6oOB7cNrstiXRmlQHb\n01Ekx/Zn00nD3+3WpXQhmWrhG49t6aEWKfxyeVuSiDOOk9mwPL8EeqEDjYzXfkxh\npn3OiKjTWiqjbDPqfiLW67DrJ6doPRc+3ZRpdU7Xptv2szMHrfNXwZflKR2aoqfA\nug/uYYKF01oG9Q3TdcvcCy0c1D+W9XcZh9mj50QIf1EWSLrYFspCc0LcmFcURR0M\njgOh6Pw4ANuoNONsXfQvgXMHN2QgiA2uFv/DbUUf0QKBgQDpZdMEm0aYBl9S0uc1\nj5+T3dXkz1wBm0ANSjfe3K6abd239+F46HOfJiYigxl1ezxUwo7O74xdrXmV6rFh\nwyEa9PXX6CJ5ZAtKU3DUB65XVenosgEHPGwjowa1sjYWSau5CEGfCR5jPaUyUyAB\nWC6h53zYkYTFNLPGrpLq2pgG5QKBgQDZJPpg+wa15PB8DZfy6O3CE614EaDuEwZI\ncG+1+w1AVG7sTmMCLCZPZ+euoFvuhM8ADs2L7YwX2YWABVklCzzYvrnvfDnsmI3Q\nTBBKipUYO+SkmDO0NY7K5QK1wLIOXp2r+qUDvl99EGuSaW/QGW23uP+PSHsjE1oc\noGNcGiJwIwKBgQCTZUa6ZgVTBNM2TxLM9ILmsvXdpkaIjS8KNZDLIbrys+eNwvGV\nlddO7pyutvRhCQ60yJm/ffC7SE68qpaTEtPZXlHTpDoBR3kJ22ApxyAG767k0WVs\n2G/CobYfEQivUp8sH1axxOR37/pfqbdQogvxG2vwqRWcJQhTtPP7dUkFMQKBgQCz\n4gk0299UQcLi0ZQF2+ZSd2Cl7dymPMZgrhws4ju5BfkZ81nby900vLvWEuv1bLna\nr2ihuXjrrPwF8OhHYsbWOzHm7b9Ce6JHYyu/xIv8lmkz3Q5ABHo1JIAZNveKJeFy\nPeIDduq9vSOQF55UAyy8HRpAhWfUx8xHmKqW+uN6hwKBgQCflNNnMmZvCNOKDXUh\nDpKpmFyColC6qJ8XHTs8R4uNwbCrCFMHcJHlQH+FiRARONuFGuYYjmg9b9S2kUsO\n4TuYg1nOYGcZqbkyigerEdcw9PwXiX1Bo07ykxrwM67M0Y4xM8yYDksnKA6c/h/7\nLbOxH5/vjfIkx/xaq7DvAqYAog==\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-fbsvc@magic-prep-academy.iam.gserviceaccount.com",
+  "client_id": "102651291268394927313",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40magic-prep-academy.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

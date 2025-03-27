@@ -126,7 +126,7 @@ export default function HomePage() {
 
   if (loading || userLoading) {
     return (
-      <div className="p-4 space-y-6">
+      <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center h-[calc(100vh-180px)]">
           <p>Loading...</p>
         </div>
@@ -135,44 +135,48 @@ export default function HomePage() {
   }
 
   return (
-    <div className="p-4 space-y-6">
-      {/* Learning Modules */}
-      <h2 className="text-lg font-medium">Learning Modules</h2>
-      <div className="space-y-3">
-        {allModules.map((module) => (
-          <button
-            key={module.id}
-            onClick={() => router.push(`/module/${module.id}`)}
-            className="w-full p-4 bg-white rounded-xl shadow-sm flex items-center justify-between hover:bg-gray-50 transition-colors active:scale-[0.98] touch-action-manipulation"
-          >
-            <div className="flex-1">
-              <p className="font-medium text-left">{module.module_name}</p>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                  {module.subject_name}
-                </span>
-                <p className="text-xs text-gray-500 text-left">
-                  {moduleProgress[module.id]?.progress === "completed" &&
-                    "Completed"}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              {moduleProgress[module.id]?.progress === "completed" && (
-                <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                  <Check className="w-4 h-4 text-green-600" />
+    <div className="min-h-screen bg-background">
+      <div className="max-w-lg mx-auto p-4">
+        {/* Learning Modules */}
+        <h2 className="text-lg font-medium sticky top-0 bg-background py-4 z-10">
+          Learning Modules
+        </h2>
+        <div className="space-y-3 pb-20">
+          {allModules.map((module) => (
+            <button
+              key={module.id}
+              onClick={() => router.push(`/module/${module.id}`)}
+              className="w-full p-4 bg-white rounded-xl shadow-sm flex items-center justify-between hover:bg-gray-50 transition-colors active:scale-[0.98] touch-action-manipulation"
+            >
+              <div className="flex-1">
+                <p className="font-medium text-left">{module.module_name}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                    {module.subject_name}
+                  </span>
+                  <p className="text-xs text-gray-500 text-left">
+                    {moduleProgress[module.id]?.progress === "completed" &&
+                      "Completed"}
+                  </p>
                 </div>
-              )}
-              <ChevronRight className="w-5 h-5 text-gray-400" />
-            </div>
-          </button>
-        ))}
+              </div>
+              <div className="flex items-center gap-3">
+                {moduleProgress[module.id]?.progress === "completed" && (
+                  <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                    <Check className="w-4 h-4 text-green-600" />
+                  </div>
+                )}
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </div>
+            </button>
+          ))}
 
-        {allModules.length === 0 && (
-          <p className="text-center text-gray-500 py-8">
-            No learning modules available
-          </p>
-        )}
+          {allModules.length === 0 && (
+            <p className="text-center text-gray-500 py-8">
+              No learning modules available
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

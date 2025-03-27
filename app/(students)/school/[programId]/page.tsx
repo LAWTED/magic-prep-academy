@@ -27,11 +27,7 @@ interface Program {
     | {
         name?: string;
         degree?: string;
-        deadlines?: {
-          fall?: string;
-          spring?: string;
-          summer?: string;
-        };
+        deadlines?: string;
         department?: string;
         programUrl?: string;
         university?: string;
@@ -222,7 +218,13 @@ export default function ProgramDetailPage({
 
         if (error) throw error;
         setIsFavorited(true);
-        toast.success("Added to favorites");
+
+        // Navigate to celebration page instead of showing toast
+        if (school) {
+          router.push(`/school/celebration?id=${programId}&name=${encodeURIComponent(school.name)}`);
+        } else {
+          toast.success("Added to favorites");
+        }
       }
     } catch (error) {
       console.error("Error toggling favorite:", error);

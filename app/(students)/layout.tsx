@@ -23,14 +23,16 @@ export default function StudentsLayout({
     pathname === "/tools" ||
     pathname.startsWith("/tools/") ||
     pathname === "/chat" ||
-    pathname.startsWith("/chat/");
+    pathname.startsWith("/chat/") ||
+    pathname === "/cal";
 
   // Check if the current path should have the header
   const shouldShowHeader =
     pathname === "/homepage" ||
     pathname === "/awards" ||
     pathname === "/school" ||
-    pathname === "/tools";
+    pathname === "/tools" ||
+    pathname === "/cal";
 
   const isProfilePage =
     pathname === "/profile" || pathname.startsWith("/profile/");
@@ -49,7 +51,14 @@ export default function StudentsLayout({
           {children}
         </main>
         {shouldShowNavigation && <BottomNavigation />}
-        <Toaster position="top-center" richColors />
+        <Toaster
+          position="bottom-center"
+          richColors
+          className="safe-bottom"
+          toastOptions={{
+            className: "mb-16 safe-bottom"
+          }}
+        />
       </div>
     </UserProvider>
   );

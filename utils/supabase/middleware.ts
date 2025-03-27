@@ -49,7 +49,6 @@ export const updateSession = async (request: NextRequest) => {
       "/school",
       "/module",
       "/session",
-      "/onboarding",
     ];
 
     // Check if current path is a student route

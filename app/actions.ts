@@ -70,6 +70,24 @@ export const signInAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
+  // Check if user has a profile
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return encodedRedirect("error", "/sign-in", "User not found");
+  }
+
+  const { data: userData, error: profileError } = await supabase
+    .from("users")
+    .select("*")
+    .eq("auth_id", user.id)
+    .single();
+
+  if (profileError || !userData) {
+    // If user is authenticated but has no profile, redirect to onboarding
+    return redirect("/onboarding");
+  }
+
   return redirect("/homepage");
 };
 

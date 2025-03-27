@@ -2,11 +2,28 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Award, BookOpen, User, BookCheck, School, Wrench, MessageCircle, Calendar } from "lucide-react";
+import {
+  Home,
+  Award,
+  BookOpen,
+  User,
+  BookCheck,
+  School,
+  Wrench,
+  MessageCircle,
+  Calendar,
+} from "lucide-react";
 import { motion } from "framer-motion";
+import { useKeyboardVisible } from "@/hooks/useKeyboardVisible";
 
 export default function BottomNavigation() {
   const pathname = usePathname();
+  const isKeyboardVisible = useKeyboardVisible();
+
+  // Hide bottom navigation when keyboard is visible
+  if (isKeyboardVisible) {
+    return null;
+  }
 
   const navItems = [
     {
@@ -39,22 +56,13 @@ export default function BottomNavigation() {
       href: "/awards",
       icon: Award,
     },
-    // {
-    //   name: "Profile",
-    //   href: "/profile",
-    //   icon: User,
-    // },
-    // {
-    //   name: "Prepare",
-    //   href: "/prepare",
-    //   icon: BookOpen,
-    // },
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-1 safe-bottom flex justify-around items-center">
+    <div className=" bg-white border-t border-gray-200 px-2 py-1  flex justify-around items-center">
       {navItems.map((item) => {
-        const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+        const isActive =
+          pathname === item.href || pathname?.startsWith(`${item.href}/`);
 
         return (
           <Link

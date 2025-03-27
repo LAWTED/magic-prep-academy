@@ -41,7 +41,7 @@ export function ChatInput({ onSendMessage, isDisabled = false, placeholder = "Ty
   };
 
   return (
-    <div className="relative">
+    <div className="px-4 relative">
       <textarea
         ref={inputRef}
         value={inputValue}
@@ -60,7 +60,7 @@ export function ChatInput({ onSendMessage, isDisabled = false, placeholder = "Ty
         whileTap={{ scale: 0.9 }}
         onClick={handleSendMessage}
         disabled={!inputValue.trim() || isDisabled}
-        className={`absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-2 ${
+        className={`absolute right-6 top-1/2 -translate-y-1/2 rounded-full p-2 ${
           inputValue.trim() && !isDisabled
             ? "bg-primary text-white"
             : "bg-gray-200 text-gray-500"

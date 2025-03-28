@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChatPerson } from "./types";
 import { chatPersons } from "./chatPersons";
+import { NotificationToggle } from "./NotificationToggle";
 
 type ChatHeaderProps = {
   selectedPerson: ChatPerson;
@@ -10,6 +11,9 @@ type ChatHeaderProps = {
   onClearChat: () => void;
   messagesCount: number;
   allChatPersons?: ChatPerson[]; // Add support for all chat persons including real mentors
+  userId?: string; // 当前用户ID
+  fcmToken: string | null; // FCM令牌
+  notificationPermissionStatus: NotificationPermission | null; // 通知权限状态
 };
 
 // 下拉菜单动画
@@ -38,7 +42,10 @@ export function ChatHeader({
   onPersonChange,
   onClearChat,
   messagesCount,
-  allChatPersons = chatPersons
+  allChatPersons = chatPersons,
+  userId,
+  fcmToken,
+  notificationPermissionStatus
 }: ChatHeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -153,6 +160,16 @@ export function ChatHeader({
       </div>
 
       <div className="flex items-center gap-2">
+        {/* 添加通知开关按钮 */}
+        {selectedPerson.isRealPerson && userId && (
+          <NotificationToggle
+            userId={userId}
+            userRole="student"
+            fcmToken={fcmToken}
+            notificationPermissionStatus={notificationPermissionStatus}
+          />
+        )}
+
         {messagesCount > 0 && (
           <motion.button
             whileHover={{ scale: 1.05 }}

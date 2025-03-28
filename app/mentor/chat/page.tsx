@@ -24,6 +24,7 @@ import {
   Message as ChatMessageType,
 } from "@/app/(students)/chat/components/types";
 import useFcmToken from "@/hooks/useFcmToken";
+import { NotificationToggle } from "@/app/(students)/chat/components/NotificationToggle";
 
 interface Message {
   id: string;
@@ -79,7 +80,7 @@ function MentorChat() {
   const supabase = createClient();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const userIdParam = searchParams?.get("userId");
+  const userIdParam = searchParams.get("userId");
   const [mentorProfile, setMentorProfile] = useState<any>(null);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
@@ -87,7 +88,7 @@ function MentorChat() {
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { token: mentorFcmToken } = useFcmToken();
+  const { token: mentorFcmToken, notificationPermissionStatus } = useFcmToken();
   const [studentFcmToken, setStudentFcmToken] = useState<string | null>(null);
 
   // Handle URL parameter changes
@@ -269,51 +270,55 @@ function MentorChat() {
 
     console.log("Setting up realtime subscription for chat ID:", selectedChatId);
 
-    // 创建一个唯一的频道名称
-    const channelId = `mentor-chat-${selectedChatId}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    console.log("Creating channel with ID:", channelId);
+    // 使用一个简单的通道名称
+    const channelId = `chat-${selectedChatId}`;
 
     // Subscribe to changes in the selected chat
-    const channel = supabase
-      .channel(channelId)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "mentor_student_interactions",
-          filter: `id=eq.${selectedChatId}`,
-        },
-        (payload) => {
-          console.log("Received real-time update in mentor chat:", payload);
-          if (
-            payload.new &&
-            payload.new.type === "chat" &&
-            payload.new.metadata?.messages
-          ) {
-            console.log("Updating mentor chat messages from real-time event");
-            setMessages(payload.new.metadata.messages);
+    let channel;
+    try {
+      channel = supabase
+        .channel(channelId)
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "mentor_student_interactions",
+            filter: `id=eq.${selectedChatId}`,
+          },
+          (payload) => {
+            console.log("Received real-time update in mentor chat");
+            if (
+              payload.new &&
+              payload.new.type === "chat" &&
+              payload.new.metadata?.messages
+            ) {
+              console.log("Updating mentor chat messages from real-time event");
+              setMessages(payload.new.metadata.messages);
 
-            // Refresh the chat list to update last message preview
-            if (mentorProfile) {
-              console.log("Reloading chat sessions for mentor:", mentorProfile.id);
-              loadChatSessions(mentorProfile.id);
+              // Refresh the chat list to update last message preview
+              if (mentorProfile) {
+                loadChatSessions(mentorProfile.id);
+              }
             }
           }
-        }
-      )
-      .subscribe((status) => {
-        console.log(`Subscription status for mentor chat ${selectedChatId}:`, status);
-        if (status !== 'SUBSCRIBED') {
-          console.error(`Failed to subscribe to updates for mentor chat ${selectedChatId}`);
-        }
-      });
+        )
+        .subscribe();
+    } catch (error) {
+      console.error("Error setting up subscription:", error);
+    }
 
     return () => {
-      console.log(`Removing channel for mentor chat ${selectedChatId}`);
-      supabase.removeChannel(channel);
+      if (channel) {
+        try {
+          console.log(`Removing channel for mentor chat ${selectedChatId}`);
+          supabase.removeChannel(channel);
+        } catch (error) {
+          console.error("Error removing channel:", error);
+        }
+      }
     };
-  }, [selectedChatId, mentorProfile, supabase]);
+  }, [selectedChatId, mentorProfile]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -338,7 +343,10 @@ function MentorChat() {
     };
 
     try {
-      // Get current messages
+      // 立即更新本地消息列表，以便快速显示消息
+      setMessages(prevMessages => [...prevMessages, newMessage]);
+
+      // Get current messages from database
       const { data, error } = await supabase
         .from("mentor_student_interactions")
         .select("metadata, student_id")
@@ -350,11 +358,11 @@ function MentorChat() {
         return;
       }
 
-      // Add the new message
-      const updatedMessages = [...(data.metadata?.messages || []), newMessage];
-      console.log("Updating chat with new message, total messages:", updatedMessages.length);
+      // Add the new message to database messages
+      const currentMessages = data.metadata?.messages || [];
+      const updatedMessages = [...currentMessages, newMessage];
 
-      // Update the database
+      // Update the database with new metadata
       const updateResult = await supabase
         .from("mentor_student_interactions")
         .update({
@@ -371,12 +379,8 @@ function MentorChat() {
       } else {
         console.log("Chat updated successfully");
 
-        // 本地更新消息列表（立即显示）
-        setMessages(updatedMessages);
-
-        // 刷新聊天列表显示
+        // 手动更新聊天列表（避免等待实时更新）
         if (mentorProfile) {
-          console.log("Reloading chat sessions for updated last message");
           loadChatSessions(mentorProfile.id);
         }
       }
@@ -456,9 +460,21 @@ function MentorChat() {
           </Link>
         </div>
 
+        <div className="flex items-center gap-2">
+          {/* 添加通知开关按钮 */}
+          {mentorProfile && (
+            <NotificationToggle
+              userId={mentorProfile.id}
+              userRole="mentor"
+              fcmToken={mentorFcmToken}
+              notificationPermissionStatus={notificationPermissionStatus}
+            />
+          )}
+
         <button className="text-gray-400 cursor-not-allowed" disabled>
           <Cog size={24} />
         </button>
+        </div>
       </header>
 
       <div className="flex max-h-[calc(100vh-76px)]">

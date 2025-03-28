@@ -5,7 +5,6 @@ import StudentHeader from "@/app/(students)/components/StudentHeader";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { UserProvider } from "@/components/UserProvider";
-import { Toaster } from "sonner";
 
 export default function StudentsLayout({
   children,
@@ -60,15 +59,6 @@ export default function StudentsLayout({
             <BottomNavigation />
           </div>
         )}
-
-        <Toaster
-          position="bottom-center"
-          richColors
-          className="safe-bottom"
-          toastOptions={{
-            className: "mb-16 safe-bottom"
-          }}
-        />
       </div>
     </UserProvider>
   );

@@ -6,3 +6,4 @@ export * from './ChatMessage';
 export * from './LoadingState';
 export * from './TypingIndicator';
 export * from './WelcomeScreen';
+export * from './NotificationToggle';

@@ -32,12 +32,11 @@ function Chat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasInitializedRef = useRef(false);
   const supabase = createClient();
-  const { token: userFcmToken } = useFcmToken();
+  const { token: userFcmToken, notificationPermissionStatus } = useFcmToken();
 
   // State for real mentor chat
   const [availableMentors, setAvailableMentors] = useState<any[]>([]);
-  const [allChatPersons, setAllChatPersons] =
-    useState<ChatPerson[]>(chatPersons);
+  const [allChatPersons, setAllChatPersons] = useState<ChatPerson[]>(chatPersons);
   const [chatSessionId, setChatSessionId] = useState<string | null>(null);
   const [mentorFcmToken, setMentorFcmToken] = useState<string | null>(null);
 
@@ -46,25 +45,23 @@ function Chat() {
     async function fetchMentors() {
       try {
         const { data, error } = await supabase
-          .from("mentors")
-          .select("*")
-          .is("deleted_at", null);
+          .from('mentors')
+          .select('*')
+          .is('deleted_at', null);
 
         if (error) {
-          console.error("Error fetching mentors:", error);
+          console.error('Error fetching mentors:', error);
           return;
         }
 
         if (data) {
           // Convert mentors to chat persons and add to all chat persons
-          const mentorChatPersons = data.map((mentor) =>
-            createMentorChatPerson(mentor)
-          );
+          const mentorChatPersons = data.map(mentor => createMentorChatPerson(mentor));
           setAvailableMentors(data);
           setAllChatPersons([...chatPersons, ...mentorChatPersons]);
         }
       } catch (error) {
-        console.error("Error fetching mentors:", error);
+        console.error('Error fetching mentors:', error);
       }
     }
 
@@ -73,7 +70,7 @@ function Chat() {
 
   // 找到指定的对话人，如果不存在，则使用默认的
   const getInitialPerson = () => {
-    const personId = searchParams?.get("person");
+    const personId = searchParams.get("person");
     if (personId) {
       const person = allChatPersons
         .filter((p) => p.id !== "resume-editor")
@@ -85,13 +82,12 @@ function Chat() {
     return allChatPersons[0]; // 默认使用第一个人物（现在是PhD Mentor）
   };
 
-  const [selectedPerson, setSelectedPerson] = useState<ChatPerson>(() =>
-    getInitialPerson()
-  );
+  const [selectedPerson, setSelectedPerson] =
+    useState<ChatPerson>(() => getInitialPerson());
 
   // Update selectedPerson when allChatPersons changes
   useEffect(() => {
-    const personId = searchParams?.get("person");
+    const personId = searchParams.get("person");
     if (personId) {
       const person = allChatPersons
         .filter((p) => p.id !== "resume-editor")
@@ -115,47 +111,46 @@ function Chat() {
 
     console.log("Setting up realtime subscription for chat ID:", chatSessionId);
 
-    // 创建一个唯一的频道名称
-    const channelId = `student-chat-${chatSessionId}-${Date.now()}`;
-    console.log("Creating channel with ID:", channelId);
+    // 使用一个简单的通道名称
+    const channelId = `chat-${chatSessionId}`;
 
     // Subscribe to changes in the mentor_student_interactions table
-    const channel = supabase
-      .channel(channelId)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "mentor_student_interactions",
-          filter: `id=eq.${chatSessionId}`,
-        },
-        (payload) => {
-          console.log("Received real-time update:", payload);
-          // The conversation has been updated
-          if (
-            payload.new &&
-            payload.new.type === "chat" &&
-            payload.new.metadata?.messages
-          ) {
-            console.log("Updating messages from real-time event");
-            // Replace our messages with the entire updated message history
-            setMessages(payload.new.metadata.messages);
+    let channel;
+    try {
+      channel = supabase
+        .channel(channelId)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'mentor_student_interactions',
+            filter: `id=eq.${chatSessionId}`,
+          },
+          (payload) => {
+            console.log("Received real-time update");
+            // The conversation has been updated
+            if (payload.new && payload.new.type === 'chat' && payload.new.metadata?.messages) {
+              console.log("Updating messages from real-time event");
+              // Replace our messages with the entire updated message history
+              setMessages(payload.new.metadata.messages);
+            }
           }
-        }
-      )
-      .subscribe((status) => {
-        console.log(`Subscription status for chat ${chatSessionId}:`, status);
-        if (status !== "SUBSCRIBED") {
-          console.error(
-            `Failed to subscribe to updates for chat ${chatSessionId}`
-          );
-        }
-      });
+        )
+        .subscribe();
+    } catch (error) {
+      console.error("Error setting up subscription:", error);
+    }
 
     return () => {
-      console.log(`Removing channel for chat ${chatSessionId}`);
-      supabase.removeChannel(channel);
+      if (channel) {
+        try {
+          console.log(`Removing channel for chat ${chatSessionId}`);
+          supabase.removeChannel(channel);
+        } catch (error) {
+          console.error("Error removing channel:", error);
+        }
+      }
     };
   }, [chatSessionId, supabase]);
 
@@ -166,23 +161,23 @@ function Chat() {
     try {
       // Check if there's an existing chat session with this mentor
       const { data, error } = await supabase
-        .from("mentor_student_interactions")
-        .select("*")
-        .eq("student_id", user.id)
-        .eq("mentor_id", mentorId)
-        .eq("type", "chat")
+        .from('mentor_student_interactions')
+        .select('*')
+        .eq('student_id', user.id)
+        .eq('mentor_id', mentorId)
+        .eq('type', 'chat')
         .maybeSingle();
 
       if (error) {
-        console.error("Error loading chat session:", error);
+        console.error('Error loading chat session:', error);
         return;
       }
 
       // Also fetch mentor's FCM token for notifications
       const { data: mentorData, error: mentorError } = await supabase
-        .from("mentors")
-        .select("fcm_token")
-        .eq("id", mentorId)
+        .from('mentors')
+        .select('fcm_token')
+        .eq('id', mentorId)
         .single();
 
       if (!mentorError && mentorData?.fcm_token) {
@@ -200,23 +195,23 @@ function Chat() {
       } else {
         // Create a new chat session
         const { data: newSession, error: createError } = await supabase
-          .from("mentor_student_interactions")
+          .from('mentor_student_interactions')
           .insert({
             student_id: user.id,
             mentor_id: mentorId,
-            type: "chat",
-            status: "active",
+            type: 'chat',
+            status: 'active',
             metadata: {
-              messages: [],
+              messages: []
             },
             created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           })
-          .select("id")
+          .select('id')
           .single();
 
         if (createError) {
-          console.error("Error creating chat session:", createError);
+          console.error('Error creating chat session:', createError);
           return;
         }
 
@@ -225,15 +220,16 @@ function Chat() {
       }
 
       setIsLoading(false);
+
     } catch (error) {
-      console.error("Error managing chat session:", error);
+      console.error('Error managing chat session:', error);
     }
   };
 
   // 检查URL中是否有初始提示
   const getInitialPrompt = () => {
     // 检查URL中的has_resume标记
-    const hasResume = searchParams?.get("has_resume");
+    const hasResume = searchParams.get("has_resume");
 
     if (hasResume === "true") {
       // 从sessionStorage读取简历内容
@@ -250,7 +246,7 @@ function Chat() {
     }
 
     // 检查URL中的has_sop标记
-    const hasSop = searchParams?.get("has_sop");
+    const hasSop = searchParams.get("has_sop");
     if (hasSop === "true") {
       // 从sessionStorage读取SOP内容
       try {
@@ -266,7 +262,7 @@ function Chat() {
     }
 
     // 回退到直接从URL参数获取
-    const initialPromptParam = searchParams?.get("initialPrompt");
+    const initialPromptParam = searchParams.get("initialPrompt");
     if (initialPromptParam) {
       try {
         return decodeURIComponent(initialPromptParam);
@@ -280,7 +276,7 @@ function Chat() {
 
   // 当URL参数变化时更新对话人
   useEffect(() => {
-    const personId = searchParams?.get("person");
+    const personId = searchParams.get("person");
     if (personId) {
       const person = allChatPersons
         .filter((p) => p.id !== "resume-editor")
@@ -386,7 +382,7 @@ function Chat() {
       sender_avatar: user?.avatar_name,
     };
 
-    // 更新本地消息列表（立即显示用户消息）
+    // 立即更新本地消息列表，直接显示用户消息
     setMessages((prev) => [...prev, userMessage]);
 
     // Handle real mentor chat
@@ -396,9 +392,9 @@ function Chat() {
 
         // 获取当前消息列表（确保获取最新状态）
         const { data: currentData, error: fetchError } = await supabase
-          .from("mentor_student_interactions")
-          .select("metadata")
-          .eq("id", chatSessionId)
+          .from('mentor_student_interactions')
+          .select('metadata')
+          .eq('id', chatSessionId)
           .single();
 
         if (fetchError) {
@@ -410,25 +406,20 @@ function Chat() {
         const currentMessages = currentData?.metadata?.messages || [];
         const updatedMessages = [...currentMessages, userMessage];
 
-        console.log(
-          "Updating chat with new message, total messages:",
-          updatedMessages.length
-        );
-
-        // 更新数据库
-        const { error } = await supabase
-          .from("mentor_student_interactions")
+        // 更新数据库 - 使用简单的.update()调用
+        const result = await supabase
+          .from('mentor_student_interactions')
           .update({
             metadata: {
               ...currentData?.metadata,
-              messages: updatedMessages,
+              messages: updatedMessages
             },
-            updated_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           })
-          .eq("id", chatSessionId);
+          .eq('id', chatSessionId);
 
-        if (error) {
-          console.error("Error saving message:", error);
+        if (result.error) {
+          console.error("Error saving message:", result.error);
         } else {
           console.log("Message saved successfully");
         }
@@ -448,7 +439,7 @@ function Chat() {
                 senderName: user?.name,
                 token: mentorFcmToken,
                 message: inputValue,
-                chatSessionId: chatSessionId,
+                chatSessionId: chatSessionId
               }),
             });
           } catch (notifyError) {
@@ -456,7 +447,7 @@ function Chat() {
           }
         }
       } catch (error) {
-        console.error("Error sending message:", error);
+        console.error('Error sending message:', error);
       }
 
       return;
@@ -538,8 +529,8 @@ function Chat() {
           // We only update the message if there are meaningful changes to avoid too many re-renders
           if (
             accumulatedText.length - lastProcessedText.length > 5 ||
-            (accumulatedText.includes("\n") &&
-              !lastProcessedText.includes("\n"))
+            accumulatedText.includes("\n") &&
+            !lastProcessedText.includes("\n")
           ) {
             lastProcessedText = accumulatedText;
             setMessages((prev) =>
@@ -581,13 +572,16 @@ function Chat() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-[calc(100vh-80px)]">
       <ChatHeader
         selectedPerson={selectedPerson}
         onPersonChange={handleChangePerson}
         onClearChat={clearChat}
         messagesCount={messages.length}
         allChatPersons={allChatPersons}
+        userId={user?.id}
+        fcmToken={userFcmToken}
+        notificationPermissionStatus={notificationPermissionStatus}
       />
 
       <div className="flex-1 flex flex-col overflow-y-auto">
@@ -618,11 +612,15 @@ function Chat() {
       </div>
 
       {!isLoading && (
-        <ChatInput
-          onSendMessage={handleSendMessage}
-          isDisabled={isStreaming}
-          placeholder={`发送消息给${selectedPerson.name}...`}
-        />
+        <div className="sticky bottom-0 w-full bg-white border-t p-4 safe-bottom">
+          <div className="max-w-3xl mx-auto">
+            <ChatInput
+              onSendMessage={handleSendMessage}
+              isDisabled={isStreaming}
+              placeholder={`发送消息给${selectedPerson.name}...`}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

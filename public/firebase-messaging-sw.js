@@ -17,28 +17,28 @@ firebase.initializeApp(firebaseConfig);
 
 const messaging = firebase.messaging();
 
-// 处理后台通知
-messaging.onBackgroundMessage((payload) => {
-  console.log(
-    "[firebase-messaging-sw.js] Received background message ",
-    payload
-  );
+// // 处理后台通知
+// messaging.onBackgroundMessage((payload) => {
+//   console.log(
+//     "[firebase-messaging-sw.js] Received background message ",
+//     payload
+//   );
 
-  // payload.fcmOptions?.link comes from our backend API route handle
-  // payload.data.link comes from the Firebase Console where link is the 'key'
-  const link = payload.fcmOptions?.link || payload.data?.link;
+//   // payload.fcmOptions?.link comes from our backend API route handle
+//   // payload.data.link comes from the Firebase Console where link is the 'key'
+//   const link = payload.fcmOptions?.link || payload.data?.link;
 
-  const notificationTitle = payload.notification.title;
-  const notificationOptions = {
-    body: payload.notification.body,
-    icon: "./logo.png",
-    data: { url: link || '/' },
-    tag: `chat-notification-${Date.now()}`, // 使用唯一标签，避免通知堆积
-    requireInteraction: true, // 通知会持续显示，直到用户与之交互
-  };
+//   const notificationTitle = payload.notification.title;
+//   const notificationOptions = {
+//     body: payload.notification.body,
+//     icon: "./logo.png",
+//     data: { url: link || '/' },
+//     tag: `chat-notification-${Date.now()}`, // 使用唯一标签，避免通知堆积
+//     requireInteraction: true, // 通知会持续显示，直到用户与之交互
+//   };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
-});
+//   self.registration.showNotification(notificationTitle, notificationOptions);
+// });
 
 // 处理通知点击事件
 self.addEventListener("notificationclick", function (event) {

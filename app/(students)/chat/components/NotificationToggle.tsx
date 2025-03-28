@@ -64,7 +64,10 @@ export function NotificationToggle({
         }
 
         setIsEnabled(false);
-        toast.success("Notifications disabled");
+        toast.info("Notifications disabled", {
+          description: "You won't receive message notifications anymore",
+          icon: <BellOff className="h-5 w-5 text-blue-500" />,
+        });
       } catch (err) {
         console.error("Error:", err);
         toast.error("An error occurred");
@@ -108,7 +111,9 @@ export function NotificationToggle({
       }
 
       setIsEnabled(true);
-      toast.success("Notifications enabled");
+      toast.success("Notifications enabled", {
+        icon: <Bell className="h-5 w-5 text-green-500" />,
+      });
     } catch (err) {
       console.error("Error:", err);
       toast.error("An error occurred");

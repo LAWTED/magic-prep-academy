@@ -58,15 +58,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={geistSans.className} suppressHydrationWarning>
-      <Toaster
-        position="bottom-center"
-        richColors
-        className="safe-bottom"
-        toastOptions={{
-          className: "mb-16 safe-bottom",
-        }}
-      />
       <body className="bg-background text-foreground overscroll-y-contain">
+        <Toaster
+          position="bottom-center"
+          richColors
+          className="safe-bottom"
+          toastOptions={{
+            className: "mb-16 safe-bottom",
+          }}
+        />
         <NotificationListener />
         {/* <ThemeProvider
           attribute="class"

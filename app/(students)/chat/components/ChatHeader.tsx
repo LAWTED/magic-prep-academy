@@ -1,9 +1,15 @@
-import { ChevronDown, Trash2 } from "lucide-react";
+import { Trash2, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChatPerson } from "./types";
 import { chatPersons } from "./chatPersons";
 import { NotificationToggle } from "./NotificationToggle";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 type ChatHeaderProps = {
   selectedPerson: ChatPerson;
@@ -16,27 +22,6 @@ type ChatHeaderProps = {
   notificationPermissionStatus: NotificationPermission | null; // 通知权限状态
 };
 
-// 下拉菜单动画
-const dropdownVariants = {
-  hidden: { opacity: 0, y: -10, height: 0 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    height: "auto",
-    transition: {
-      duration: 0.2,
-    },
-  },
-  exit: {
-    opacity: 0,
-    y: -10,
-    height: 0,
-    transition: {
-      duration: 0.2,
-    },
-  },
-};
-
 export function ChatHeader({
   selectedPerson,
   onPersonChange,
@@ -47,100 +32,64 @@ export function ChatHeader({
   fcmToken,
   notificationPermissionStatus
 }: ChatHeaderProps) {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // 处理点击外部关闭下拉菜单
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
   return (
     <header className="sticky top-0 z-10 w-full p-4 flex items-center justify-between border-b bg-background">
-      <div className="flex items-center gap-2 relative" ref={dropdownRef}>
-        <button
-          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className="flex items-center gap-2"
-        >
-          {selectedPerson.avatar ? (
-            <div className="w-10 h-10 overflow-hidden rounded-full">
-              <img
-                src={selectedPerson.avatar}
-                alt={selectedPerson.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ) : (
-            <div
-              className={`p-2 rounded-full ${
-                selectedPerson.isRealPerson
-                  ? "bg-green-100"
-                  : selectedPerson.id === "phd-mentor"
-                  ? "bg-purple-100"
-                  : selectedPerson.id === "resume-editor"
-                    ? "bg-blue-100"
-                    : "bg-green-100"
-              }`}
-            >
-              <selectedPerson.icon
-                className={`h-5 w-5 ${selectedPerson.color}`}
-              />
-            </div>
-          )}
-          <div className="flex items-center gap-1">
-            <h1 className="text-xl font-bold">{selectedPerson.name}</h1>
-            <ChevronDown
-              className={`h-4 w-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
-            />
-          </div>
-        </button>
-
-        <AnimatePresence>
-          {isDropdownOpen && (
-            <motion.div
-              variants={dropdownVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg py-2 w-60 overflow-hidden z-20 max-h-96 overflow-y-auto"
-            >
-              {/* Filter out resume-editor and group real mentors */}
-              {allChatPersons
-                .filter(person => person.id !== "resume-editor")
-                .map((person) => (
-                <button
-                  key={person.id}
-                  onClick={() => {
-                    onPersonChange(person);
-                    setIsDropdownOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-left ${
-                    selectedPerson.id === person.id ? "bg-gray-50" : ""
+      <div className="flex items-center gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger className="flex items-center gap-2 focus:outline-none">
+            <div className="w-10 h-10 flex items-center justify-center overflow-hidden rounded-full">
+              {selectedPerson.avatar ? (
+                <img
+                  src={selectedPerson.avatar}
+                  alt={selectedPerson.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div
+                  className={`w-full h-full flex items-center justify-center ${
+                    selectedPerson.isRealPerson
+                      ? "bg-green-100"
+                      : selectedPerson.id === "phd-mentor"
+                      ? "bg-purple-100"
+                      : selectedPerson.id === "resume-editor"
+                        ? "bg-blue-100"
+                        : "bg-green-100"
                   }`}
                 >
+                  <selectedPerson.icon
+                    className={`h-5 w-5 ${selectedPerson.color}`}
+                  />
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              <h1 className="text-xl font-bold">{selectedPerson.name}</h1>
+              <ChevronDown className="h-4 w-4 text-gray-500 ml-1" />
+            </div>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent align="start" className="w-60 max-h-[400px] overflow-y-auto">
+            {/* Filter out resume-editor and group real mentors */}
+            {allChatPersons
+              .filter(person => person.id !== "resume-editor")
+              .map((person) => (
+              <DropdownMenuItem
+                key={person.id}
+                onClick={() => onPersonChange(person)}
+                className={`flex items-center gap-2 ${
+                  selectedPerson.id === person.id ? "bg-gray-50" : ""
+                }`}
+              >
+                <div className="w-8 h-8 flex items-center justify-center overflow-hidden rounded-full">
                   {person.avatar ? (
-                    <div className="w-8 h-8 overflow-hidden rounded-full">
-                      <img
-                        src={person.avatar}
-                        alt={person.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
+                    <img
+                      src={person.avatar}
+                      alt={person.name}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <div
-                      className={`p-1 rounded-full ${
+                      className={`w-full h-full flex items-center justify-center ${
                         person.isRealPerson
                           ? "bg-green-100"
                           : person.id === "phd-mentor"
@@ -151,12 +100,12 @@ export function ChatHeader({
                       <person.icon className={`h-4 w-4 ${person.color}`} />
                     </div>
                   )}
-                  <span className="text-sm font-medium truncate">{person.name}</span>
-                </button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+                </div>
+                <span className="text-sm font-medium truncate">{person.name}</span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div className="flex items-center gap-2">

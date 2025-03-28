@@ -41,37 +41,43 @@ export function ChatInput({ onSendMessage, isDisabled = false, placeholder = "Ty
   };
 
   return (
-    <div className="px-4 relative">
-      <textarea
-        ref={inputRef}
-        value={inputValue}
-        onChange={(e) => {
-          setInputValue(e.target.value);
-          adjustTextareaHeight();
-        }}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        className="w-full border rounded-xl pl-4 pr-12 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm md:text-base"
-        rows={1}
-        style={{ maxHeight: "120px" }}
-      />
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={handleSendMessage}
-        disabled={!inputValue.trim() || isDisabled}
-        className={`absolute right-6 top-1/2 -translate-y-1/2 rounded-full p-2 ${
-          inputValue.trim() && !isDisabled
-            ? "bg-primary text-white"
-            : "bg-gray-200 text-gray-500"
-        }`}
-      >
-        {isDisabled ? (
-          <RefreshCw size={18} className="animate-spin" />
-        ) : (
-          <Send size={18} />
-        )}
-      </motion.button>
+    <div className="px-4 py-2">
+      <div className="flex border rounded-xl overflow-hidden">
+        <div className="flex-1 relative">
+          <textarea
+            ref={inputRef}
+            value={inputValue}
+            onChange={(e) => {
+              setInputValue(e.target.value);
+              adjustTextareaHeight();
+            }}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            className="w-full px-4 py-3 resize-none focus:outline-none text-sm md:text-base border-none"
+            rows={1}
+            style={{ maxHeight: "120px" }}
+          />
+        </div>
+        <div className="pr-2 flex items-end pb-2">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={handleSendMessage}
+            disabled={!inputValue.trim() || isDisabled}
+            className={`rounded-full p-2 ${
+              inputValue.trim() && !isDisabled
+                ? "bg-primary text-white"
+                : "bg-gray-200 text-gray-500"
+            }`}
+          >
+            {isDisabled ? (
+              <RefreshCw size={18} className="animate-spin" />
+            ) : (
+              <Send size={18} />
+            )}
+          </motion.button>
+        </div>
+      </div>
     </div>
   );
 }

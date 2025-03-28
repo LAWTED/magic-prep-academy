@@ -119,7 +119,7 @@ function Chat() {
     const channelId = `chat-${chatSessionId}`;
 
     // Subscribe to changes in the mentor_student_interactions table
-    let channel;
+    let channel: any;
     try {
       channel = supabase
         .channel(channelId)

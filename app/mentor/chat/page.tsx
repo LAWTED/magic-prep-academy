@@ -274,7 +274,7 @@ function MentorChat() {
     const channelId = `chat-${selectedChatId}`;
 
     // Subscribe to changes in the selected chat
-    let channel;
+    let channel: any;
     try {
       channel = supabase
         .channel(channelId)

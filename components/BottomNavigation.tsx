@@ -51,11 +51,6 @@ export default function BottomNavigation() {
       href: "/tools",
       icon: Wrench,
     },
-    {
-      name: "Awards",
-      href: "/awards",
-      icon: Award,
-    },
   ];
 
   return (

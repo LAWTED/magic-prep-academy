@@ -96,13 +96,22 @@ export default function StudentHeader() {
               </motion.div>
 
               {/* XP as money */}
-              <div className="flex items-center gap-2 bg-white/90 px-3 py-1.5 rounded-xl">
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => router.push("/awards")}
+                className="flex items-center gap-2 bg-white/90 px-3 py-1.5 rounded-xl hover:bg-white/100 transition-colors active:bg-white/80 border border-gray-200"
+              >
                 {themeConfig.xpReward(userXP?.total_xp || 0)}
-              </div>
+              </motion.button>
               {/* Hearts */}
-              <div className="flex items-center gap-2 bg-white/90 px-3 py-1.5 rounded-xl">
+
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => router.push("/pay")}
+                className="flex items-center gap-2 bg-white/90 px-3 py-1.5 rounded-xl hover:bg-white/100 transition-colors active:bg-white/80 border border-gray-200"
+              >
                 {themeConfig.hearts(userHearts?.current_hearts || 0)}
-              </div>
+              </motion.button>
             </>
           )}
         </div>

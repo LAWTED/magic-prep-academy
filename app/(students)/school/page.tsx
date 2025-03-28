@@ -13,6 +13,13 @@ import {
   School as SchoolType,
 } from "@/app/types";
 import { SCHOOL_PROMPTS } from "@/app/config/themePrompts";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function SchoolPage() {
   const router = useRouter();
@@ -28,8 +35,8 @@ export default function SchoolPage() {
   const [expandedSchool, setExpandedSchool] = useState<string | null>(null);
   const [locations, setLocations] = useState<string[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState<string>("");
-  const [selectedSubject, setSelectedSubject] = useState<string>("");
+  const [selectedLocation, setSelectedLocation] = useState<string>("all");
+  const [selectedSubject, setSelectedSubject] = useState<string>("all");
   const [showFavorited, setShowFavorited] = useState(true);
   const [favoritedPrograms, setFavoritedPrograms] = useState<string[]>([]);
   const [filtersVisible, setFiltersVisible] = useState(false);
@@ -61,13 +68,13 @@ export default function SchoolPage() {
         let favoritedProgramIds: string[] = [];
         if (user) {
           const { data: favoritesData, error: favoritesError } = await supabase
-            .from('user_programs_progress')
-            .select('program_id')
-            .eq('user_id', user.id)
-            .eq('status', 'favorited');
+            .from("user_programs_progress")
+            .select("program_id")
+            .eq("user_id", user.id)
+            .eq("status", "favorited");
 
           if (!favoritesError && favoritesData) {
-            favoritedProgramIds = favoritesData.map(item => item.program_id);
+            favoritedProgramIds = favoritesData.map((item) => item.program_id);
             setFavoritedPrograms(favoritedProgramIds);
           }
         }
@@ -145,14 +152,14 @@ export default function SchoolPage() {
     let filteredSchools = [...allSchoolsWithPrograms];
 
     // Filter by location
-    if (selectedLocation) {
+    if (selectedLocation !== "all") {
       filteredSchools = filteredSchools.filter(
         (school) => school.location === selectedLocation
       );
     }
 
     // Filter by subject
-    if (selectedSubject) {
+    if (selectedSubject !== "all") {
       filteredSchools = filteredSchools.filter((school) =>
         school.programs.some(
           (program) => program.subject_id === selectedSubject
@@ -171,20 +178,28 @@ export default function SchoolPage() {
     // Filter by favorited status
     if (showFavorited) {
       filteredSchools = filteredSchools.filter((school) =>
-        school.programs.some((program) => favoritedPrograms.includes(program.id))
+        school.programs.some((program) =>
+          favoritedPrograms.includes(program.id)
+        )
       );
 
       // Also filter the programs within each school
       filteredSchools = filteredSchools.map((school) => ({
         ...school,
-        programs: school.programs.filter(
-          (program) => favoritedPrograms.includes(program.id)
+        programs: school.programs.filter((program) =>
+          favoritedPrograms.includes(program.id)
         ),
       }));
     }
 
     setSchoolsWithPrograms(filteredSchools);
-  }, [selectedLocation, selectedSubject, showFavorited, allSchoolsWithPrograms, favoritedPrograms]);
+  }, [
+    selectedLocation,
+    selectedSubject,
+    showFavorited,
+    allSchoolsWithPrograms,
+    favoritedPrograms,
+  ]);
 
   const toggleSchool = (schoolId: string) => {
     if (expandedSchool === schoolId) {
@@ -195,9 +210,9 @@ export default function SchoolPage() {
   };
 
   const clearFilters = () => {
-    setSelectedLocation("");
-    setSelectedSubject("");
-    setShowFavorited(true);
+    setSelectedLocation("all");
+    setSelectedSubject("all");
+    setShowFavorited(false);
   };
 
   if (loading || userLoading) {
@@ -228,7 +243,9 @@ export default function SchoolPage() {
                     : "bg-gray-100 text-gray-600"
                 }`}
               >
-                <Heart className={`w-4 h-4 ${showFavorited ? "fill-primary" : ""}`} />
+                <Heart
+                  className={`w-4 h-4 ${showFavorited ? "fill-primary" : ""}`}
+                />
                 Favorites
               </button>
               <button
@@ -250,7 +267,7 @@ export default function SchoolPage() {
             >
               <div className="flex justify-between items-center">
                 <h3 className="font-medium">Filters</h3>
-                {(selectedLocation || selectedSubject) && (
+                {(selectedLocation !== "all" || selectedSubject !== "all") && (
                   <button
                     onClick={clearFilters}
                     className="text-xs flex items-center gap-1 text-gray-500"
@@ -261,35 +278,47 @@ export default function SchoolPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-600 mb-1">Location</label>
-                <select
+                <label className="block text-sm text-gray-600 mb-1">
+                  Location
+                </label>
+                <Select
                   value={selectedLocation}
-                  onChange={(e) => setSelectedLocation(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg p-2.5 bg-transparent"
+                  onValueChange={setSelectedLocation}
                 >
-                  <option value="">All locations</option>
-                  {locations.map((location) => (
-                    <option key={location} value={location}>
-                      {location}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All locations" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All locations</SelectItem>
+                    {locations.map((location) => (
+                      <SelectItem key={location} value={location}>
+                        {location}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
-                <label className="block text-sm text-gray-600 mb-1">Subject</label>
-                <select
+                <label className="block text-sm text-gray-600 mb-1">
+                  Subject
+                </label>
+                <Select
                   value={selectedSubject}
-                  onChange={(e) => setSelectedSubject(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg p-2.5 bg-transparent"
+                  onValueChange={setSelectedSubject}
                 >
-                  <option value="">All subjects</option>
-                  {subjects.map((subject) => (
-                    <option key={subject.id} value={subject.id}>
-                      {subject.subject_name}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All subjects" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All subjects</SelectItem>
+                    {subjects.map((subject) => (
+                      <SelectItem key={subject.id} value={subject.id}>
+                        {subject.subject_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </motion.div>
           )}
@@ -300,7 +329,7 @@ export default function SchoolPage() {
         {schoolsWithPrograms.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <p>No schools or programs found with selected filters</p>
-            {(selectedLocation || selectedSubject || showFavorited) && (
+            {(selectedLocation !== "all" || selectedSubject !== "all" || showFavorited) && (
               <button
                 onClick={clearFilters}
                 className="mt-2 text-primary text-sm"
@@ -311,7 +340,7 @@ export default function SchoolPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {[...schoolsWithPrograms, ...schoolsWithPrograms, ...schoolsWithPrograms, ...schoolsWithPrograms, ...schoolsWithPrograms, ...schoolsWithPrograms, ...schoolsWithPrograms, ...schoolsWithPrograms, ...schoolsWithPrograms, ...schoolsWithPrograms].map((school) => (
+            {schoolsWithPrograms.map((school) => (
               <div
                 key={school.id}
                 className="bg-white rounded-xl overflow-hidden shadow-sm"

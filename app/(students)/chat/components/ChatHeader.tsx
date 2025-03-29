@@ -1,4 +1,4 @@
-import { Trash2, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ChatPerson } from "./types";
@@ -14,7 +14,6 @@ import {
 type ChatHeaderProps = {
   selectedPerson: ChatPerson;
   onPersonChange: (person: ChatPerson) => void;
-  onClearChat: () => void;
   messagesCount: number;
   allChatPersons?: ChatPerson[]; // Add support for all chat persons including real mentors
   userId?: string; // 当前用户ID
@@ -25,7 +24,6 @@ type ChatHeaderProps = {
 export function ChatHeader({
   selectedPerson,
   onPersonChange,
-  onClearChat,
   messagesCount,
   allChatPersons = chatPersons,
   userId,
@@ -117,18 +115,6 @@ export function ChatHeader({
             fcmToken={fcmToken}
             notificationPermissionStatus={notificationPermissionStatus}
           />
-        )}
-
-        {messagesCount > 0 && (
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={onClearChat}
-            className="flex items-center gap-1 text-sm text-gray-500 hover:text-red-500 transition-colors"
-          >
-            <Trash2 size={16} />
-            <span className="hidden sm:inline">Clear</span>
-          </motion.button>
         )}
       </div>
     </header>

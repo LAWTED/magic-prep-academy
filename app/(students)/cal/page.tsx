@@ -9,6 +9,7 @@ import { themeConfig } from "@/app/config/themeConfig";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { TextMorph } from "@/components/ui/text-morph";
+import EventItem from "./components/EventItem";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +25,15 @@ interface CalendarEvent {
   end_date: string;
   action_type: string;
   program_id: string;
+}
+
+// 推荐信事件内容接口
+interface RecommendationLetterEventContent {
+  mentor_name?: string;
+  school_name?: string;
+  program_name?: string;
+  document_id?: string;
+  [key: string]: any; // 允许其他属性
 }
 
 // 创建客户端实例移到组件外部
@@ -210,6 +220,28 @@ function Calendar() {
 
         // Process and format events
         if (data) {
+          console.log("Calendar events loaded:", data.length);
+          // 查找并记录推荐信发送事件
+          const recommendationEvents = data.filter(event => event.action_type === 'recommendation_letter_sent');
+          if (recommendationEvents.length > 0) {
+            console.log("Found recommendation letter events:", recommendationEvents.length);
+            recommendationEvents.forEach(event => {
+              console.log("Recommendation letter event:", event.title, event.start_date);
+              // 尝试解析事件描述
+              try {
+                if (event.description && typeof event.description === 'string') {
+                  let content;
+                  // 尝试不同的解析方法
+                  if (event.description.startsWith('{') && event.description.endsWith('}')) {
+                    content = JSON.parse(event.description);
+                    console.log("Parsed event content:", content);
+                  }
+                }
+              } catch (e) {
+                console.error("Failed to parse event description:", event.description);
+              }
+            });
+          }
           setEvents(data);
         }
       } catch (error) {
@@ -260,10 +292,19 @@ function Calendar() {
   const getEventsForDate = (date: Date | null) => {
     if (!date) return [];
 
-    const dateStr = date.toISOString().split('T')[0];
-    return events.filter(event =>
-      dateStr >= event.start_date && dateStr <= event.end_date
-    );
+    // 使用日期的年月日部分进行比较，避免时区问题
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+
+    return events.filter(event => {
+      // 将事件日期截取到年月日部分
+      const startDateParts = event.start_date.split('T')[0];
+      const endDateParts = event.end_date.split('T')[0];
+
+      return dateStr >= startDateParts && dateStr <= endDateParts;
+    });
   };
 
   // Check if date has events
@@ -276,12 +317,48 @@ function Calendar() {
   const getSchoolEventsForDate = (date: Date | null) => {
     if (!date) return [];
 
-    const dateStr = date.toISOString().split('T')[0];
-    return events.filter(event =>
-      dateStr >= event.start_date &&
-      dateStr <= event.end_date &&
-      event.action_type === 'deadline'
-    );
+    // 使用日期的年月日部分进行比较，避免时区问题
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+
+    return events.filter(event => {
+      // 将事件日期截取到年月日部分
+      const startDateParts = event.start_date.split('T')[0];
+      const endDateParts = event.end_date.split('T')[0];
+
+      return dateStr >= startDateParts &&
+             dateStr <= endDateParts &&
+             event.action_type === 'deadline';
+    });
+  };
+
+  // Get recommendation letter sent events for a date
+  const getRecommendationLetterEvents = (date: Date | null) => {
+    if (!date) return [];
+
+    // 使用日期的年月日部分进行比较，避免时区问题
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+
+    return events.filter(event => {
+      // 将事件日期截取到年月日部分
+      const startDateParts = event.start_date.split('T')[0];
+      const endDateParts = event.end_date.split('T')[0];
+
+      return dateStr >= startDateParts &&
+             dateStr <= endDateParts &&
+             event.action_type === 'recommendation_letter_sent';
+    });
+  };
+
+  // Check if date has recommendation letter events
+  const hasRecommendationLetterEvents = (date: Date | null) => {
+    if (!date) return false;
+    return getRecommendationLetterEvents(date).length > 0;
   };
 
   // Check if date has school-specific events
@@ -294,10 +371,16 @@ function Calendar() {
   const getCommonTimelineEventsForDate = (date: Date | null) => {
     if (!date) return [];
 
-    const dateStr = date.toISOString().split('T')[0];
-    const commonEvents = Object.entries(themeConfig.commonTimelineEvents).filter(([action_type, event]) =>
-      dateStr >= event.start_date && dateStr <= event.end_date
-    );
+    // 使用日期的年月日部分进行比较，避免时区问题
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+
+    const commonEvents = Object.entries(themeConfig.commonTimelineEvents).filter(([action_type, event]) => {
+      // 确保日期范围比较是基于年月日部分
+      return dateStr >= event.start_date && dateStr <= event.end_date;
+    });
 
     return commonEvents.map(([action_type, event]) => ({
       id: action_type,
@@ -369,7 +452,13 @@ function Calendar() {
       return "/images/cal/stamp.png";
     }
 
-    // If no common events, check for school events (deadline events)
+    // If no common events, check for recommendation letter events
+    const recommendationEvents = getRecommendationLetterEvents(date);
+    if (recommendationEvents.length > 0) {
+      return "/images/cal/application_materials.png"; // Using application materials icon for recommendation letters
+    }
+
+    // If no recommendation events, check for school events (deadline events)
     const schoolEvents = getSchoolEventsForDate(date);
     if (schoolEvents.length > 0) {
       // Use a dedicated deadline icon or fallback to application_materials.png
@@ -596,19 +685,10 @@ function Calendar() {
             {days.map((day, index) => {
               const isSelected = isSelectedDate(day);
               const dateHasSchoolEvents = hasSchoolEvents(day);
+              const hasLorEvents = hasRecommendationLetterEvents(day);
               const commonTimelineColor = getCommonTimelineColorForDate(day);
               const schoolEvents = day ? getSchoolEventsForDate(day) : [];
               const eventImage = getEventImageForDate(day);
-
-              // 为有截止日期的日子设置边框样式
-              let borderStyle = {};
-              if (dateHasSchoolEvents && day) {
-                borderStyle = {
-                  borderWidth: '2px',
-                  borderStyle: 'solid',
-                  borderColor: '#EF4444' // 红色的截止日期边框，更鲜艳
-                };
-              }
 
               return (
                 <motion.div
@@ -619,14 +699,46 @@ function Calendar() {
                   animate="animate"
                   whileTap={{ scale: 0.95 }}
                   onClick={() => day && updateSelectedDate(day)}
-                  style={borderStyle}
                   className={`
                     aspect-square flex flex-col items-center justify-start p-1 rounded-lg relative
                     ${day ? "cursor-pointer" : ""}
                     ${commonTimelineColor ? `${commonTimelineColor} bg-opacity-20` : ""}
                   `}
                 >
-                  <span className="text-sm mb-1">{day?.getDate()}</span>
+                  {/* Date number - hidden when selected */}
+                  <AnimatePresence>
+                    {!(isSelected && (eventImage || true)) && (
+                      <motion.span
+                        initial={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="text-sm mb-1"
+                      >
+                        {day?.getDate()}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+
+                  {/* 事件指示器容器 - hidden when selected */}
+                  <AnimatePresence>
+                    {day && (dateHasSchoolEvents || hasLorEvents) && !(isSelected && (eventImage || true)) && (
+                      <motion.div
+                        initial={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute top-6 left-0 right-0 flex justify-center space-x-1"
+                      >
+                        {/* 截止日期指示器 */}
+                        {dateHasSchoolEvents && (
+                          <div className="h-1 w-4 rounded-full bg-red-500"></div>
+                        )}
+
+                        {/* 推荐信里程碑指示器 */}
+                        {hasLorEvents && (
+                          <div className="h-1 w-4 rounded-full bg-emerald-500"></div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   {isSelected && eventImage && (
                     <motion.div
                       layoutId="selected-overlay"
@@ -684,7 +796,6 @@ function Calendar() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-6 p-4 bg-white rounded-lg shadow-sm"
         >
           <h2 className="text-lg font-medium mb-4">
             {selectedDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
@@ -695,41 +806,12 @@ function Calendar() {
               <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
             </div>
           ) : selectedDateEvents.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">No deadlines scheduled for this day</p>
+            <p className="text-gray-500 text-center py-4">No events scheduled for this day</p>
           ) : (
             <div className="space-y-3">
-              {selectedDateEvents.map((event) => {
-                const theme = getThemeForAction(event.action_type);
-                const IconComponent = theme.icon;
-                const colorClass = theme.color;
-
-                return (
-                  <motion.div
-                    key={event.id}
-                    initial={{ x: -10, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    className="flex gap-3 p-3 rounded-lg"
-                  >
-                    <div className={`w-8 h-8 rounded-full ${colorClass} flex items-center justify-center flex-shrink-0`}>
-                      <IconComponent size={16} />
-                    </div>
-
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-semibold">{event.title}</h3>
-                          {event.program_id && (
-                            <ProgramName programId={event.program_id} />
-                          )}
-                        </div>
-                        <span className="text-xs text-gray-500 whitespace-nowrap">
-                          {new Date(event.start_date).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
+              {selectedDateEvents.map((event) => (
+                <EventItem key={event.id} event={event} />
+              ))}
             </div>
           )}
         </motion.div>

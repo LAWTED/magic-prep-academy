@@ -26,7 +26,7 @@ export default function CheckStatusCard({ programId }: CheckStatusCardProps) {
   const { user } = useUserStore();
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<EligibilityResult[] | null>(null);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [showResults, setShowResults] = useState(false);
   const [activeItem, setActiveItem] = useState<number | null>(null);
 
   const checkEligibility = async () => {
@@ -35,7 +35,6 @@ export default function CheckStatusCard({ programId }: CheckStatusCardProps) {
     try {
       setIsLoading(true);
       setResults(null);
-      setIsExpanded(false);
       setActiveItem(null);
 
       const response = await fetch("/api/eligibility-check", {
@@ -58,7 +57,7 @@ export default function CheckStatusCard({ programId }: CheckStatusCardProps) {
       // 检查API响应是否成功
       if (data.success && Array.isArray(data.data)) {
         setResults(data.data);
-        setIsExpanded(true);
+        setShowResults(true);
 
         // 短暂延迟后自动展开第一项
         setTimeout(() => {
@@ -125,87 +124,68 @@ export default function CheckStatusCard({ programId }: CheckStatusCardProps) {
     setActiveItem(activeItem === index ? null : index);
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
-    },
-  };
-
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
     visible: { y: 0, opacity: 1 },
   };
 
   return (
-    <div className="bg-white border border-primary/20 rounded-xl p-4 md:p-5 shadow-md">
-      {!isExpanded ? (
+    <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+      {/* Show Check Eligibility button when no results are displayed */}
+      {!showResults && !isLoading && (
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={checkEligibility}
-          disabled={isLoading}
-          className="w-full flex flex-col md:flex-row items-center gap-4 md:justify-between p-2"
+          className="w-full p-4 text-left flex flex-col"
         >
-          <div className="flex items-center gap-3">
-            <div className="bg-primary/20 h-14 w-14 rounded-full flex items-center justify-center">
-              <ClipboardCheck className="h-7 w-7 text-primary" />
-            </div>
-            <div className="text-center md:text-left">
-              <h3 className="font-bold text-primary text-lg">
-                Check Your Eligibility
-              </h3>
-              <p className="text-sm text-gray-600">
-                See if you meet the program requirements
-              </p>
-            </div>
+          <div className="flex items-center gap-2 mb-2">
+            <h3 className="font-bold text-primary">Eligibility Check</h3>
           </div>
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className={`px-6 py-3 rounded-full text-base font-medium shadow-sm ${
-              isLoading ? "bg-gray-300 text-gray-600" : "bg-primary text-white"
-            }`}
-          >
-            {isLoading ? "Checking..." : "Check Now"}
-          </motion.div>
+          <p className="text-sm text-gray-600">
+            Check if you meet the requirements for this program
+          </p>
+          <div className="mt-3 self-end px-4 py-2 rounded-full text-sm font-medium bg-primary text-white">
+            Check Eligibility
+          </div>
         </motion.button>
-      ) : (
-        <div>
-          <div className="mb-5 text-center md:text-left">
-            <h3 className="font-bold text-primary text-lg">
-              Eligibility Results
-            </h3>
-            <p className="text-sm text-gray-600">
-              Based on your academic profile for this program
+      )}
+
+      {/* Display loading state */}
+      {isLoading && (
+        <div className="p-4">
+          <div className="flex flex-col items-center py-6">
+            <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin mb-3"></div>
+            <p className="text-gray-500 text-sm">
+              Checking your eligibility...
             </p>
           </div>
+        </div>
+      )}
 
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="space-y-3"
-          >
-            {results?.map((result, index) => (
+      {/* Display eligibility results */}
+      {showResults && results && (
+        <div className="p-4">
+          <div className="space-y-3">
+            {results.map((result, index) => (
               <motion.div
                 key={index}
                 variants={itemVariants}
-                className={`border rounded-xl overflow-hidden ${getStatusColor(result.status)}`}
+                initial="hidden"
+                animate="visible"
+                className={`border rounded-lg overflow-hidden ${getStatusColor(result.status)}`}
               >
                 <motion.button
                   whileTap={{ scale: 0.98 }}
                   onClick={() => toggleItem(index)}
-                  className="w-full flex items-center justify-between p-4"
+                  className="w-full flex items-center justify-between p-3"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-full bg-white shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-full bg-white shadow-sm">
                       {getStatusIcon(result.status)}
                     </div>
                     <h5 className="font-medium">{result.label}</h5>
                   </div>
-                  <span className="px-3 py-1 rounded-full text-sm font-medium bg-white shadow-sm">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-white shadow-sm">
                     {getStatusText(result.status)}
                   </span>
                 </motion.button>
@@ -224,15 +204,12 @@ export default function CheckStatusCard({ programId }: CheckStatusCardProps) {
                 </AnimatePresence>
               </motion.div>
             ))}
-          </motion.div>
+          </div>
 
           <motion.button
             whileTap={{ scale: 0.98 }}
-            onClick={() => {
-              setIsExpanded(false);
-              setResults(null);
-            }}
-            className="mt-6 w-full py-3 text-center text-primary font-medium rounded-xl border border-primary/20 hover:bg-primary/5"
+            onClick={checkEligibility}
+            className="mt-4 w-full px-4 py-2 text-center text-primary font-medium rounded-full border border-primary/20 hover:bg-primary/5"
           >
             Check Again
           </motion.button>

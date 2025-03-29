@@ -22,12 +22,23 @@ export function NotificationToggle({
   const [isEnabled, setIsEnabled] = useState<boolean>(false);
   const supabase = createClient();
 
-  // 检查数据库中是否有保存token
+  // 检查通知状态：优先使用localStorage，然后才检查数据库
   useEffect(() => {
     if (!userId) return;
 
-    const checkTokenInDb = async () => {
+    const checkNotificationStatus = async () => {
       try {
+        // 先从localStorage获取用户偏好设置
+        const storageKey = `notifications_${userRole}_${userId}`;
+        const storedPreference = localStorage.getItem(storageKey);
+
+        if (storedPreference !== null) {
+          // 如果有存储的偏好设置，使用它
+          setIsEnabled(storedPreference === 'enabled');
+          return;
+        }
+
+        // 如果没有存储的偏好，检查数据库中是否有token
         const table = userRole === "mentor" ? "mentors" : "users";
         const { data, error } = await supabase
           .from(table)
@@ -37,17 +48,26 @@ export function NotificationToggle({
 
         if (!error && data && data.fcm_token) {
           setIsEnabled(true);
+          // 保存到localStorage
+          localStorage.setItem(storageKey, 'enabled');
+        } else {
+          // 默认为关闭
+          localStorage.setItem(storageKey, 'disabled');
         }
       } catch (error) {
-        console.error("Error checking token:", error);
+        console.error("Error checking notification status:", error);
       }
     };
 
-    checkTokenInDb();
+    checkNotificationStatus();
   }, [userId, userRole, supabase]);
 
   // 处理通知权限请求和保存token
   const handleToggleNotification = async () => {
+    if (!userId) return;
+
+    const storageKey = `notifications_${userRole}_${userId}`;
+
     if (isEnabled) {
       // 已开启状态，进行关闭
       try {
@@ -63,7 +83,12 @@ export function NotificationToggle({
           return;
         }
 
+        // 更新UI状态
         setIsEnabled(false);
+
+        // 保存到localStorage
+        localStorage.setItem(storageKey, 'disabled');
+
         toast.info("Notifications disabled", {
           description: "You won't receive message notifications anymore",
           icon: <BellOff className="h-5 w-5 text-blue-500" />,
@@ -76,7 +101,7 @@ export function NotificationToggle({
       // 已关闭状态，进行开启
       if (notificationPermissionStatus === "granted" && fcmToken) {
         // 已有权限，保存token
-        await saveFcmTokenToDb();
+        await saveFcmTokenToDb(storageKey);
       } else if (notificationPermissionStatus === "denied") {
         // 权限被拒绝，需要在浏览器设置中更改
         toast.error("Please enable notifications in your browser settings");
@@ -85,6 +110,8 @@ export function NotificationToggle({
         const permission = await Notification.requestPermission();
         if (permission === "granted") {
           // 重新获取token（通过页面刷新）
+          // 先保存用户意图
+          localStorage.setItem(storageKey, 'enabled');
           window.location.reload();
         } else {
           toast.error("Notification permission denied");
@@ -94,7 +121,7 @@ export function NotificationToggle({
   };
 
   // 保存FCM token到数据库
-  const saveFcmTokenToDb = async () => {
+  const saveFcmTokenToDb = async (storageKey: string) => {
     if (!fcmToken || !userId) return;
 
     try {
@@ -110,7 +137,12 @@ export function NotificationToggle({
         return;
       }
 
+      // 更新UI状态
       setIsEnabled(true);
+
+      // 保存到localStorage
+      localStorage.setItem(storageKey, 'enabled');
+
       toast.success("Notifications enabled", {
         icon: <Bell className="h-5 w-5 text-green-500" />,
       });

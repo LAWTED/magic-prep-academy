@@ -107,7 +107,18 @@ const useFcmToken = () => {
       console.log("User role:", user.role);
       console.log("Token (first 10 chars):", fcmToken.substring(0, 10) + "...");
 
-      // Check if user is a student (in profiles table) or mentor
+      // 检查用户是否禁用了通知（从localStorage中）
+      const table = user.role === 'mentor' ? 'mentors' : 'users';
+      const storageKey = `notifications_${user.role}_${user.id}`;
+      const storedPreference = localStorage.getItem(storageKey);
+
+      // 如果用户明确禁用了通知，不自动保存token
+      if (storedPreference === 'disabled') {
+        console.log("User has disabled notifications in preferences - not auto-saving token");
+        return;
+      }
+
+      // 否则，正常保存token
       if (user.role === 'mentor') {
         const { error } = await supabase
           .from('mentors')
@@ -119,6 +130,8 @@ const useFcmToken = () => {
           return;
         }
         console.log("FCM token saved successfully to mentors table");
+        // 记录已启用通知
+        localStorage.setItem(storageKey, 'enabled');
       } else {
         const { error } = await supabase
           .from('users')
@@ -130,6 +143,8 @@ const useFcmToken = () => {
           return;
         }
         console.log("FCM token saved successfully to users table");
+        // 记录已启用通知
+        localStorage.setItem(storageKey, 'enabled');
       }
 
       hasSavedToken.current = true;

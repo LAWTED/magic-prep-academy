@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FileText, Check, X, Clock, ExternalLink } from "lucide-react";
+import { FileText, Check, X, Clock, ExternalLink, Award } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
@@ -18,7 +18,7 @@ export default function LoRRequestPreview({
   programName,
   schoolName,
 }: LoRRequestPreviewProps) {
-  const [status, setStatus] = useState<'pending' | 'accepted' | 'rejected'>('pending');
+  const [status, setStatus] = useState<'pending' | 'accepted' | 'rejected' | 'completed'>('pending');
   const [isUpdating, setIsUpdating] = useState(false);
   const supabase = createClient();
   const pathname = usePathname();
@@ -95,6 +95,8 @@ export default function LoRRequestPreview({
         return <Check size={16} className="text-green-600" />;
       case 'rejected':
         return <X size={16} className="text-red-600" />;
+      case 'completed':
+        return <Award size={16} className="text-blue-600" />;
       default:
         return <Clock size={16} className="text-yellow-600" />;
     }
@@ -107,8 +109,26 @@ export default function LoRRequestPreview({
         return 'bg-green-100 text-green-800';
       case 'rejected':
         return 'bg-red-100 text-red-800';
+      case 'completed':
+        return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-yellow-100 text-yellow-800';
+    }
+  };
+
+  // Get status text display
+  const getStatusText = () => {
+    switch (status) {
+      case 'pending':
+        return 'Pending';
+      case 'accepted':
+        return 'Accepted';
+      case 'rejected':
+        return 'Rejected';
+      case 'completed':
+        return 'Completed';
+      default:
+        return status;
     }
   };
 
@@ -123,7 +143,7 @@ export default function LoRRequestPreview({
 
           <div className={`px-2 py-1 rounded-full text-xs flex items-center ${getStatusBadgeClass()}`}>
             {getStatusIcon()}
-            <span className="ml-1 capitalize">{status}</span>
+            <span className="ml-1">{getStatusText()}</span>
           </div>
         </div>
 
@@ -177,14 +197,15 @@ export default function LoRRequestPreview({
           )}
 
           {/* Show view button based on status and user type */}
-          {(status === 'accepted' || !isMentorView || status === 'rejected') && (
+          {(status === 'accepted' || status === 'completed' || !isMentorView || status === 'rejected') && (
             <Link href={lorPath} className="block w-full">
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 className="w-full py-2 rounded-lg font-medium bg-purple-600 text-white text-sm flex items-center justify-center"
               >
                 <ExternalLink size={14} className="mr-1" />
-                {status === 'accepted' ? 'View Recommendation Letter' : 'View Request'}
+                {status === 'accepted' ? 'View Recommendation Letter' :
+                 status === 'completed' ? 'View Completed Letter' : 'View Request'}
               </motion.button>
             </Link>
           )}

@@ -1,5 +1,5 @@
 // 游戏配置, 以汉堡店为例
-import { CircleDollarSign, Heart, BookOpen, FileText, Globe, Award, Stamp, GraduationCap } from "lucide-react";
+import { CircleDollarSign, Heart, BookOpen, FileText, Globe, Award, Stamp, GraduationCap, Mail } from "lucide-react";
 import { QUIZ_TYPES } from "./const";
 
 export const themeConfig = {
@@ -61,6 +61,10 @@ export const themeConfig = {
     "start_school": {
       color: "bg-indigo-100 text-indigo-600",
       icon: GraduationCap
+    },
+    "recommendation_letter_sent": {
+      color: "bg-emerald-100 text-emerald-600",
+      icon: Mail
     }
   } as const,
 

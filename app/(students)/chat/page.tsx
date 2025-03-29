@@ -40,6 +40,7 @@ function Chat() {
     useState<ChatPerson[]>(chatPersons);
   const [chatSessionId, setChatSessionId] = useState<string | null>(null);
   const [mentorFcmToken, setMentorFcmToken] = useState<string | null>(null);
+  const [isLoadingChat, setIsLoadingChat] = useState(false);
 
   // Fetch available mentors from the database
   useEffect(() => {
@@ -104,10 +105,10 @@ function Chat() {
 
   // Load existing chat session if available for real mentor
   useEffect(() => {
-    if (selectedPerson.isRealPerson && user?.id) {
+    if (selectedPerson.isRealPerson && user?.id && !isLoadingChat) {
       loadChatSession(selectedPerson.id);
     }
-  }, [selectedPerson, user]);
+  }, [selectedPerson.id, user?.id]);
 
   // Set up real-time subscription for chat messages
   useEffect(() => {
@@ -164,7 +165,10 @@ function Chat() {
 
   // Load existing chat session if available
   const loadChatSession = async (mentorId: string) => {
-    if (!user?.id) return;
+    if (!user?.id || isLoadingChat) return;
+
+    // Set loading state to prevent duplicate calls
+    setIsLoadingChat(true);
 
     try {
       // Check if there's an existing chat session with this mentor
@@ -178,6 +182,7 @@ function Chat() {
 
       if (error) {
         console.error("Error loading chat session:", error);
+        setIsLoadingChat(false);
         return;
       }
 
@@ -220,6 +225,7 @@ function Chat() {
 
         if (createError) {
           console.error("Error creating chat session:", createError);
+          setIsLoadingChat(false);
           return;
         }
 
@@ -228,8 +234,10 @@ function Chat() {
       }
 
       setIsLoading(false);
+      setIsLoadingChat(false);
     } catch (error) {
       console.error("Error managing chat session:", error);
+      setIsLoadingChat(false);
     }
   };
 
@@ -334,16 +342,6 @@ function Chat() {
     return () => clearInterval(interval);
   }, [isStreaming]);
 
-  const clearChat = () => {
-    if (selectedPerson.isRealPerson && chatSessionId) {
-      setChatSessionId(null);
-      setMessages([]);
-    } else {
-      hasInitializedRef.current = false;
-      setMessages([]);
-    }
-  };
-
   // 统一处理人物切换逻辑
   const changePerson = (person: ChatPerson) => {
     setSelectedPerson(person);
@@ -353,7 +351,7 @@ function Chat() {
 
     if (person.isRealPerson) {
       // If switching to real mentor, load the chat session
-      if (user?.id) {
+      if (user?.id && !isLoadingChat) {
         loadChatSession(person.id);
       }
     } else {
@@ -583,7 +581,6 @@ function Chat() {
       <ChatHeader
         selectedPerson={selectedPerson}
         onPersonChange={handleChangePerson}
-        onClearChat={clearChat}
         messagesCount={messages.length}
         allChatPersons={allChatPersons}
         userId={user?.id}

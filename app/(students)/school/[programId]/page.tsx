@@ -9,6 +9,7 @@ import {
   BookmarkCheck,
   ChevronDown,
   ChevronUp,
+  Info,
 } from "lucide-react";
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -16,6 +17,7 @@ import { useUserStore } from "@/store/userStore";
 import { toast } from "sonner";
 import CheckStatusCard from "./components/CheckStatusCard";
 import ReactMarkdown from "react-markdown";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Program {
   id: string;
@@ -68,6 +70,7 @@ export default function ProgramDetailPage({
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [programSummary, setProgramSummary] = useState<string | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
 
   // Check if program is already favorited
   useEffect(() => {
@@ -116,6 +119,7 @@ export default function ProgramDetailPage({
       const data = await response.json();
       if (data.success && data.summary) {
         setProgramSummary(data.summary);
+        setShowSummary(true);
       }
     } catch (error) {
       console.error("Error fetching program summary:", error);
@@ -147,11 +151,6 @@ export default function ProgramDetailPage({
         }
 
         setProgram(programData);
-
-        // Fetch program summary
-        if (programData.content) {
-          fetchProgramSummary(programData.content);
-        }
 
         // Fetch school details
         const { data: schoolData, error: schoolError } = await supabase
@@ -288,7 +287,7 @@ export default function ProgramDetailPage({
         </button>
       </div>
 
-      <div className="bg-white rounded-xl ">
+      <div className="bg-white rounded-xl p-4">
         <h1 className="text-2xl font-bold mb-1">{program.name}</h1>
 
         <div className="flex items-center gap-2">
@@ -312,70 +311,123 @@ export default function ProgramDetailPage({
         </div>
       </div>
 
-      {/* Display AI-generated summary first */}
-      {summaryLoading ? (
-        <div className="prose prose-sm max-w-none mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100">
-          <div className="flex flex-col items-center py-4">
-            <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin mb-2"></div>
-            <p className="text-gray-500 text-sm">Generating an AI summary...</p>
-          </div>
-        </div>
-      ) : programSummary ? (
-        <div className="prose prose-sm max-w-none mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100">
-          <ReactMarkdown
-            components={{
-              h1: ({ node, ...props }) => (
-                <h1 className="text-2xl font-bold mb-4 mt-6" {...props} />
-              ),
-              h2: ({ node, ...props }) => (
-                <h2 className="text-xl font-bold mb-3 mt-5" {...props} />
-              ),
-              h3: ({ node, ...props }) => (
-                <h3 className="text-lg font-bold mb-2 mt-4" {...props} />
-              ),
-              p: ({ node, ...props }) => (
-                <p className="mb-4 text-gray-700" {...props} />
-              ),
-              ul: ({ node, ...props }) => (
-                <ul className="list-disc pl-5 mb-4" {...props} />
-              ),
-              ol: ({ node, ...props }) => (
-                <ol className="list-decimal pl-5 mb-4" {...props} />
-              ),
-              li: ({ node, ...props }) => <li className="mb-1" {...props} />,
-              a: ({ node, ...props }) => (
-                <a className="text-blue-600 hover:underline" {...props} />
-              ),
-              blockquote: ({ node, ...props }) => (
-                <blockquote
-                  className="border-l-4 border-gray-200 pl-4 italic my-4"
-                  {...props}
-                />
-              ),
-              code: ({ node, ...props }) => (
-                <code
-                  className="bg-gray-100 rounded px-1 py-0.5 font-mono text-sm"
-                  {...props}
-                />
-              ),
-              pre: ({ node, ...props }) => (
-                <pre
-                  className="bg-gray-100 rounded p-4 overflow-x-auto my-4 font-mono text-sm"
-                  {...props}
-                />
-              ),
-              hr: ({ node, ...props }) => (
-                <hr className="my-6 border-t border-gray-200" {...props} />
-              ),
-            }}
+      {/* AI Summary Card */}
+      <div className="bg-white border border-primary/20 rounded-xl p-4 md:p-5 shadow-md">
+        {!showSummary ? (
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={() => program?.content && fetchProgramSummary(program.content)}
+            disabled={summaryLoading}
+            className="w-full flex flex-col md:flex-row items-center gap-4 md:justify-between p-2"
           >
-            {programSummary}
-          </ReactMarkdown>
-        </div>
-      ) : null}
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/20 h-14 w-14 rounded-full flex items-center justify-center">
+                <Info className="h-7 w-7 text-primary" />
+              </div>
+              <div className="text-center md:text-left">
+                <h3 className="font-bold text-primary text-lg">
+                  AI Program Summary
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Get a helpful AI-generated overview of this program
+                </p>
+              </div>
+            </div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className={`px-6 py-3 rounded-full text-base font-medium shadow-sm ${
+                summaryLoading ? "bg-gray-300 text-gray-600" : "bg-primary text-white"
+              }`}
+            >
+              {summaryLoading ? "Generating..." : "Generate Summary"}
+            </motion.div>
+          </motion.button>
+        ) : (
+          <div>
+            <div className="mb-5 text-center md:text-left">
+              <h3 className="font-bold text-primary text-lg">
+                AI Program Summary
+              </h3>
+              <p className="text-sm text-gray-600">
+                AI-generated overview of this program
+              </p>
+            </div>
 
-      {/* Check Status Card */}
-      {programSummary && <CheckStatusCard programId={programId} />}
+            {summaryLoading ? (
+              <div className="flex flex-col items-center py-4">
+                <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin mb-2"></div>
+                <p className="text-gray-500 text-sm">Generating an AI summary...</p>
+              </div>
+            ) : programSummary ? (
+              <div className="prose prose-sm max-w-none">
+                <ReactMarkdown
+                  components={{
+                    h1: ({ node, ...props }) => (
+                      <h1 className="text-2xl font-bold mb-4 mt-6" {...props} />
+                    ),
+                    h2: ({ node, ...props }) => (
+                      <h2 className="text-xl font-bold mb-3 mt-5" {...props} />
+                    ),
+                    h3: ({ node, ...props }) => (
+                      <h3 className="text-lg font-bold mb-2 mt-4" {...props} />
+                    ),
+                    p: ({ node, ...props }) => (
+                      <p className="mb-4 text-gray-700" {...props} />
+                    ),
+                    ul: ({ node, ...props }) => (
+                      <ul className="list-disc pl-5 mb-4" {...props} />
+                    ),
+                    ol: ({ node, ...props }) => (
+                      <ol className="list-decimal pl-5 mb-4" {...props} />
+                    ),
+                    li: ({ node, ...props }) => <li className="mb-1" {...props} />,
+                    a: ({ node, ...props }) => (
+                      <a className="text-blue-600 hover:underline" {...props} />
+                    ),
+                    blockquote: ({ node, ...props }) => (
+                      <blockquote
+                        className="border-l-4 border-gray-200 pl-4 italic my-4"
+                        {...props}
+                      />
+                    ),
+                    code: ({ node, ...props }) => (
+                      <code
+                        className="bg-gray-100 rounded px-1 py-0.5 font-mono text-sm"
+                        {...props}
+                      />
+                    ),
+                    pre: ({ node, ...props }) => (
+                      <pre
+                        className="bg-gray-100 rounded p-4 overflow-x-auto my-4 font-mono text-sm"
+                        {...props}
+                      />
+                    ),
+                    hr: ({ node, ...props }) => (
+                      <hr className="my-6 border-t border-gray-200" {...props} />
+                    ),
+                  }}
+                >
+                  {programSummary}
+                </ReactMarkdown>
+              </div>
+            ) : null}
+
+            <motion.button
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                setShowSummary(false);
+                setProgramSummary(null);
+              }}
+              className="mt-6 w-full py-3 text-center text-primary font-medium rounded-xl border border-primary/20 hover:bg-primary/5"
+            >
+              Generate Again
+            </motion.button>
+          </div>
+        )}
+      </div>
+
+      {/* Check Status Card - always display */}
+      <CheckStatusCard programId={programId} />
     </div>
   );
 }

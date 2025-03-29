@@ -73,7 +73,7 @@ function Chat() {
 
   // 找到指定的对话人，如果不存在，则使用默认的
   const getInitialPerson = () => {
-    const personId = searchParams.get("person");
+    const personId = searchParams?.get("person");
     if (personId) {
       const person = allChatPersons
         .filter((p) => p.id !== "resume-editor")
@@ -91,7 +91,7 @@ function Chat() {
 
   // Update selectedPerson when allChatPersons changes
   useEffect(() => {
-    const personId = searchParams.get("person");
+    const personId = searchParams?.get("person");
     if (personId) {
       const person = allChatPersons
         .filter((p) => p.id !== "resume-editor")
@@ -236,7 +236,7 @@ function Chat() {
   // 检查URL中是否有初始提示
   const getInitialPrompt = () => {
     // 检查URL中的has_resume标记
-    const hasResume = searchParams.get("has_resume");
+    const hasResume = searchParams?.get("has_resume");
 
     if (hasResume === "true") {
       // 从sessionStorage读取简历内容
@@ -253,7 +253,7 @@ function Chat() {
     }
 
     // 检查URL中的has_sop标记
-    const hasSop = searchParams.get("has_sop");
+    const hasSop = searchParams?.get("has_sop");
     if (hasSop === "true") {
       // 从sessionStorage读取SOP内容
       try {
@@ -269,7 +269,7 @@ function Chat() {
     }
 
     // 回退到直接从URL参数获取
-    const initialPromptParam = searchParams.get("initialPrompt");
+    const initialPromptParam = searchParams?.get("initialPrompt");
     if (initialPromptParam) {
       try {
         return decodeURIComponent(initialPromptParam);
@@ -283,7 +283,7 @@ function Chat() {
 
   // 当URL参数变化时更新对话人
   useEffect(() => {
-    const personId = searchParams.get("person");
+    const personId = searchParams?.get("person");
     if (personId) {
       const person = allChatPersons
         .filter((p) => p.id !== "resume-editor")

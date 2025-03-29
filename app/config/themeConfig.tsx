@@ -71,36 +71,49 @@ export const themeConfig = {
       id: 1,
       title: "Prepare Language Tests",
       description: "Study for TOEFL/IELTS exams to meet school requirements",
-      start_date: "2025-01-01",
-      end_date: "2025-05-31"
+      start_date: "2025-03-01",
+      end_date: "2025-06-30",
+      pic: "/images/cal/language_test.png",
     },
     "application_materials": {
       id: 2,
       title: "Prepare Application Materials",
       description: "Work on personal statements, recommendation letters, and other documents",
-      start_date: "2025-06-01",
-      end_date: "2025-08-31"
+      start_date: "2025-07-01",
+      end_date: "2025-10-31",
+      pic: "/images/cal/application_materials.png",
+    },
+    "submit_application": {
+      id: 3,
+      title: "Submit Applications",
+      description: "Submit your applications to target schools before deadlines",
+      start_date: "2025-11-01",
+      end_date: "2026-01-15",
+      pic: "/images/cal/application_materials.png",
     },
     "receive_offers": {
       id: 4,
       title: "Receive Offers",
       description: "Receive admission notices and confirm your acceptance",
       start_date: "2026-02-01",
-      end_date: "2026-04-30"
+      end_date: "2026-04-15",
+      pic: "/images/cal/receive_offers.png",
     },
     "prepare_visa": {
       id: 5,
       title: "Prepare Visa",
       description: "Apply for and obtain your student visa",
-      start_date: "2026-05-01",
-      end_date: "2026-07-31"
+      start_date: "2026-04-16",
+      end_date: "2026-07-15",
+      pic: "/images/cal/prepare_visa.png",
     },
     "start_school": {
       id: 6,
       title: "Start School",
       description: "Arrive at the university and begin your first semester",
       start_date: "2026-08-01",
-      end_date: "2026-09-30"
+      end_date: "2026-09-30",
+      pic: "/images/cal/start_school.png",
     }
   } as const,
 };

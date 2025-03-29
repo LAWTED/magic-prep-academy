@@ -130,7 +130,7 @@ function SchoolCelebration() {
               description: "Application submission deadline for this program",
               start_date: deadlineDate,
               end_date: deadlineDate,
-              action_type: "submit_application",
+              action_type: "deadline",
             });
           } else {
             // Use fallback date only for development
@@ -148,7 +148,7 @@ function SchoolCelebration() {
                 "Estimated application deadline - please check official program website",
               start_date: fallbackDate,
               end_date: fallbackDate,
-              action_type: "submit_application",
+              action_type: "deadline",
             });
           }
         }
@@ -299,9 +299,20 @@ function SchoolCelebration() {
 
   // Get theme for action type
   const getThemeForAction = (action_type: string) => {
-    return themeConfig.actionThemes[
-      action_type as keyof typeof themeConfig.actionThemes
-    ];
+    // Use red theme for deadlines
+    if (action_type === 'deadline') {
+      return {
+        color: "bg-red-100 text-red-600",
+        icon: themeConfig.timeline.icons.submitApplication,
+      };
+    }
+
+    // For timeline type action (language_test, etc.)
+    const key = action_type.replace(/_/g, '') as TimelineThemeKey;
+    return {
+      color: themeConfig.timeline.colors[key] || "bg-gray-100 text-gray-600",
+      icon: themeConfig.timeline.icons[key] || (() => null),
+    };
   };
 
   return (
@@ -408,7 +419,7 @@ function SchoolCelebration() {
               const IconComponent = theme.icon;
               const colorClass = theme.color;
               const timeframe = getTimeframe(item.start_date, item.end_date);
-              const isDeadlineEvent = item.action_type === "submit_application";
+              const isDeadlineEvent = item.action_type === "deadline";
 
               return (
                 <motion.div

@@ -2,7 +2,6 @@
 
 import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
-import { Cog } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { UserXP, UserHearts } from "@/app/types/index";
@@ -115,14 +114,6 @@ export default function StudentHeader() {
             </>
           )}
         </div>
-
-        {/* Settings (disabled) */}
-        <button
-          className="text-gray-400 cursor-not-allowed flex-shrink-0"
-          disabled
-        >
-          <Cog size={22} />
-        </button>
       </div>
     </header>
   );

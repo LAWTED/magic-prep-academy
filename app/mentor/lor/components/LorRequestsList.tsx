@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FileText, Eye, Clock } from "lucide-react";
+import { FileText, Eye, Clock, CheckCircle } from "lucide-react";
 import AcceptRejectLorButtons from "./AcceptRejectLorButtons";
 import { format, isPast } from "date-fns";
 
@@ -74,10 +74,19 @@ export default function LorRequestsList({ requests, showTitle = true }: LorReque
                             ? "bg-indigo-100 text-indigo-800"
                             : request.status === "completed"
                             ? "bg-green-100 text-green-800"
+                            : request.status === "finished"
+                            ? "bg-violet-100 text-violet-800"
                             : "bg-red-100 text-red-800"
                         }`}
                       >
-                        {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                        {request.status === "finished" ? (
+                          <span className="flex items-center gap-1">
+                            <CheckCircle size={10} />
+                            Submitted
+                          </span>
+                        ) : (
+                          request.status.charAt(0).toUpperCase() + request.status.slice(1)
+                        )}
                       </span>
 
                       {hasDeadline && deadlineDate && (
@@ -114,6 +123,14 @@ export default function LorRequestsList({ requests, showTitle = true }: LorReque
                     >
                       <FileText size={16} />
                       <span>Write Recommendation Letter</span>
+                    </Link>
+                  ) : request.status === "finished" ? (
+                    <Link
+                      href={`/mentor/lor/${request.id}`}
+                      className="flex items-center gap-1 bg-violet-600 text-white hover:bg-violet-700 px-3 py-2 rounded-md text-sm transition-colors"
+                    >
+                      <CheckCircle size={16} />
+                      <span>View Submitted Letter</span>
                     </Link>
                   ) : (
                     <Link

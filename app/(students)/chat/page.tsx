@@ -619,7 +619,7 @@ function Chat() {
         <ChatInput
           onSendMessage={handleSendMessage}
           isDisabled={isStreaming}
-          placeholder={`发送消息给${selectedPerson.name}...`}
+          placeholder={`Send a message to ${selectedPerson.name}...`}
         />
       )}
     </div>

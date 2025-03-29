@@ -1,5 +1,5 @@
 // import { ThemeSwitcher } from "@/components/theme-switcher";
-import { Geist } from "next/font/google";
+import { Nunito } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
@@ -46,9 +46,9 @@ export function generateViewport(): Viewport {
   };
 }
 
-const geistSans = Geist({
-  display: "swap",
+const nunito = Nunito({
   subsets: ["latin"],
+
 });
 
 export default function RootLayout({
@@ -57,7 +57,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={geistSans.className} suppressHydrationWarning>
+    <html lang="en" className={nunito.className} suppressHydrationWarning>
       <body className="bg-background text-foreground overscroll-y-contain">
         <Toaster
           position="bottom-center"

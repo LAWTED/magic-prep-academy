@@ -1,17 +1,27 @@
 // 游戏配置, 以汉堡店为例
-import { CircleDollarSign, Heart, BookOpen, FileText, Globe, Award, Stamp, GraduationCap, Mail } from "lucide-react";
+import {
+  CircleDollarSign,
+  Heart,
+  BookOpen,
+  FileText,
+  Globe,
+  Award,
+  Stamp,
+  GraduationCap,
+  Mail,
+} from "lucide-react";
 import { QUIZ_TYPES } from "./const";
 
 export const themeConfig = {
   xpReward: (num: number) => (
-    <span className="flex items-center gap-1">
-      <CircleDollarSign className="w-4 h-4 text-green-500 font-bold" />
+    <span className="flex items-center gap-1 text-bronze font-bold">
+      <CircleDollarSign className="w-4 h-4 text-green font-bold " />
       {num}
     </span>
   ),
   hearts: (num: number) => (
-    <span className="flex items-center gap-1">
-      <Heart className="w-4 h-4 text-red-500 font-bold" />
+    <span className="flex items-center gap-1 text-bronze font-bold">
+      <Heart className="w-4 h-4 fill-current text-red font-bold" />
       {num}
     </span>
   ),
@@ -38,40 +48,40 @@ export const themeConfig = {
 
   // Action type to theme mapping
   actionThemes: {
-    "language_test": {
+    language_test: {
       color: "bg-blue-100 text-blue-600",
-      icon: BookOpen
+      icon: BookOpen,
     },
-    "application_materials": {
+    application_materials: {
       color: "bg-purple-100 text-purple-600",
-      icon: FileText
+      icon: FileText,
     },
-    "submit_application": {
+    submit_application: {
       color: "bg-green-100 text-green-600",
-      icon: Globe
+      icon: Globe,
     },
-    "receive_offers": {
+    receive_offers: {
       color: "bg-yellow-100 text-yellow-600",
-      icon: Award
+      icon: Award,
     },
-    "prepare_visa": {
+    prepare_visa: {
       color: "bg-red-100 text-red-600",
-      icon: Stamp
+      icon: Stamp,
     },
-    "start_school": {
+    start_school: {
       color: "bg-indigo-100 text-indigo-600",
-      icon: GraduationCap
+      icon: GraduationCap,
     },
-    "recommendation_letter_sent": {
+    recommendation_letter_sent: {
       color: "bg-emerald-100 text-emerald-600",
-      icon: Mail
-    }
+      icon: Mail,
+    },
   } as const,
 
   // Common timeline events that apply to most schools
   // These can be updated once per year
   commonTimelineEvents: {
-    "language_test": {
+    language_test: {
       id: 1,
       title: "Prepare Language Tests",
       description: "Study for TOEFL/IELTS exams to meet school requirements",
@@ -79,23 +89,25 @@ export const themeConfig = {
       end_date: "2025-06-30",
       pic: "/images/cal/language_test.png",
     },
-    "application_materials": {
+    application_materials: {
       id: 2,
       title: "Prepare Application Materials",
-      description: "Work on personal statements, recommendation letters, and other documents",
+      description:
+        "Work on personal statements, recommendation letters, and other documents",
       start_date: "2025-07-01",
       end_date: "2025-10-31",
       pic: "/images/cal/application_materials.png",
     },
-    "submit_application": {
+    submit_application: {
       id: 3,
       title: "Submit Applications",
-      description: "Submit your applications to target schools before deadlines",
+      description:
+        "Submit your applications to target schools before deadlines",
       start_date: "2025-11-01",
       end_date: "2026-01-15",
       pic: "/images/cal/application_materials.png",
     },
-    "receive_offers": {
+    receive_offers: {
       id: 4,
       title: "Receive Offers",
       description: "Receive admission notices and confirm your acceptance",
@@ -103,7 +115,7 @@ export const themeConfig = {
       end_date: "2026-04-15",
       pic: "/images/cal/receive_offers.png",
     },
-    "prepare_visa": {
+    prepare_visa: {
       id: 5,
       title: "Prepare Visa",
       description: "Apply for and obtain your student visa",
@@ -111,13 +123,13 @@ export const themeConfig = {
       end_date: "2026-07-15",
       pic: "/images/cal/prepare_visa.png",
     },
-    "start_school": {
+    start_school: {
       id: 6,
       title: "Start School",
       description: "Arrive at the university and begin your first semester",
       start_date: "2026-08-01",
       end_date: "2026-09-30",
       pic: "/images/cal/start_school.png",
-    }
+    },
   } as const,
 };

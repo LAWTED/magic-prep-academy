@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useUserStore } from "@/store/userStore";
+import LoadingCard from "@/app/components/LoadingCard";
 
 interface CheckStatusCardProps {
   programId: string;
@@ -153,12 +154,7 @@ export default function CheckStatusCard({ programId }: CheckStatusCardProps) {
       {/* Display loading state */}
       {isLoading && (
         <div className="p-4">
-          <div className="flex flex-col items-center py-6">
-            <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin mb-3"></div>
-            <p className="text-gray-500 text-sm">
-              Checking your eligibility...
-            </p>
-          </div>
+          <LoadingCard message="Checking your eligibility..." />
         </div>
       )}
 

@@ -10,13 +10,16 @@ import { LOR_PROMPTS } from "@/app/config/themePrompts";
 
 interface CompleteRequestFormProps {
   requestId: string;
+  status?: string;
 }
 
 export default function CompleteRequestForm({
   requestId,
+  status = "accepted",
 }: CompleteRequestFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMarkingFinished, setIsMarkingFinished] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [studentInfo, setStudentInfo] = useState<{
     program_name?: string;
@@ -34,31 +37,42 @@ export default function CompleteRequestForm({
   // Function to get text suggestion from API
   const fetchSuggestion = async (text: string): Promise<string> => {
     try {
-      // Format the input text using the extracted function
-      const formattedInput = LOR_PROMPTS.FORMAT_CONTINUATION_INPUT(text);
+      // For LOR, we should have something in letterData
+      if (Object.keys(studentInfo).length === 0) {
+        console.error("No letter data available for suggestions");
+        return "";
+      }
 
-      // Get the instructions using the extracted function
-      const instructions = LOR_PROMPTS.SUGGESTION_PROMPT(studentInfo);
+      const prefix = text.substring(text.lastIndexOf("\n") + 1);
 
-      const response = await fetch("/api/suggestion", {
+      const response = await fetch("/api/suggest", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          text: formattedInput,
-          instructions: instructions,
+          prefix,
+          context: {
+            type: "lor",
+            student_name: studentInfo.student_name,
+            mentor_name: studentInfo.mentor_name,
+            program_name: studentInfo.program_name,
+            school_name: studentInfo.school_name,
+            program_details: studentInfo.program_details,
+            student_notes: studentInfo.student_notes,
+          },
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to get suggestion");
+        const error = await response.json();
+        throw new Error(error.error || "Failed to get suggestion");
       }
 
       const data = await response.json();
       return data.suggestion || "";
     } catch (error) {
-      console.error("Error getting suggestion:", error);
+      console.error("Error fetching suggestion:", error);
       return "";
     }
   };
@@ -211,6 +225,58 @@ export default function CompleteRequestForm({
     }
   };
 
+  const handleMarkAsFinished = async () => {
+    try {
+      setIsMarkingFinished(true);
+      setError(null);
+
+      // First, get the current request to access its metadata
+      const { data: request, error: fetchError } = await supabase
+        .from("mentor_student_interactions")
+        .select("metadata")
+        .eq("id", requestId)
+        .eq("type", "lor_request")
+        .single();
+
+      if (fetchError) {
+        console.error("Error fetching request:", fetchError);
+        throw new Error("Failed to fetch the recommendation request");
+      }
+
+      // Update the status to finished
+      const { error: updateError } = await supabase
+        .from("mentor_student_interactions")
+        .update({
+          status: "finished",
+          metadata: {
+            ...request.metadata,
+            finished_at: new Date().toISOString(),
+          },
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", requestId);
+
+      if (updateError) {
+        console.error("Error updating request:", updateError);
+        throw new Error("Failed to mark letter as submitted to school");
+      }
+
+      toast.success("Letter marked as submitted to school successfully");
+      router.push("/mentor/lor");
+      router.refresh();
+    } catch (error) {
+      console.error("Error marking as finished:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update status"
+      );
+      setError(
+        error instanceof Error ? error.message : "Failed to update status"
+      );
+    } finally {
+      setIsMarkingFinished(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {error && (
@@ -229,20 +295,30 @@ export default function CompleteRequestForm({
         getSuggestion={fetchSuggestion}
       />
 
-      <div className="flex justify-end mt-4">
-        <button
-          onClick={() => {
-            if (content.trim()) {
-              handleSave(content);
-            } else {
-              toast.error("Please write a recommendation letter first");
-            }
-          }}
-          disabled={isSubmitting}
-          className="py-2 px-6 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:pointer-events-none"
-        >
-          {isSubmitting ? "Submitting..." : "Submit Recommendation Letter"}
-        </button>
+      <div className="flex justify-end mt-4 gap-4">
+        {status === "completed" ? (
+          <button
+            onClick={handleMarkAsFinished}
+            disabled={isMarkingFinished}
+            className="py-2 px-6 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+          >
+            {isMarkingFinished ? "Updating..." : "Mark as Submitted to School"}
+          </button>
+        ) : status !== "finished" && (
+          <button
+            onClick={() => {
+              if (content.trim()) {
+                handleSave(content);
+              } else {
+                toast.error("Please write a recommendation letter first");
+              }
+            }}
+            disabled={isSubmitting}
+            className="py-2 px-6 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+          >
+            {isSubmitting ? "Submitting..." : "Submit Recommendation Letter"}
+          </button>
+        )}
       </div>
     </div>
   );

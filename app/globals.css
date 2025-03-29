@@ -75,12 +75,12 @@ body {
 
 @layer components {
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 
   .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
+    display: none; /* Chrome, Safari and Opera */
   }
 }
 
@@ -98,7 +98,9 @@ body {
     padding-right: env(safe-area-inset-right);
   }
   .min-h-screen-safe {
-    min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    min-height: calc(
+      100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    );
   }
   .pt-safe {
     padding-top: max(env(safe-area-inset-top), 16px);

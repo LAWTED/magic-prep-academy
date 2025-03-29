@@ -17,6 +17,30 @@ import {
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
+// Custom header component to match ChatHeader style
+function ResumeEditorHeader({ selectedPerson, documentId }: { selectedPerson: ChatPerson, documentId: string }) {
+  return (
+    <header className="sticky top-0 z-10 w-full p-4 flex items-center justify-between border-b bg-background">
+      <div className="flex items-center gap-2">
+        <Link href={`/tools/resume/${documentId}`}>
+          <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+            <ArrowLeft size={18} />
+          </button>
+        </Link>
+
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 flex items-center justify-center overflow-hidden rounded-full">
+            <div className="w-full h-full flex items-center justify-center bg-blue-100">
+              <selectedPerson.icon className={`h-5 w-5 ${selectedPerson.color}`} />
+            </div>
+          </div>
+          <h1 className="text-xl font-bold">{selectedPerson.name}</h1>
+        </div>
+      </div>
+    </header>
+  );
+}
+
 function ResumeEdit() {
   const { user } = useUserStore();
   const router = useRouter();
@@ -236,53 +260,44 @@ function ResumeEdit() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
-      {/* 自定义简单的头部，带返回按钮 */}
-      <div className="flex items-center px-4 py-3 border-b">
-        <Link href={`/tools/resume/${documentId}`}>
-          <button className="mr-3 p-2 rounded-full hover:bg-gray-100 transition-colors">
-            <ArrowLeft size={20} />
-          </button>
-        </Link>
-        <h1 className="font-medium text-lg">Resume Editor</h1>
-      </div>
+    <div className="flex flex-col h-full">
+      {/* Use the custom header component */}
+      <ResumeEditorHeader selectedPerson={selectedPerson} documentId={documentId} />
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 relative">
-        {messages.length === 0 ? (
+      <div className="flex-1 flex flex-col overflow-y-auto">
+        {isLoading ? (
+          <LoadingState />
+        ) : messages.length === 0 ? (
           <WelcomeScreen selectedPerson={selectedPerson} />
         ) : (
-          <div className="space-y-2">
-            {messages.map((message) => (
-              <ChatMessage
-                key={message.id}
-                message={message}
-                selectedPerson={selectedPerson}
-                documentId={documentId}
-              />
-            ))}
+          <div className="flex-1 pb-20 overflow-auto">
+            <div className="max-w-3xl mx-auto p-4 space-y-6">
+              {messages.map((message) => (
+                <ChatMessage
+                  key={message.id}
+                  message={message}
+                  selectedPerson={selectedPerson}
+                  documentId={documentId}
+                />
+              ))}
+              {isStreaming && (
+                <TypingIndicator
+                  selectedPerson={selectedPerson}
+                  dots={streamingDots}
+                />
+              )}
+              <div ref={messagesEndRef} />
+            </div>
           </div>
         )}
-
-        {isStreaming && (
-          <TypingIndicator
-            selectedPerson={selectedPerson}
-            dots={streamingDots}
-          />
-        )}
-
-        <div ref={messagesEndRef} />
       </div>
 
       {!isLoading && (
-        <div className="sticky bottom-0 w-full bg-white border-t p-4 safe-bottom">
-          <div className="max-w-3xl mx-auto">
-            <ChatInput
-              onSendMessage={handleSendMessage}
-              isDisabled={isStreaming}
-              placeholder={`发送消息给${selectedPerson.name}...`}
-            />
-          </div>
-        </div>
+        <ChatInput
+          onSendMessage={handleSendMessage}
+          isDisabled={isStreaming}
+          placeholder={`Send a message to ${selectedPerson.name}...`}
+        />
       )}
     </div>
   );
@@ -290,7 +305,7 @@ function ResumeEdit() {
 
 export default function ResumeEditPage() {
   return (
-    <Suspense fallback={<div className="p-6">Loading...</div>}>
+    <Suspense fallback={<div>Loading...</div>}>
       <ResumeEdit />
     </Suspense>
   );

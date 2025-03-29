@@ -4,6 +4,7 @@ import { useState } from "react";
 import { School } from "lucide-react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
+import LoadingCard from "@/app/components/LoadingCard";
 
 interface ProgramSummaryCardProps {
   programContent: any;
@@ -72,10 +73,7 @@ export default function ProgramSummaryCard({
       {/* Display loading state */}
       {summaryLoading && (
         <div className="p-4">
-          <div className="flex flex-col items-center py-6">
-            <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin mb-3"></div>
-            <p className="text-gray-500 text-sm">Generating an AI summary...</p>
-          </div>
+          <LoadingCard message="Generating an AI summary..." />
         </div>
       )}
 

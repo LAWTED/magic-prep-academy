@@ -1,7 +1,7 @@
 "use client";
 
 import { createClient } from "@/utils/supabase/client";
-import { ChevronRight, School, BookOpen, Filter, X, Heart } from "lucide-react";
+import { ChevronRight, School, BookOpen, Filter, X, Heart, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -21,25 +21,35 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+interface ProgramWithSubmissionStatus extends Program {
+  subject_name: string;
+  is_submitted?: boolean;
+}
+
+interface SchoolWithProgramsAndStatus extends SchoolType {
+  programs: ProgramWithSubmissionStatus[];
+}
+
 export default function SchoolPage() {
   const router = useRouter();
   const supabase = createClient();
   const { user, isLoading: userLoading } = useUserStore();
   const [loading, setLoading] = useState(true);
   const [schoolsWithPrograms, setSchoolsWithPrograms] = useState<
-    SchoolWithPrograms[]
+    SchoolWithProgramsAndStatus[]
   >([]);
   const [allSchoolsWithPrograms, setAllSchoolsWithPrograms] = useState<
-    SchoolWithPrograms[]
+    SchoolWithProgramsAndStatus[]
   >([]);
-  const [expandedSchool, setExpandedSchool] = useState<string | null>(null);
   const [locations, setLocations] = useState<string[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<string>("all");
   const [selectedSubject, setSelectedSubject] = useState<string>("all");
-  const [showFavorited, setShowFavorited] = useState(true);
+  const [showFavorited, setShowFavorited] = useState(false);
   const [favoritedPrograms, setFavoritedPrograms] = useState<string[]>([]);
+  const [submittedPrograms, setSubmittedPrograms] = useState<string[]>([]);
   const [filtersVisible, setFiltersVisible] = useState(false);
+  const [showAsCards, setShowAsCards] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
@@ -64,9 +74,12 @@ export default function SchoolPage() {
           return;
         }
 
-        // Fetch favorited programs if user is logged in
+        // Fetch favorited and submitted programs if user is logged in
         let favoritedProgramIds: string[] = [];
+        let submittedProgramIds: string[] = [];
+
         if (user) {
+          // Get favorited programs
           const { data: favoritesData, error: favoritesError } = await supabase
             .from("user_programs_progress")
             .select("program_id")
@@ -76,6 +89,19 @@ export default function SchoolPage() {
           if (!favoritesError && favoritesData) {
             favoritedProgramIds = favoritesData.map((item) => item.program_id);
             setFavoritedPrograms(favoritedProgramIds);
+          }
+
+          // Get submitted applications
+          const { data: progressData, error: progressError } = await supabase
+            .from("user_programs_progress")
+            .select("program_id, content")
+            .eq("user_id", user.id);
+
+          if (!progressError && progressData) {
+            submittedProgramIds = progressData
+              .filter(item => item.content?.application_submitted === true)
+              .map(item => item.program_id);
+            setSubmittedPrograms(submittedProgramIds);
           }
         }
 
@@ -104,7 +130,7 @@ export default function SchoolPage() {
         });
 
         // Organize programs by school
-        const schoolsMap: Record<string, SchoolWithPrograms> = {};
+        const schoolsMap: Record<string, SchoolWithProgramsAndStatus> = {};
 
         schoolsData.forEach((school: SchoolType) => {
           schoolsMap[school.id] = {
@@ -118,6 +144,7 @@ export default function SchoolPage() {
             schoolsMap[program.school_id].programs.push({
               ...program,
               subject_name: subjectMap[program.subject_id] || "Unknown Subject",
+              is_submitted: submittedProgramIds.includes(program.id)
             });
           }
         });
@@ -201,25 +228,21 @@ export default function SchoolPage() {
     favoritedPrograms,
   ]);
 
-  const toggleSchool = (schoolId: string) => {
-    if (expandedSchool === schoolId) {
-      setExpandedSchool(null);
-    } else {
-      setExpandedSchool(schoolId);
-    }
-  };
-
   const clearFilters = () => {
     setSelectedLocation("all");
     setSelectedSubject("all");
     setShowFavorited(false);
   };
 
+  const toggleViewMode = () => {
+    setShowAsCards(!showAsCards);
+  };
+
   if (loading || userLoading) {
     return (
       <div className="p-4 space-y-6">
         <div className="flex items-center justify-center h-[calc(100vh-180px)]">
-          <p>Loading...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       </div>
     );
@@ -228,16 +251,16 @@ export default function SchoolPage() {
   return (
     <div className="relative pb-4">
       <div className="sticky top-0 z-10 bg-gray-50 shadow-sm">
-        <div className="p-4 space-y-4">
-          <div className="flex items-center justify-between">
+        <div className="p-4 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <h2 className="text-lg font-medium flex items-center gap-2">
               <School className="w-5 h-5 text-primary" />
               Schools and Programs
             </h2>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
               <button
                 onClick={() => setShowFavorited(!showFavorited)}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium ${
+                className={`flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium ${
                   showFavorited
                     ? "bg-primary/10 text-primary"
                     : "bg-gray-100 text-gray-600"
@@ -249,8 +272,19 @@ export default function SchoolPage() {
                 Favorites
               </button>
               <button
+                onClick={toggleViewMode}
+                className={`flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium ${
+                  showAsCards
+                    ? "bg-gray-100 text-gray-600"
+                    : "bg-primary/10 text-primary"
+                }`}
+              >
+                <BookOpen className="w-4 h-4" />
+                {showAsCards ? "Grid View" : "List View"}
+              </button>
+              <button
                 onClick={() => setFiltersVisible(!filtersVisible)}
-                className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium"
+                className="flex-shrink-0 flex items-center gap-1 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium"
               >
                 <Filter className="w-4 h-4" />
                 Filter
@@ -329,7 +363,9 @@ export default function SchoolPage() {
         {schoolsWithPrograms.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <p>No schools or programs found with selected filters</p>
-            {(selectedLocation !== "all" || selectedSubject !== "all" || showFavorited) && (
+            {(selectedLocation !== "all" ||
+              selectedSubject !== "all" ||
+              showFavorited) && (
               <button
                 onClick={clearFilters}
                 className="mt-2 text-primary text-sm"
@@ -338,62 +374,93 @@ export default function SchoolPage() {
               </button>
             )}
           </div>
+        ) : showAsCards ? (
+          /* Grid View */
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {schoolsWithPrograms.flatMap((school) =>
+              school.programs.map((program) => (
+                <motion.div
+                  key={program.id}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => router.push(`/school/${program.id}`)}
+                  className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200 cursor-pointer"
+                >
+                  <div className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-medium text-lg line-clamp-2">{program.name}</h3>
+                        <p className="text-sm text-gray-600">{school.name}</p>
+                        <p className="text-xs text-gray-500">{school.location}</p>
+                      </div>
+                      {program.is_submitted && (
+                        <div className="flex-shrink-0 text-green-600" title="Application Submitted">
+                          <CheckCircle2 size={20} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-3">
+                      <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full flex items-center gap-1">
+                        <BookOpen className="w-3 h-3" />
+                        {program.subject_name}
+                      </span>
+                      {favoritedPrograms.includes(program.id) && (
+                        <span className="text-xs bg-pink-100 text-pink-600 px-2 py-1 rounded-full flex items-center gap-1">
+                          <Heart className="w-3 h-3 fill-pink-600" />
+                          Favorite
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))
+            )}
+          </div>
         ) : (
+          /* List View - grouped by school */
           <div className="space-y-4">
             {schoolsWithPrograms.map((school) => (
               <div
                 key={school.id}
                 className="bg-white rounded-xl overflow-hidden shadow-sm"
               >
-                <button
-                  onClick={() => toggleSchool(school.id)}
-                  className="w-full p-4 flex items-center justify-between  transition-colors active:scale-[0.98] touch-action-manipulation"
-                >
-                  <div className="flex-1 text-left">
-                    <h3 className="font-medium text-lg">{school.name}</h3>
-                    <p className="text-sm text-gray-600">{school.location}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {school.programs.length} program
-                      {school.programs.length !== 1 ? "s" : ""}
-                    </p>
-                  </div>
-                  <ChevronRight
-                    className={`w-5 h-5 text-gray-400 transition-transform ${
-                      expandedSchool === school.id ? "rotate-90" : ""
-                    }`}
-                  />
-                </button>
+                <div className="p-4 border-b border-gray-100">
+                  <h3 className="font-medium text-lg">{school.name}</h3>
+                  <p className="text-sm text-gray-600">{school.location}</p>
+                </div>
 
-                {expandedSchool === school.id && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="border-t border-gray-100"
-                  >
-                    <div className="divide-y divide-gray-100">
-                      {school.programs.map((program) => (
-                        <div
-                          key={program.id}
-                          className="p-4 pl-6 flex items-center  active:bg-gray-100 transition-colors"
-                          onClick={() => router.push(`/school/${program.id}`)}
-                        >
-                          <div className="flex-1">
-                            <p className="font-medium">{program.name}</p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full flex items-center gap-1">
-                                <BookOpen className="w-3 h-3" />
-                                {program.subject_name}
-                              </span>
-                            </div>
-                          </div>
-                          <ChevronRight className="w-4 h-4 text-gray-400" />
+                <div className="divide-y divide-gray-100">
+                  {school.programs.map((program) => (
+                    <motion.div
+                      key={program.id}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => router.push(`/school/${program.id}`)}
+                      className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-start gap-2">
+                          <p className="font-medium">{program.name}</p>
+                          {program.is_submitted && (
+                            <CheckCircle2 size={16} className="text-green-600 flex-shrink-0 mt-1" />
+                          )}
                         </div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full flex items-center gap-1">
+                            <BookOpen className="w-3 h-3" />
+                            {program.subject_name}
+                          </span>
+                          {favoritedPrograms.includes(program.id) && (
+                            <span className="text-xs bg-pink-100 text-pink-600 px-2 py-1 rounded-full flex items-center gap-1">
+                              <Heart className="w-3 h-3 fill-pink-600" />
+                              Favorite
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-400" />
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>

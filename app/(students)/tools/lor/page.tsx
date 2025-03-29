@@ -145,7 +145,7 @@ export default function LoRPage() {
       }
 
       // Then, create the document version with the actual content
-      const { error: versionError } = await supabase
+      const { data: versionData, error: versionError } = await supabase
         .from("document_versions")
         .insert({
           document_id: documentData.id,
@@ -159,7 +159,9 @@ export default function LoRPage() {
           },
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-        });
+        })
+        .select("id")
+        .single();
 
       if (versionError) {
         console.error("Error creating document version:", versionError);
@@ -209,13 +211,13 @@ export default function LoRPage() {
             };
           }
 
-          // Update the lor section with the new information
+          // Update the lor section with the new information - use document_version_id instead of document_id
           progressContent = {
             ...progressContent,
             lor: {
               status: "completed",
               document_id: documentData.id,
-              sent_to_school: true,
+              document_version_id: versionData.id, // Add document_version_id here
               sent_date: new Date().toISOString(),
               mentor_name: request.mentor_name,
               school_name: request.school_name,
@@ -255,6 +257,7 @@ export default function LoRPage() {
           description: `Your LoR from ${request.mentor_name} has been sent to ${request.program_name} at ${request.school_name}.`,
           content: {
             document_id: documentData.id,
+            document_version_id: versionData.id, // Also include document_version_id here
             program_name: request.program_name,
             school_name: request.school_name,
             mentor_name: request.mentor_name,

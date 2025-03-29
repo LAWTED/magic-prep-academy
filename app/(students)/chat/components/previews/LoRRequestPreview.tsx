@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FileText, Check, X, Clock, ExternalLink, Award } from "lucide-react";
+import { FileText, Check, X, Clock, ExternalLink, Award, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
@@ -18,7 +18,7 @@ export default function LoRRequestPreview({
   programName,
   schoolName,
 }: LoRRequestPreviewProps) {
-  const [status, setStatus] = useState<'pending' | 'accepted' | 'rejected' | 'completed'>('pending');
+  const [status, setStatus] = useState<'pending' | 'accepted' | 'rejected' | 'completed' | 'finished'>('pending');
   const [isUpdating, setIsUpdating] = useState(false);
   const supabase = createClient();
   const pathname = usePathname();
@@ -97,6 +97,8 @@ export default function LoRRequestPreview({
         return <X size={16} className="text-red-600" />;
       case 'completed':
         return <Award size={16} className="text-blue-600" />;
+      case 'finished':
+        return <CheckCircle size={16} className="text-indigo-600" />;
       default:
         return <Clock size={16} className="text-yellow-600" />;
     }
@@ -111,6 +113,8 @@ export default function LoRRequestPreview({
         return 'bg-red-100 text-red-800';
       case 'completed':
         return 'bg-blue-100 text-blue-800';
+      case 'finished':
+        return 'bg-indigo-100 text-indigo-800';
       default:
         return 'bg-yellow-100 text-yellow-800';
     }
@@ -127,6 +131,8 @@ export default function LoRRequestPreview({
         return 'Rejected';
       case 'completed':
         return 'Completed';
+      case 'finished':
+        return 'Finished';
       default:
         return status;
     }
@@ -197,7 +203,7 @@ export default function LoRRequestPreview({
           )}
 
           {/* Show view button based on status and user type */}
-          {(status === 'accepted' || status === 'completed' || !isMentorView || status === 'rejected') && (
+          {(status === 'accepted' || status === 'completed' || status === 'finished' || !isMentorView || status === 'rejected') && (
             <Link href={lorPath} className="block w-full">
               <motion.button
                 whileTap={{ scale: 0.95 }}
@@ -205,7 +211,8 @@ export default function LoRRequestPreview({
               >
                 <ExternalLink size={14} className="mr-1" />
                 {status === 'accepted' ? 'View Recommendation Letter' :
-                 status === 'completed' ? 'View Completed Letter' : 'View Request'}
+                 status === 'completed' ? 'View Completed Letter' :
+                 status === 'finished' ? 'View Submitted Letter' : 'View Request'}
               </motion.button>
             </Link>
           )}

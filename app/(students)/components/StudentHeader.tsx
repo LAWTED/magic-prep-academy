@@ -64,56 +64,61 @@ export default function StudentHeader() {
   const isDataLoading = userLoading || loading;
 
   return (
-    <header className="w-full border-b bg-background">
-      <div className="mx-auto w-full max-w-screen-md px-4 py-4 flex items-center justify-between">
-        <div className="flex flex-wrap items-center gap-3">
-          {isDataLoading || !user ? (
-            <>
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 animate-pulse flex-shrink-0"></div>
-              <div className="w-24 h-6 bg-gray-200 animate-pulse rounded"></div>
-              <div className="w-16 h-8 bg-gray-200 animate-pulse rounded-xl"></div>
-              <div className="w-16 h-8 bg-gray-200 animate-pulse rounded-xl"></div>
-            </>
-          ) : (
-            <>
-              {/* Avatar and Name - Clickable */}
-              <motion.div
-                className="flex items-center gap-3 cursor-pointer"
-                onClick={navigateToProfile}
-                whileTap={{ scale: 0.97 }}
-              >
-                <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-primary flex-shrink-0">
-                  <Image
-                    src={avatarPath}
-                    alt={user.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                {/* Name */}
-                <p className="text-lg font-bold">{user.name}</p>
-              </motion.div>
+    <header className="w-full shadow-md rounded-b-lg">
+      <div className="mx-auto w-full max-w-screen-md px-4 py-4 flex items-center justify-between bg-gold">
+        {isDataLoading || !user ? (
+          <>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 animate-pulse flex-shrink-0 bg-sand"></div>
+              <div className="w-24 h-6 bg-gray-200 animate-pulse rounded-xl bg-sand"></div>
+            </div>
+            <div className="flex gap-2">
+              <div className="w-16 h-8 bg-gray-200 animate-pulse rounded-xl bg-sand"></div>
+              <div className="w-16 h-8 bg-gray-200 animate-pulse rounded-xl bg-sand"></div>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Avatar and Name - Clickable */}
+            <motion.div
+              className="flex items-center gap-3 cursor-pointer"
+              onClick={navigateToProfile}
+              whileTap={{ scale: 0.97 }}
+            >
+              <div className="relative w-10 h-10 rounded-full overflow-hidden border-4 border-sand flex-shrink-0 shadow-md">
+                <Image
+                  src={avatarPath}
+                  alt={user.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              {/* Name */}
+              <p className="text-lg font-bold text-bronze">{user.name}</p>
+            </motion.div>
 
+            {/* XP and Hearts on right side */}
+            <div className="flex items-center gap-2">
               {/* XP as money */}
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={() => router.push("/awards")}
-                className="flex items-center gap-2 bg-white/90 px-3 py-1.5 rounded-xl hover:bg-white/100 transition-colors active:bg-white/80 border border-gray-200"
+                className="flex items-center gap-2 bg-sand px-3 py-1.5 rounded-xl hover:bg-white/100 transition-colors active:bg-white/80 shadow-sm"
               >
                 {themeConfig.xpReward(userXP?.total_xp || 0)}
               </motion.button>
               {/* Hearts */}
-
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={() => router.push("/pay")}
-                className="flex items-center gap-2 bg-white/90 px-3 py-1.5 rounded-xl hover:bg-white/100 transition-colors active:bg-white/80 border border-gray-200"
+                className="flex items-center gap-2 bg-sand px-3 py-1.5 rounded-xl hover:bg-white/100 transition-colors active:bg-white/80 shadow-sm"
               >
                 {themeConfig.hearts(userHearts?.current_hearts || 0)}
               </motion.button>
-            </>
-          )}
-        </div>
+
+            </div>
+          </>
+        )}
       </div>
     </header>
   );

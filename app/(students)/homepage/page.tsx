@@ -120,18 +120,35 @@ export default function HomePage() {
     }
   }, [user, supabase, userLoading]);
 
-  if (loading || userLoading) {
+  if (loading || userLoading || (user?.subjects?.length > 0 && allModules.length === 0)) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-180px)]">
-        <p>Loading...</p>
+      <div className="max-w-lg mx-auto p-4 bg-[#efb854]">
+        {/* Skeleton for title */}
+        <div className="h-14 bg-gold/60 rounded-lg px-4 mb-4 animate-pulse"></div>
+
+        {/* Skeleton for modules */}
+        <div className="space-y-3 pb-10">
+          {[...Array(5)].map((_, index) => (
+            <div key={index} className="w-full p-4 bg-sand/80 rounded-xl shadow-sm flex items-center justify-between animate-pulse">
+              <div className="flex-1">
+                <div className="h-5 bg-bronze/20 rounded w-3/4 mb-2"></div>
+                <div className="flex items-center gap-2">
+                  <div className="h-4 bg-bronze/20 rounded-full w-20"></div>
+                  <div className="h-4 bg-bronze/20 rounded w-16"></div>
+                </div>
+              </div>
+              <div className="w-6 h-6 rounded-full bg-bronze/20"></div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-lg mx-auto p-4">
+    <div className="max-w-lg mx-auto p-4 bg-[#efb854] ">
       {/* Learning Modules */}
-      <h2 className="text-lg font-medium sticky top-0 bg-background py-4 z-10">
+      <h2 className="text-lg font-bold sticky top-0 bg-gold/90 py-4 z-10 text-bronze rounded-lg px-4 shadow-sm mb-4">
         Learning Modules
       </h2>
       <div className="space-y-3 pb-10">
@@ -139,15 +156,15 @@ export default function HomePage() {
           <button
             key={module.id}
             onClick={() => router.push(`/module/${module.id}`)}
-            className="w-full p-4 bg-white rounded-xl shadow-sm flex items-center justify-between hover:bg-gray-50 transition-colors active:scale-[0.98] touch-action-manipulation"
+            className="w-full p-4 bg-sand rounded-xl shadow-sm flex items-center justify-between active:scale-[0.98] touch-action-manipulation"
           >
             <div className="flex-1">
-              <p className="font-medium text-left">{module.module_name}</p>
+              <p className="font-semibold text-left text-black">{module.module_name}</p>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                <span className="text-xs bg-gold/60 text-bronze px-2 py-1 rounded-full">
                   {module.subject_name}
                 </span>
-                <p className="text-xs text-gray-500 text-left">
+                <p className="text-xs text-green text-left">
                   {moduleProgress[module.id]?.progress === "completed" &&
                     "Completed"}
                 </p>
@@ -155,19 +172,19 @@ export default function HomePage() {
             </div>
             <div className="flex items-center gap-3">
               {moduleProgress[module.id]?.progress === "completed" && (
-                <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                  <Check className="w-4 h-4 text-green-600" />
+                <div className="w-6 h-6 rounded-full bg-green/20 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-green" />
                 </div>
               )}
-              <ChevronRight className="w-5 h-5 text-gray-400" />
+              <ChevronRight className="w-5 h-5 text-bronze" />
             </div>
           </button>
         ))}
 
         {allModules.length === 0 && (
-          <p className="text-center text-gray-500 py-8">
+          <div className="text-center text-bronze py-8 bg-sand rounded-xl p-6">
             No learning modules available
-          </p>
+          </div>
         )}
       </div>
     </div>

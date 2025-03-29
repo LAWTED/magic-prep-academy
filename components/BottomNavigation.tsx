@@ -54,7 +54,7 @@ export default function BottomNavigation() {
   ];
 
   return (
-    <div className=" bg-white border-t border-gray-200 px-2 py-1  flex justify-around items-center">
+    <div className="bg-sand border-t border-bronze/30 px-2 py-1 flex justify-around items-center">
       {navItems.map((item) => {
         const isActive =
           pathname === item.href || pathname?.startsWith(`${item.href}/`);
@@ -64,19 +64,19 @@ export default function BottomNavigation() {
             key={item.name}
             href={item.href}
             className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg ${
-              isActive ? "text-primary" : "text-gray-500"
+              isActive ? "text-bronze" : "text-black"
             }`}
           >
             <motion.div
               whileTap={{ scale: 0.9 }}
-              className={`flex items-center justify-center ${isActive ? "text-primary" : "text-gray-500"}`}
+              className={`flex items-center justify-center ${isActive ? "text-bronze" : "text-black"}`}
             >
               <item.icon
                 size={24}
-                className={isActive ? "text-primary" : "text-gray-500"}
+                className={isActive ? "text-bronze" : "text-black"}
               />
             </motion.div>
-            <span className="text-xs mt-1">{item.name}</span>
+            <span className={`text-xs mt-1 ${isActive ? "text-bronze font-medium" : "text-black"}`}>{item.name}</span>
           </Link>
         );
       })}

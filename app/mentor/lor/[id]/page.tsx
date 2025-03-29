@@ -87,11 +87,23 @@ export default async function RecommendationRequestPage({
           icon: <Clock className="h-5 w-5" />,
           color: "text-yellow-600 bg-yellow-50",
         };
+      case "accepted":
+        return {
+          label: "Accepted",
+          icon: <CheckCircle className="h-5 w-5" />,
+          color: "text-blue-600 bg-blue-50",
+        };
       case "completed":
         return {
           label: "Completed",
           icon: <CheckCircle className="h-5 w-5" />,
           color: "text-green-600 bg-green-50",
+        };
+      case "finished":
+        return {
+          label: "Submitted",
+          icon: <CheckCircle className="h-5 w-5" />,
+          color: "text-indigo-600 bg-indigo-50",
         };
       case "rejected":
         return {
@@ -265,15 +277,37 @@ export default async function RecommendationRequestPage({
             {request.status === "accepted" && (
               <div className="bg-card rounded-xl border shadow-sm p-6 space-y-4 min-h-[600px]">
                 <h3 className="text-lg font-semibold mb-4">Write Recommendation Letter</h3>
-                <CompleteRequestForm requestId={id} />
+                <CompleteRequestForm requestId={id} status={request.status} />
               </div>
             )}
 
             {/* Letter Content (if completed) */}
             {request.status === "completed" && metadata.letter_content && (
               <div className="bg-card rounded-xl border shadow-sm p-6 space-y-4 min-h-[600px]">
-                <h3 className="text-lg font-semibold">Recommendation Letter</h3>
+                <h3 className="text-lg font-semibold mb-4">Recommendation Letter</h3>
+                <div className="mb-4">
+                  <TextPreview content={metadata.letter_content} />
+                </div>
+                <CompleteRequestForm requestId={id} status={request.status} />
+              </div>
+            )}
+
+            {/* Letter Content (if finished/submitted to school) */}
+            {request.status === "finished" && metadata.letter_content && (
+              <div className="bg-card rounded-xl border shadow-sm p-6 space-y-4 min-h-[600px]">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Submitted Recommendation Letter</h3>
+                  <div className="text-xs bg-indigo-100 text-indigo-800 rounded-full py-1 px-3 flex items-center gap-1">
+                    <CheckCircle size={14} />
+                    <span>Submitted to School</span>
+                  </div>
+                </div>
                 <TextPreview content={metadata.letter_content} />
+                {metadata.finished_at && (
+                  <p className="text-sm text-gray-500 mt-4">
+                    Submitted on {format(new Date(metadata.finished_at), 'MMMM d, yyyy')}
+                  </p>
+                )}
               </div>
             )}
 

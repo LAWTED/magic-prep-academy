@@ -310,13 +310,13 @@ export default function UploadSOP({ onAskMentor }: UploadSOPProps) {
     <div className="flex flex-col space-y-6">
       {/* Progress Bar */}
       <div className="w-full mb-8 mt-4">
-        <div className="w-full bg-gray-200 rounded-full h-2.5">
+        <div className="w-full bg-bronze/30 rounded-full h-2.5">
           <div
-            className="bg-primary h-2.5 rounded-full transition-all duration-300 ease-out"
+            className="bg-bronze h-2.5 rounded-full transition-all duration-300 ease-out"
             style={{ width: `${(step / totalSteps) * 100}%` }}
           ></div>
         </div>
-        <div className="flex justify-between mt-2 text-xs text-gray-500">
+        <div className="flex justify-between mt-2 text-xs text-bronze/70">
           <span>SOP Builder</span>
           <span>
             {step}/{totalSteps}
@@ -358,15 +358,15 @@ export default function UploadSOP({ onAskMentor }: UploadSOPProps) {
                 transition={{ delay: 0.2 }}
                 className="text-center mb-6"
               >
-                <h1 className="text-2xl font-bold mb-2">Upload Your SOP</h1>
-                <p className="text-gray-500">
+                <h1 className="text-2xl font-bold mb-2 text-bronze">Upload Your SOP</h1>
+                <p className="text-bronze/70">
                   Upload your statement of purpose to get started
                 </p>
               </motion.div>
 
               <div
                 className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
-                  isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"
+                  isDragging ? "border-bronze bg-bronze/10" : "border-bronze/30"
                 }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -375,29 +375,29 @@ export default function UploadSOP({ onAskMentor }: UploadSOPProps) {
                 {loading && !file ? (
                   <>
                     <div className="flex justify-center mb-4">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-bronze"></div>
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">Uploading...</h3>
-                    <p className="text-sm text-gray-500">
+                    <h3 className="text-lg font-semibold mb-2 text-bronze">Uploading...</h3>
+                    <p className="text-sm text-bronze/70">
                       This may take a moment
                     </p>
                   </>
                 ) : (
                   <>
                     <div className="flex justify-center mb-4">
-                      <Upload size={40} className="text-gray-400" />
+                      <Upload size={40} className="text-bronze/70" />
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">
+                    <h3 className="text-lg font-semibold mb-2 text-bronze">
                       Drag & drop your SOP
                     </h3>
-                    <p className="text-sm text-gray-500 mb-4">
+                    <p className="text-sm text-bronze/70 mb-4">
                       Or click to browse your files
                     </p>
-                    <p className="text-xs text-gray-400 mb-4">
+                    <p className="text-xs text-bronze/50 mb-4">
                       Supported formats: PDF, DOCX, TXT
                     </p>
                     <label className="inline-block">
-                      <span className="bg-blue-600 text-white py-2 px-4 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors">
+                      <span className="bg-bronze text-sand py-2 px-4 rounded-lg cursor-pointer hover:bg-bronze/90 transition-colors">
                         Choose File
                       </span>
                       <input
@@ -413,19 +413,19 @@ export default function UploadSOP({ onAskMentor }: UploadSOPProps) {
               </div>
 
               {file && (
-                <div className="border rounded-xl p-4">
+                <div className="border border-bronze/20 rounded-xl p-4 bg-sand">
                   <div className="flex items-center">
-                    <FileText className="text-blue-600 mr-3" size={24} />
+                    <FileText className="text-bronze mr-3" size={24} />
                     <div className="flex-1">
-                      <p className="font-medium">{file.name}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="font-medium text-bronze">{file.name}</p>
+                      <p className="text-xs text-bronze/70">
                         {(file.size / 1024).toFixed(1)} KB
                       </p>
                     </div>
                     {loading ? (
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-bronze"></div>
                     ) : (
-                      <Check className="text-green-500" size={24} />
+                      <Check className="text-bronze" size={24} />
                     )}
                   </div>
                 </div>
@@ -435,7 +435,7 @@ export default function UploadSOP({ onAskMentor }: UploadSOPProps) {
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   onClick={nextStep}
-                  className="w-full flex items-center justify-center bg-blue-600 text-white py-3 px-4 rounded-lg mt-4"
+                  className="w-full flex items-center justify-center bg-bronze text-sand py-3 px-4 rounded-lg mt-4"
                 >
                   Continue
                   <ArrowRight size={18} className="ml-2" />
@@ -453,28 +453,28 @@ export default function UploadSOP({ onAskMentor }: UploadSOPProps) {
                 transition={{ delay: 0.2 }}
                 className="text-center mb-6"
               >
-                <h1 className="text-2xl font-bold mb-2">Extract SOP Text</h1>
-                <p className="text-gray-500">
+                <h1 className="text-2xl font-bold mb-2 text-bronze">Extract SOP Text</h1>
+                <p className="text-bronze/70">
                   Extract the text content from your statement of purpose
                 </p>
               </motion.div>
 
-              <div className="border rounded-xl p-4 mb-4">
+              <div className="border border-bronze/20 rounded-xl p-4 mb-4 bg-sand">
                 <div className="flex items-center">
-                  <FileText className="text-blue-600 mr-3" size={24} />
+                  <FileText className="text-bronze mr-3" size={24} />
                   <div className="flex-1">
-                    <p className="font-medium">{file?.name}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="font-medium text-bronze">{file?.name}</p>
+                    <p className="text-xs text-bronze/70">
                       {file && (file.size / 1024).toFixed(1)} KB
                     </p>
                   </div>
-                  <Check className="text-green-500" size={24} />
+                  <Check className="text-bronze" size={24} />
                 </div>
               </div>
 
               {!formattedSOP && (
                 <button
-                  className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300"
+                  className="w-full flex items-center justify-center gap-2 bg-bronze hover:bg-bronze/90 text-sand font-semibold py-3 px-6 rounded-lg transition-colors duration-300"
                   onClick={handleExtractSOP}
                   disabled={loading || !vectorStoreId}
                 >
@@ -500,8 +500,8 @@ export default function UploadSOP({ onAskMentor }: UploadSOPProps) {
 
               {formattedSOP && (
                 <>
-                  <div className="border rounded-xl p-4">
-                    <h3 className="font-semibold mb-4">
+                  <div className="border border-bronze/20 rounded-xl p-4 bg-sand">
+                    <h3 className="font-semibold mb-4 text-bronze">
                       Extracted SOP Text Preview
                     </h3>
                     <TextPreview content={formattedSOP.content} className="mb-4" />
@@ -509,7 +509,7 @@ export default function UploadSOP({ onAskMentor }: UploadSOPProps) {
                       <button
                         onClick={handleExtractSOP}
                         disabled={loading}
-                        className="mt-4 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
+                        className="mt-4 flex items-center justify-center gap-2 bg-bronze hover:bg-bronze/90 text-sand py-2 px-4 rounded"
                       >
                         {loading ? (
                           <>
@@ -534,7 +534,7 @@ export default function UploadSOP({ onAskMentor }: UploadSOPProps) {
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={prevStep}
-                      className="flex-1 flex items-center justify-center border border-gray-300 py-3 px-4 rounded-lg"
+                      className="flex-1 flex items-center justify-center border border-bronze/30 text-bronze py-3 px-4 rounded-lg"
                       disabled={loading}
                     >
                       <ArrowLeft size={18} className="mr-2" />
@@ -543,7 +543,7 @@ export default function UploadSOP({ onAskMentor }: UploadSOPProps) {
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={nextStep}
-                      className="flex-1 flex items-center justify-center bg-blue-600 text-white py-3 px-4 rounded-lg"
+                      className="flex-1 flex items-center justify-center bg-bronze text-sand py-3 px-4 rounded-lg"
                       disabled={loading}
                     >
                       Continue
@@ -564,26 +564,22 @@ export default function UploadSOP({ onAskMentor }: UploadSOPProps) {
                 transition={{ delay: 0.2 }}
                 className="text-center mb-6"
               >
-                <h1 className="text-2xl font-bold mb-2">Save Your SOP</h1>
-                <p className="text-gray-500">
+                <h1 className="text-2xl font-bold mb-2 text-bronze">Save Your SOP</h1>
+                <p className="text-bronze/70">
                   Review and save your statement of purpose
                 </p>
               </motion.div>
 
-              <div className="border rounded-xl p-6">
-                <h3 className="font-semibold mb-3">{file?.name}</h3>
+              <div className="border border-bronze/20 rounded-xl p-4 bg-sand">
+                <h3 className="font-semibold mb-4 text-bronze">SOP Preview</h3>
                 <TextPreview content={formattedSOP?.content || ""} className="mb-4" />
-                <div className="flex items-center text-sm text-gray-500">
-                  <FileText size={16} className="mr-1" />
-                  <span>Format: Text</span>
-                </div>
               </div>
 
               <div className="flex space-x-4 mt-6">
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   onClick={prevStep}
-                  className="flex-1 flex items-center justify-center border border-gray-300 py-3 px-4 rounded-lg"
+                  className="flex-1 flex items-center justify-center border border-bronze/30 text-bronze py-3 px-4 rounded-lg"
                   disabled={loading}
                 >
                   <ArrowLeft size={18} className="mr-2" />
@@ -593,10 +589,10 @@ export default function UploadSOP({ onAskMentor }: UploadSOPProps) {
                   whileTap={{ scale: 0.95 }}
                   onClick={handleSaveSOP}
                   disabled={loading}
-                  className="flex-1 flex items-center justify-center bg-green-600 text-white py-3 px-4 rounded-lg"
+                  className="flex-1 flex items-center justify-center bg-gold text-bronze py-3 px-4 rounded-lg"
                 >
                   {loading ? (
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-bronze mr-2"></div>
                   ) : (
                     <Download size={18} className="mr-2" />
                   )}
@@ -604,11 +600,11 @@ export default function UploadSOP({ onAskMentor }: UploadSOPProps) {
                 </motion.button>
               </div>
 
-              <div className="mt-6 pt-4 border-t text-center">
+              <div className="mt-6 pt-4 border-t border-bronze/20 text-center">
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   onClick={resetState}
-                  className="text-gray-500 hover:text-gray-700 text-sm flex items-center justify-center mx-auto"
+                  className="text-bronze/60 hover:text-bronze/80 text-sm flex items-center justify-center mx-auto"
                 >
                   <RefreshCw size={14} className="mr-2" />
                   Start Over

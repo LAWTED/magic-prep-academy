@@ -10,17 +10,17 @@ export default function UploadResumePage() {
   const handleAskMentor = () => {};
 
   return (
-    <div className="p-4 pb-20">
+    <div className="p-4 pb-20 bg-yellow">
       <div className="flex items-center mb-6">
         <Link href="/tools/resume">
           <motion.div
             whileTap={{ scale: 0.9 }}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100"
+            className="w-10 h-10 flex items-center justify-center rounded-full  text-bronze"
           >
             <ArrowLeft size={20} />
           </motion.div>
         </Link>
-        <h1 className="ml-3 text-2xl font-bold">Upload Resume</h1>
+        <h1 className="ml-3 text-2xl font-bold text-bronze">Upload Resume</h1>
       </div>
 
       <UploadResume onAskMentor={handleAskMentor} />

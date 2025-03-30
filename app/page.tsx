@@ -85,6 +85,18 @@ export default function Home() {
               </Button>
             </Link>
           </motion.div>
+
+          <div className="w-full border-t border-bronze/20 my-2 pt-4">
+            <motion.div
+              whileTap={{ scale: 0.97 }}
+            >
+              <Link href="/mentor/dashboard" className="w-full">
+                <Button variant="ghost" className="text-bronze/70 font-medium py-2 w-full">
+                  For Mentors
+                </Button>
+              </Link>
+            </motion.div>
+          </div>
         </div>
       </motion.div>
 

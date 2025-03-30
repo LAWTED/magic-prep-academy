@@ -37,42 +37,31 @@ export default function CompleteRequestForm({
   // Function to get text suggestion from API
   const fetchSuggestion = async (text: string): Promise<string> => {
     try {
-      // For LOR, we should have something in letterData
-      if (Object.keys(studentInfo).length === 0) {
-        console.error("No letter data available for suggestions");
-        return "";
-      }
+      // Format the input text using the extracted function
+      const formattedInput = LOR_PROMPTS.FORMAT_CONTINUATION_INPUT(text);
 
-      const prefix = text.substring(text.lastIndexOf("\n") + 1);
+      // Get the instructions using the extracted function
+      const instructions = LOR_PROMPTS.SUGGESTION_PROMPT(studentInfo);
 
-      const response = await fetch("/api/suggest", {
+      const response = await fetch("/api/suggestion", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          prefix,
-          context: {
-            type: "lor",
-            student_name: studentInfo.student_name,
-            mentor_name: studentInfo.mentor_name,
-            program_name: studentInfo.program_name,
-            school_name: studentInfo.school_name,
-            program_details: studentInfo.program_details,
-            student_notes: studentInfo.student_notes,
-          },
+          text: formattedInput,
+          instructions: instructions,
         }),
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to get suggestion");
+        throw new Error("Failed to get suggestion");
       }
 
       const data = await response.json();
       return data.suggestion || "";
     } catch (error) {
-      console.error("Error fetching suggestion:", error);
+      console.error("Error getting suggestion:", error);
       return "";
     }
   };
@@ -304,20 +293,22 @@ export default function CompleteRequestForm({
           >
             {isMarkingFinished ? "Updating..." : "Mark as Submitted to School"}
           </button>
-        ) : status !== "finished" && (
-          <button
-            onClick={() => {
-              if (content.trim()) {
-                handleSave(content);
-              } else {
-                toast.error("Please write a recommendation letter first");
-              }
-            }}
-            disabled={isSubmitting}
-            className="py-2 px-6 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:pointer-events-none"
-          >
-            {isSubmitting ? "Submitting..." : "Submit Recommendation Letter"}
-          </button>
+        ) : (
+          status !== "finished" && (
+            <button
+              onClick={() => {
+                if (content.trim()) {
+                  handleSave(content);
+                } else {
+                  toast.error("Please write a recommendation letter first");
+                }
+              }}
+              disabled={isSubmitting}
+              className="py-2 px-6 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+            >
+              {isSubmitting ? "Submitting..." : "Submit Recommendation Letter"}
+            </button>
+          )
         )}
       </div>
     </div>

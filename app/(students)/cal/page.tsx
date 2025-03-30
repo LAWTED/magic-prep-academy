@@ -631,7 +631,7 @@ function Calendar() {
   };
 
   return (
-    <div className="p-4 bg-yellow">
+    <div className="p-4 ">
       <h2 className="text-lg font-bold bg-gold py-4 z-10 text-bronze rounded-lg px-4 shadow-sm mb-4 flex items-center justify-between gap-2">
         <div
           className="cursor-pointer hover:text-bronze transition-colors"
@@ -736,12 +736,12 @@ function Calendar() {
                 className="flex items-center justify-between gap-2 p-2 bg-sand rounded-md text-sm border-l-4 shadow-sm w-full border-gold"
               >
                 <div className="flex items-center gap-2">
-                <div
-                  className={`w-5 h-5 rounded-full bg-gold text-bronze flex items-center justify-center flex-shrink-0`}
-                >
-                  <IconComponent size={10} />
-                </div>
-                <span className="font-medium text-bronze">{event.title}</span>
+                  <div
+                    className={`w-5 h-5 rounded-full bg-gold text-bronze flex items-center justify-center flex-shrink-0`}
+                  >
+                    <IconComponent size={10} />
+                  </div>
+                  <span className="font-medium text-bronze">{event.title}</span>
                 </div>
                 <span className="text-xs text-bronze/70 block ">
                   {getTimeframe(event.start_date, event.end_date)}

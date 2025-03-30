@@ -265,18 +265,25 @@ export default function ApplicationProgressCard({
     if (!user?.id) return;
 
     // Check if all required documents are completed
-    const isLorCompleted = progressData?.lor?.status === "completed" || progressData?.lor?.status === "finished";
+    const isLorCompleted =
+      progressData?.lor?.status === "completed" ||
+      progressData?.lor?.status === "finished";
     const isCvCompleted = progressData?.cv?.status === "completed";
     const isSopCompleted = progressData?.sop?.status === "completed";
 
     // If trying to mark as submitted but not all documents are complete
-    if (!progressData?.application_submitted && (!isLorCompleted || !isCvCompleted || !isSopCompleted)) {
+    if (
+      !progressData?.application_submitted &&
+      (!isLorCompleted || !isCvCompleted || !isSopCompleted)
+    ) {
       const missing = [];
       if (!isLorCompleted) missing.push("Letter of Recommendation");
       if (!isCvCompleted) missing.push("CV/Resume");
       if (!isSopCompleted) missing.push("Statement of Purpose");
 
-      toast.error(`Cannot submit application: ${missing.join(", ")} not completed`);
+      toast.error(
+        `Cannot submit application: ${missing.join(", ")} not completed`
+      );
       return;
     }
 
@@ -305,7 +312,7 @@ export default function ApplicationProgressCard({
       // Toggle the application_submitted status
       progressContent = {
         ...progressContent,
-        application_submitted: !progressContent.application_submitted
+        application_submitted: !progressContent.application_submitted,
       };
 
       if (data?.id) {
@@ -339,9 +346,11 @@ export default function ApplicationProgressCard({
       setProgressData(progressContent as ProgressData);
 
       // Show success message
-      toast.success(progressContent.application_submitted
-        ? "Application marked as submitted!"
-        : "Application marked as not submitted");
+      toast.success(
+        progressContent.application_submitted
+          ? "Application marked as submitted!"
+          : "Application marked as not submitted"
+      );
     } catch (error) {
       console.error("Error updating application status:", error);
       toast.error("Failed to update application status");
@@ -351,7 +360,9 @@ export default function ApplicationProgressCard({
   };
 
   const canSubmitApplication = () => {
-    const isLorCompleted = progressData?.lor?.status === "completed" || progressData?.lor?.status === "finished";
+    const isLorCompleted =
+      progressData?.lor?.status === "completed" ||
+      progressData?.lor?.status === "finished";
     const isCvCompleted = progressData?.cv?.status === "completed";
     const isSopCompleted = progressData?.sop?.status === "completed";
     return isLorCompleted && isCvCompleted && isSopCompleted;
@@ -381,7 +392,7 @@ export default function ApplicationProgressCard({
         return "bg-warning/20 text-warning border-warning/30";
       case "not_started":
       default:
-        return "bg-waiting/20 text-waiting border-disabled/30";
+        return "bg-waiting/20 text-waiting border-waiting/30";
     }
   };
 
@@ -401,7 +412,8 @@ export default function ApplicationProgressCard({
   };
 
   const renderDrawerContent = () => {
-    const documentType = selectedDocumentType === "cv" ? "Resume" : "Statement of Purpose";
+    const documentType =
+      selectedDocumentType === "cv" ? "Resume" : "Statement of Purpose";
 
     return (
       <>
@@ -415,17 +427,19 @@ export default function ApplicationProgressCard({
             </button>
           )}
           <DrawerTitle className="text-black">
-            {selectionStep === 1
-              ? `Select ${documentType}`
-              : `Select Version`}
+            {selectionStep === 1 ? `Select ${documentType}` : `Select Version`}
           </DrawerTitle>
         </DrawerHeader>
 
         <div className="px-4 pb-2 bg-sand">
           <div className="flex items-center w-full mb-6">
             <div className={`h-2 flex-1 rounded-full bg-skyblue`}></div>
-            <div className="mx-2 text-bronze/70 text-xs">Step {selectionStep} of 2</div>
-            <div className={`h-2 flex-1 rounded-full ${selectionStep === 2 ? `bg-skyblue` : "bg-bronze/20"}`}></div>
+            <div className="mx-2 text-bronze/70 text-xs">
+              Step {selectionStep} of 2
+            </div>
+            <div
+              className={`h-2 flex-1 rounded-full ${selectionStep === 2 ? `bg-skyblue` : "bg-bronze/20"}`}
+            ></div>
           </div>
         </div>
 
@@ -437,7 +451,9 @@ export default function ApplicationProgressCard({
           ) : selectionStep === 1 ? (
             documents.length === 0 ? (
               <div className="text-center py-8 text-bronze/70">
-                <p>You don't have any {documentType.toLowerCase()} documents yet.</p>
+                <p>
+                  You don't have any {documentType.toLowerCase()} documents yet.
+                </p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -457,7 +473,8 @@ export default function ApplicationProgressCard({
                         <div>
                           <h3 className="font-medium text-black">{doc.name}</h3>
                           <p className="text-xs text-bronze/70">
-                            Last updated: {new Date(doc.updated_at).toLocaleDateString()}
+                            Last updated:{" "}
+                            {new Date(doc.updated_at).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -517,7 +534,9 @@ export default function ApplicationProgressCard({
 
   return (
     <div className="bg-sand border border-bronze/20 rounded-xl p-4 md:p-5 shadow-sm">
-      <h3 className="font-bold text-lg mb-4 text-black">Application Progress</h3>
+      <h3 className="font-bold text-lg mb-4 text-black">
+        Application Progress
+      </h3>
 
       <div className="space-y-3">
         {/* Letter of Recommendation */}
@@ -525,7 +544,9 @@ export default function ApplicationProgressCard({
           <div className="flex items-center justify-between p-3">
             <div className="flex items-center gap-2">
               <FileText size={18} className="text-skyblue" />
-              <h5 className="font-medium text-black">Letter of Recommendation</h5>
+              <h5 className="font-medium text-black">
+                Letter of Recommendation
+              </h5>
             </div>
             <div
               className={`px-2 py-1 rounded-full text-xs flex items-center gap-1 ${getStatusClass(
@@ -653,14 +674,14 @@ export default function ApplicationProgressCard({
               <CheckCircle size={18} className="text-skyblue" />
               <h5 className="font-medium text-black">Application Submitted</h5>
             </div>
-            <div className={`px-2 py-1 rounded-full text-xs flex items-center gap-1 ${
-              progressData?.application_submitted
-                ? "bg-success/20 text-success border-success/30"
-                : "bg-waiting/20 text-waiting border-disabled/30"
-            }`}>
-              <span>
-                {progressData?.application_submitted ? "Yes" : "No"}
-              </span>
+            <div
+              className={`px-2 py-1 rounded-full text-xs flex items-center gap-1 ${
+                progressData?.application_submitted
+                  ? "bg-success/20 text-success border-success/30"
+                  : "bg-waiting/20 text-waiting border-waiting/30"
+              }`}
+            >
+              <span>{progressData?.application_submitted ? "Yes" : "No"}</span>
             </div>
           </div>
 
@@ -671,9 +692,11 @@ export default function ApplicationProgressCard({
                 onClick={toggleApplicationSubmitted}
                 disabled={isSubmitting || !canSubmitApplication()}
                 className={`w-full py-2 text-sm font-medium rounded-md flex items-center justify-center gap-1
-                  ${canSubmitApplication()
-                    ? "bg-warning/20 text-warning hover:bg-warning/30"
-                    : "bg-waiting/20 text-waiting cursor-not-allowed"}`}
+                  ${
+                    canSubmitApplication()
+                      ? "bg-waiting/20 text-waiting hover:bg-waiting/30"
+                      : "bg-gray-500/20 text-gray-500 cursor-not-allowed"
+                  }`}
               >
                 {isSubmitting ? (
                   <Loader2 size={14} className="animate-spin" />
@@ -697,7 +720,7 @@ export default function ApplicationProgressCard({
                 whileTap={{ scale: 0.95 }}
                 onClick={toggleApplicationSubmitted}
                 disabled={isSubmitting}
-                className="w-full py-2 text-sm font-medium bg-waiting/20 text-waiting hover:bg-waiting/30 rounded-md flex items-center justify-center gap-1"
+                className="w-full py-2 text-sm font-medium bg-gray-500/20 text-gray-500  rounded-md flex items-center justify-center gap-1"
               >
                 {isSubmitting ? (
                   <Loader2 size={14} className="animate-spin" />

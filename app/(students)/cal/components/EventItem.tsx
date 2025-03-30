@@ -81,7 +81,7 @@ export default function EventItem({ event }: EventItemProps) {
     <motion.div
       initial={{ x: -10, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className={`flex gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors border-l-4 ${borderColor}`}
+      className={`flex gap-3 p-3 rounded-lg hover:bg-sand/80 transition-colors border-l-4 ${borderColor} bg-sand`}
     >
       <div className={`w-8 h-8 rounded-full ${colorClass} flex items-center justify-center flex-shrink-0`}>
         <IconComponent size={16} />
@@ -89,16 +89,16 @@ export default function EventItem({ event }: EventItemProps) {
 
       <div className="flex-1">
         <div>
-          <h3 className="font-semibold">{event.title}</h3>
+          <h3 className="font-semibold text-bronze">{event.title}</h3>
 
           {event.program_id && (
-            <span className="text-xs text-gray-500 block">
+            <span className="text-xs text-bronze/70 block">
               Program ID: {event.program_id}
             </span>
           )}
 
           {event.description && (
-            <p className="mt-2 text-sm text-gray-600">{event.description}</p>
+            <p className="mt-2 text-sm text-bronze/80">{event.description}</p>
           )}
         </div>
       </div>

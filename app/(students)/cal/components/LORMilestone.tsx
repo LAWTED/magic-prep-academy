@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { themeConfig } from "@/app/config/themeConfig";
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { ProgramInfoSkeleton } from "./DeadlineEvent";
 
 interface LORMilestoneProps {
   event: {
@@ -23,14 +24,7 @@ interface LORMilestoneProps {
   };
 }
 
-// Skeleton loading component
-function ProgramInfoSkeleton() {
-  return (
-    <div className="animate-pulse">
-      <div className="h-4 w-40 bg-gray-200 rounded"></div>
-    </div>
-  );
-}
+
 
 // 根据项目ID获取项目和学校信息
 function ProgramInfo({ programId }: { programId: string }) {
@@ -88,7 +82,7 @@ function ProgramInfo({ programId }: { programId: string }) {
   }
 
   return (
-    <span className="text-xs text-gray-500 block">
+    <span className="text-xs text-bronze/70 block">
       {schoolName && `${schoolName} - `}{programName}
     </span>
   );
@@ -102,11 +96,11 @@ export default function LORMilestone({ event }: LORMilestoneProps) {
     <motion.div
       initial={{ x: -10, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="p-3 rounded-lg hover:bg-gray-50 transition-colors border-l-4 border-emerald-500"
+      className="p-3 rounded-lg hover:bg-sand/80 transition-colors border-l-4 border-grass bg-sand"
     >
       <div className="flex-1">
         <div>
-          <h3 className="font-semibold">{event.title}</h3>
+          <h3 className="font-semibold text-bronze">{event.title}</h3>
 
           {/* 显示项目信息 - 优先使用数据库查询 */}
           {event.program_id && (
@@ -114,12 +108,12 @@ export default function LORMilestone({ event }: LORMilestoneProps) {
           )}
           {/* 如果没有项目ID但内容中有项目名称和学校名称，则直接显示 */}
           {!event.program_id && content.program_name && content.school_name && (
-            <span className="text-xs text-gray-500 block">
+            <span className="text-xs text-bronze/70 block">
               {content.school_name} - {content.program_name}
             </span>
           )}
 
-          <div className="mt-2 text-sm text-gray-600 space-y-1">
+          <div className="mt-2 text-sm text-bronze/80 space-y-1">
             {/* 推荐信特有信息 */}
             {content.mentor_name && (
               <p>Mentor: {content.mentor_name}</p>

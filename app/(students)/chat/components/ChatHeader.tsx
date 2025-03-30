@@ -28,14 +28,14 @@ export function ChatHeader({
   allChatPersons = chatPersons,
   userId,
   fcmToken,
-  notificationPermissionStatus
+  notificationPermissionStatus,
 }: ChatHeaderProps) {
   return (
-    <header className="sticky top-0 z-10 w-full p-4 flex items-center justify-between border-b bg-background">
+    <header className="sticky top-0 z-10 w-full p-4 flex items-center justify-between  bg-gold shadow-md">
       <div className="flex items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-2 focus:outline-none">
-            <div className="w-10 h-10 flex items-center justify-center overflow-hidden rounded-full">
+            <div className="w-10 h-10 flex items-center justify-center overflow-hidden rounded-full border-4 border-sand">
               {selectedPerson.avatar ? (
                 <img
                   src={selectedPerson.avatar}
@@ -46,62 +46,67 @@ export function ChatHeader({
                 <div
                   className={`w-full h-full flex items-center justify-center ${
                     selectedPerson.isRealPerson
-                      ? "bg-green-100"
+                      ? "bg-sand"
                       : selectedPerson.id === "phd-mentor"
-                      ? "bg-purple-100"
-                      : selectedPerson.id === "resume-editor"
-                        ? "bg-blue-100"
-                        : "bg-green-100"
+                        ? "bg-gold"
+                        : selectedPerson.id === "resume-editor"
+                          ? "bg-sand"
+                          : "bg-sand"
                   }`}
                 >
-                  <selectedPerson.icon
-                    className={`h-5 w-5 ${selectedPerson.color}`}
-                  />
+                  <selectedPerson.icon className={`h-5 w-5 text-bronze`} />
                 </div>
               )}
             </div>
             <div className="flex items-center gap-1">
-              <h1 className="text-xl font-bold">{selectedPerson.name}</h1>
-              <ChevronDown className="h-4 w-4 text-gray-500 ml-1" />
+              <h1 className="text-xl font-bold text-bronze">
+                {selectedPerson.name}
+              </h1>
+              <ChevronDown className="h-4 w-4 text-bronze ml-1" />
             </div>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="start" className="w-60 max-h-[400px] overflow-y-auto">
+          <DropdownMenuContent
+            align="start"
+            className="w-60 max-h-[400px] overflow-y-auto bg-sand"
+          >
             {/* Filter out resume-editor and group real mentors */}
             {allChatPersons
-              .filter(person => person.id !== "resume-editor")
+              .filter((person) => person.id !== "resume-editor")
               .map((person) => (
-              <DropdownMenuItem
-                key={person.id}
-                onClick={() => onPersonChange(person)}
-                className={`flex items-center gap-2 ${
-                  selectedPerson.id === person.id ? "bg-gray-50" : ""
-                }`}
-              >
-                <div className="w-8 h-8 flex items-center justify-center overflow-hidden rounded-full">
-                  {person.avatar ? (
-                    <img
-                      src={person.avatar}
-                      alt={person.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div
-                      className={`w-full h-full flex items-center justify-center ${
-                        person.isRealPerson
-                          ? "bg-green-100"
-                          : person.id === "phd-mentor"
-                          ? "bg-purple-100"
-                          : "bg-blue-100"
-                      }`}
-                    >
-                      <person.icon className={`h-4 w-4 ${person.color}`} />
-                    </div>
-                  )}
-                </div>
-                <span className="text-sm font-medium truncate">{person.name}</span>
-              </DropdownMenuItem>
-            ))}
+                <DropdownMenuItem
+                  key={person.id}
+                  onClick={() => onPersonChange(person)}
+                  className={`flex items-center gap-2 ${
+                    selectedPerson.id === person.id ? "bg-gold/60" : ""
+                  }`}
+                >
+                  <div className="w-8 h-8 flex items-center justify-center overflow-hidden rounded-full ">
+                    {person.avatar ? (
+                      <img
+                        src={person.avatar}
+                        alt={person.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div
+                        className={`w-full h-full flex items-center justify-center ${
+                          person.isRealPerson
+                            ? "bg-sand"
+                            : person.id === "phd-mentor"
+                              ? "bg-sand"
+                              : "bg-sand"
+                        }`}
+                      >
+                        <person.icon className={`h-4 w-4 text-bronze`} />
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-sm font-medium truncate text-bronze">
+                    {person.name}
+                  </span>
+                </DropdownMenuItem>
+              ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

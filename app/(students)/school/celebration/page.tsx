@@ -19,7 +19,7 @@ export type TimelineThemeKey =
   | "startSchool";
 
 // Generate timeframe display string from start and end dates
-const getTimeframe = (startDate: string, endDate: string) => {
+export const getTimeframe = (startDate: string, endDate: string) => {
   const start = new Date(startDate);
   const end = new Date(endDate);
 
@@ -311,14 +311,17 @@ function SchoolCelebration() {
   // Verify the timeline to debug
   useEffect(() => {
     if (timelineEvents.length > 0) {
-      console.log("Timeline events:", timelineEvents.map(e => `${e.id}: ${e.title} (${e.action_type})`));
+      console.log(
+        "Timeline events:",
+        timelineEvents.map((e) => `${e.id}: ${e.title} (${e.action_type})`)
+      );
     }
   }, [timelineEvents]);
 
   // Get theme for action type
   const getThemeForAction = (action_type: string) => {
     // Use special theme for program deadline
-    if (action_type === 'deadline') {
+    if (action_type === "deadline") {
       // Use the same icon as submit_application but with our custom colors
       return {
         color: "bg-red-100 text-red-600",
@@ -327,7 +330,10 @@ function SchoolCelebration() {
     }
 
     // For other action types, use the actionThemes from themeConfig
-    const actionTheme = themeConfig.actionThemes[action_type as keyof typeof themeConfig.actionThemes];
+    const actionTheme =
+      themeConfig.actionThemes[
+        action_type as keyof typeof themeConfig.actionThemes
+      ];
 
     if (actionTheme) {
       return {
@@ -344,7 +350,7 @@ function SchoolCelebration() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-[100dvh] p-6 pt-10 overflow-y-auto bg-yellow">
+    <div className="flex flex-col items-center justify-start min-h-[100dvh] p-6 pt-10 overflow-y-auto">
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -465,7 +471,9 @@ function SchoolCelebration() {
                   </div>
 
                   <div className="mb-1 flex justify-between items-center flex-wrap gap-1">
-                    <h3 className={`font-bold text-sm md:text-base text-black ${isDeadlineEvent ? "flex items-center" : ""}`}>
+                    <h3
+                      className={`font-bold text-sm md:text-base text-black ${isDeadlineEvent ? "flex items-center" : ""}`}
+                    >
                       {item.title}
                     </h3>
                     <span

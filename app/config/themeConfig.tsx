@@ -29,12 +29,12 @@ export const themeConfig = {
   // Timeline theme configuration
   timeline: {
     colors: {
-      languageTest: "bg-blue-100 text-blue-600",
-      applicationMaterials: "bg-purple-100 text-purple-600",
-      submitApplication: "bg-green-100 text-green-600",
-      receiveOffers: "bg-yellow-100 text-yellow-600",
-      prepareVisa: "bg-red-100 text-red-600",
-      startSchool: "bg-indigo-100 text-indigo-600",
+      languageTest: "bg-skyblue/20 text-skyblue",
+      applicationMaterials: "bg-gold/30 text-bronze",
+      submitApplication: "bg-grass/20 text-grass",
+      receiveOffers: "bg-gold/40 text-bronze",
+      prepareVisa: "bg-tomato/20 text-tomato",
+      startSchool: "bg-lime/30 text-grass",
     } as const,
     icons: {
       languageTest: BookOpen,
@@ -49,31 +49,31 @@ export const themeConfig = {
   // Action type to theme mapping
   actionThemes: {
     language_test: {
-      color: "bg-blue-100 text-blue-600",
+      color: "bg-skyblue/20 text-skyblue border-skyblue/20",
       icon: BookOpen,
     },
     application_materials: {
-      color: "bg-purple-100 text-purple-600",
+      color: "bg-gold/30 text-bronze border-gold/30",
       icon: FileText,
     },
     submit_application: {
-      color: "bg-green-100 text-green-600",
+      color: "bg-grass/20 text-grass border-grass/20",
       icon: Globe,
     },
     receive_offers: {
-      color: "bg-yellow-100 text-yellow-600",
+      color: "bg-gold/40 text-gold border-gold/40",
       icon: Award,
     },
     prepare_visa: {
-      color: "bg-red-100 text-red-600",
+      color: "bg-tomato/20 text-tomato border-tomato/20",
       icon: Stamp,
     },
     start_school: {
-      color: "bg-indigo-100 text-indigo-600",
+      color: "bg-lime/30 text-grass border-lime/30",
       icon: GraduationCap,
     },
     recommendation_letter_sent: {
-      color: "bg-emerald-100 text-emerald-600",
+      color: "bg-lime/30 text-grass border-lime/30",
       icon: Mail,
     },
   } as const,

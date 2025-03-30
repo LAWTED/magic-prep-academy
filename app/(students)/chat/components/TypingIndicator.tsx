@@ -22,7 +22,7 @@ export function TypingIndicator({ selectedPerson, dots }: TypingIndicatorProps) 
       exit="exit"
       className="flex justify-center my-2"
     >
-      <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+      <span className="text-sm text-bronze bg-sand px-3 py-1 rounded-full">
         {selectedPerson.name} is typing{dots}
       </span>
     </motion.div>

@@ -29,14 +29,14 @@ export function WelcomeScreen({ selectedPerson }: WelcomeScreenProps) {
       variants={welcomeVariants}
       initial="hidden"
       animate="visible"
-      className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4 py-6"
+      className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4 py-6 "
     >
       <motion.div
         whileHover={{ scale: 1.05 }}
         className="mb-6"
       >
         {selectedPerson.avatar ? (
-          <div className="w-20 h-20 overflow-hidden rounded-full border-2 border-primary">
+          <div className="w-20 h-20 overflow-hidden rounded-full border-2 border-gold">
             <Image
               src={selectedPerson.avatar}
               alt={selectedPerson.name}
@@ -46,27 +46,21 @@ export function WelcomeScreen({ selectedPerson }: WelcomeScreenProps) {
             />
           </div>
         ) : (
-          <div className={`p-5 rounded-full ${
-            selectedPerson.id === "phd-mentor"
-              ? "bg-purple-100"
-              : selectedPerson.id === "resume-editor"
-                ? "bg-blue-100"
-                : "bg-green-100"
-          }`}>
-            <selectedPerson.icon size={40} className={selectedPerson.color} />
+          <div className={`p-5 rounded-full bg-sand`}>
+            <selectedPerson.icon size={40} className="text-bronze" />
           </div>
         )}
       </motion.div>
 
-      <h1 className="text-2xl font-bold mb-3">
+      <h1 className="text-2xl font-bold mb-3 text-bronze">
         Chat with {selectedPerson.name}
       </h1>
 
-      <p className="text-gray-500 max-w-md text-center mb-6">
+      <p className="text-bronze/80 max-w-md text-center mb-6 bg-sand p-4 rounded-xl">
         {welcomeMessage}
       </p>
 
-      <div className="text-sm text-gray-400 max-w-md">
+      <div className="text-sm text-bronze/70 max-w-md">
         <p>Send a message to start the conversation...</p>
       </div>
     </motion.div>

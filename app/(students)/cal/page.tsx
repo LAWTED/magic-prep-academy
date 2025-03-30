@@ -2,7 +2,15 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Globe, BookOpen, Check, CalendarIcon, ChevronDown } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Globe,
+  BookOpen,
+  Check,
+  CalendarIcon,
+  ChevronDown,
+} from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { useUserStore } from "@/store/userStore";
 import { themeConfig } from "@/app/config/themeConfig";
@@ -16,6 +24,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import LoadingCard from "@/app/components/LoadingCard";
+import { cn } from "@/lib/utils";
+import { getTimeframe } from "../school/celebration/page";
 
 interface CalendarEvent {
   id: string;
@@ -50,9 +61,9 @@ function ProgramName({ programId }: { programId: string }) {
       try {
         // 获取项目信息
         const { data: programData, error: programError } = await supabase
-          .from('programs')
-          .select('name, content, school_id')
-          .eq('id', programId)
+          .from("programs")
+          .select("name, content, school_id")
+          .eq("id", programId)
           .single();
 
         if (programError || !programData) {
@@ -61,16 +72,17 @@ function ProgramName({ programId }: { programId: string }) {
         }
 
         // 设置项目名称
-        const displayName = programData.name ||
-                          (programData.content?.name ? programData.content.name : "Program");
+        const displayName =
+          programData.name ||
+          (programData.content?.name ? programData.content.name : "Program");
         setProgramName(displayName);
 
         // 获取学校信息
         if (programData.school_id) {
           const { data: schoolData, error: schoolError } = await supabase
-            .from('schools')
-            .select('name')
-            .eq('id', programData.school_id)
+            .from("schools")
+            .select("name")
+            .eq("id", programData.school_id)
             .single();
 
           if (!schoolError && schoolData) {
@@ -90,12 +102,15 @@ function ProgramName({ programId }: { programId: string }) {
   }, [programId]);
 
   if (loading) {
-    return <span className="text-xs text-gray-400">Loading program info...</span>;
+    return (
+      <span className="text-xs text-bronze/50">Loading program info...</span>
+    );
   }
 
   return (
     <span className="text-xs text-gray-500 block">
-      {schoolName && `${schoolName} - `}{programName}
+      {schoolName && `${schoolName} - `}
+      {programName}
     </span>
   );
 }
@@ -118,32 +133,53 @@ function Calendar() {
   };
 
   const initialDate = getInitialDate();
-  const initialMonthDate = new Date(initialDate.getFullYear(), initialDate.getMonth(), 1);
+  const initialMonthDate = new Date(
+    initialDate.getFullYear(),
+    initialDate.getMonth(),
+    1
+  );
 
   const [currentDate, setCurrentDate] = useState(initialMonthDate);
   const [selectedDate, setSelectedDate] = useState<Date>(initialDate);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [slideDirection, setSlideDirection] = useState<"left" | "right" | null>(null);
+  const [slideDirection, setSlideDirection] = useState<"left" | "right" | null>(
+    null
+  );
   const { user } = useUserStore();
 
   // Available years for selection (covering current year + 2025-2026 application timeline)
   const currentYear = today.getFullYear();
-  const startYear = Math.min(currentYear, 2025);  // Start from earlier of current year or 2025
-  const endYear = 2027;    // Add an extra year after the end of timeline
-  const years = Array.from({length: endYear - startYear + 1}, (_, i) => startYear + i);
+  const startYear = Math.min(currentYear, 2025); // Start from earlier of current year or 2025
+  const endYear = 2027; // Add an extra year after the end of timeline
+  const years = Array.from(
+    { length: endYear - startYear + 1 },
+    (_, i) => startYear + i
+  );
 
   // Month names for selection
   const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
   ];
 
   const [headerText, setHeaderText] = useState(() => {
     // Initialize with "Calendar" if selected date is today, otherwise "Carpe diem"
     const today = new Date();
     const selectedDay = getInitialDate();
-    return today.toDateString() === selectedDay.toDateString() ? "Calendar" : "Carpe diem";
+    return today.toDateString() === selectedDay.toDateString()
+      ? "Calendar"
+      : "Carpe diem";
   });
 
   // Handle month selection change
@@ -171,9 +207,15 @@ function Calendar() {
     const todayYear = today.getFullYear();
 
     // Determine slide direction based on date comparison
-    if (todayYear > currentYear || (todayYear === currentYear && todayMonth > currentMonth)) {
+    if (
+      todayYear > currentYear ||
+      (todayYear === currentYear && todayMonth > currentMonth)
+    ) {
       setSlideDirection("left");
-    } else if (todayYear < currentYear || (todayYear === currentYear && todayMonth < currentMonth)) {
+    } else if (
+      todayYear < currentYear ||
+      (todayYear === currentYear && todayMonth < currentMonth)
+    ) {
       setSlideDirection("right");
     } else {
       setSlideDirection(null);
@@ -191,12 +233,20 @@ function Calendar() {
     if (!user) return;
 
     // 获取当前月份的开始和结束日期
-    const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    const startOfMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      1
+    );
+    const endOfMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() + 1,
+      0
+    );
 
     // Format dates for query
-    const startDate = startOfMonth.toISOString().split('T')[0];
-    const endDate = endOfMonth.toISOString().split('T')[0];
+    const startDate = startOfMonth.toISOString().split("T")[0];
+    const endDate = endOfMonth.toISOString().split("T")[0];
 
     console.log(`Fetching events for ${startDate} to ${endDate}`);
     setLoading(true);
@@ -206,11 +256,13 @@ function Calendar() {
       try {
         // Fetch events where event duration overlaps with current month
         const { data, error } = await supabase
-          .from('user_program_event')
-          .select(`
+          .from("user_program_event")
+          .select(
+            `
             id, title, description, start_date, end_date, action_type, program_id
-          `)
-          .eq('user_id', user?.id || '')
+          `
+          )
+          .eq("user_id", user?.id || "")
           .or(`start_date.lte.${endDate},end_date.gte.${startDate}`);
 
         if (error) {
@@ -222,23 +274,41 @@ function Calendar() {
         if (data) {
           console.log("Calendar events loaded:", data.length);
           // 查找并记录推荐信发送事件
-          const recommendationEvents = data.filter(event => event.action_type === 'recommendation_letter_sent');
+          const recommendationEvents = data.filter(
+            (event) => event.action_type === "recommendation_letter_sent"
+          );
           if (recommendationEvents.length > 0) {
-            console.log("Found recommendation letter events:", recommendationEvents.length);
-            recommendationEvents.forEach(event => {
-              console.log("Recommendation letter event:", event.title, event.start_date);
+            console.log(
+              "Found recommendation letter events:",
+              recommendationEvents.length
+            );
+            recommendationEvents.forEach((event) => {
+              console.log(
+                "Recommendation letter event:",
+                event.title,
+                event.start_date
+              );
               // 尝试解析事件描述
               try {
-                if (event.description && typeof event.description === 'string') {
+                if (
+                  event.description &&
+                  typeof event.description === "string"
+                ) {
                   let content;
                   // 尝试不同的解析方法
-                  if (event.description.startsWith('{') && event.description.endsWith('}')) {
+                  if (
+                    event.description.startsWith("{") &&
+                    event.description.endsWith("}")
+                  ) {
                     content = JSON.parse(event.description);
                     console.log("Parsed event content:", content);
                   }
                 }
               } catch (e) {
-                console.error("Failed to parse event description:", event.description);
+                console.error(
+                  "Failed to parse event description:",
+                  event.description
+                );
               }
             });
           }
@@ -251,8 +321,8 @@ function Calendar() {
       }
     })();
 
-  // 月份变化时需要重新获取事件
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // 月份变化时需要重新获取事件
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, `${currentDate.getFullYear()}-${currentDate.getMonth()}`]);
 
   const getDaysInMonth = (date: Date) => {
@@ -296,12 +366,12 @@ function Calendar() {
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const day = date.getDate();
-    const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+    const dateStr = `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
 
-    return events.filter(event => {
+    return events.filter((event) => {
       // 将事件日期截取到年月日部分
-      const startDateParts = event.start_date.split('T')[0];
-      const endDateParts = event.end_date.split('T')[0];
+      const startDateParts = event.start_date.split("T")[0];
+      const endDateParts = event.end_date.split("T")[0];
 
       return dateStr >= startDateParts && dateStr <= endDateParts;
     });
@@ -321,16 +391,18 @@ function Calendar() {
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const day = date.getDate();
-    const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+    const dateStr = `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
 
-    return events.filter(event => {
+    return events.filter((event) => {
       // 将事件日期截取到年月日部分
-      const startDateParts = event.start_date.split('T')[0];
-      const endDateParts = event.end_date.split('T')[0];
+      const startDateParts = event.start_date.split("T")[0];
+      const endDateParts = event.end_date.split("T")[0];
 
-      return dateStr >= startDateParts &&
-             dateStr <= endDateParts &&
-             event.action_type === 'deadline';
+      return (
+        dateStr >= startDateParts &&
+        dateStr <= endDateParts &&
+        event.action_type === "deadline"
+      );
     });
   };
 
@@ -342,16 +414,18 @@ function Calendar() {
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const day = date.getDate();
-    const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+    const dateStr = `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
 
-    return events.filter(event => {
+    return events.filter((event) => {
       // 将事件日期截取到年月日部分
-      const startDateParts = event.start_date.split('T')[0];
-      const endDateParts = event.end_date.split('T')[0];
+      const startDateParts = event.start_date.split("T")[0];
+      const endDateParts = event.end_date.split("T")[0];
 
-      return dateStr >= startDateParts &&
-             dateStr <= endDateParts &&
-             event.action_type === 'recommendation_letter_sent';
+      return (
+        dateStr >= startDateParts &&
+        dateStr <= endDateParts &&
+        event.action_type === "recommendation_letter_sent"
+      );
     });
   };
 
@@ -375,9 +449,11 @@ function Calendar() {
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const day = date.getDate();
-    const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+    const dateStr = `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
 
-    const commonEvents = Object.entries(themeConfig.commonTimelineEvents).filter(([action_type, event]) => {
+    const commonEvents = Object.entries(
+      themeConfig.commonTimelineEvents
+    ).filter(([action_type, event]) => {
       // 确保日期范围比较是基于年月日部分
       return dateStr >= event.start_date && dateStr <= event.end_date;
     });
@@ -389,7 +465,7 @@ function Calendar() {
       description: event.description,
       start_date: event.start_date,
       end_date: event.end_date,
-      program_id: '', // Common events don't have a program ID
+      program_id: "", // Common events don't have a program ID
     }));
   };
 
@@ -408,32 +484,38 @@ function Calendar() {
 
     // Get the first matching common event
     const firstEvent = commonEvents[0];
-    const theme = themeConfig.actionThemes[firstEvent.action_type as keyof typeof themeConfig.actionThemes];
+    const theme =
+      themeConfig.actionThemes[
+        firstEvent.action_type as keyof typeof themeConfig.actionThemes
+      ];
 
     // Return just the background color class
-    return theme?.color.split(' ')[0] || null;
+    return theme?.color.split(" ")[0] || null;
   };
 
   // Get theme for action type with fallback
   const getThemeForAction = (action_type: string) => {
     // 截止日期事件使用红色主题
-    if (action_type === 'deadline') {
+    if (action_type === "deadline") {
       return {
-        color: 'bg-red-100 text-red-500',
-        icon: Globe // Using Globe icon for deadlines
+        color: "bg-bronze/20 text-bronze",
+        icon: Globe, // Using Globe icon for deadlines
       };
     }
 
     // Try to get from action themes
-    const actionTheme = themeConfig.actionThemes[action_type as keyof typeof themeConfig.actionThemes];
+    const actionTheme =
+      themeConfig.actionThemes[
+        action_type as keyof typeof themeConfig.actionThemes
+      ];
     if (actionTheme) {
       return actionTheme;
     }
 
     // Default fallback
     return {
-      color: 'bg-gray-100 text-gray-600',
-      icon: BookOpen
+      color: "bg-sand/40 text-bronze",
+      icon: BookOpen,
     };
   };
 
@@ -447,7 +529,11 @@ function Calendar() {
       const actionType = commonEvents[0].action_type;
       // Check if the action type exists in commonTimelineEvents
       if (actionType in themeConfig.commonTimelineEvents) {
-        return themeConfig.commonTimelineEvents[actionType as keyof typeof themeConfig.commonTimelineEvents].pic || "/images/cal/stamp.png";
+        return (
+          themeConfig.commonTimelineEvents[
+            actionType as keyof typeof themeConfig.commonTimelineEvents
+          ].pic || "/images/cal/stamp.png"
+        );
       }
       return "/images/cal/stamp.png";
     }
@@ -488,12 +574,14 @@ function Calendar() {
 
     // Update header text based on whether selected date is today
     const today = new Date();
-    setHeaderText(today.toDateString() === date.toDateString() ? "Calendar" : "Carpe diem");
+    setHeaderText(
+      today.toDateString() === date.toDateString() ? "Calendar" : "Carpe diem"
+    );
 
     // 使用原生Date方法获取年月日，避免时区问题
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份从0开始
-    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // 月份从0开始
+    const day = String(date.getDate()).padStart(2, "0");
 
     // 将日期格式化为YYYY-MM-DD格式
     const formattedDate = `${year}-${month}-${day}`;
@@ -506,8 +594,8 @@ function Calendar() {
   useEffect(() => {
     if (!dateParam) {
       const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
       const formattedToday = `${year}-${month}-${day}`;
       router.push(`/cal?date=${formattedToday}`);
     }
@@ -517,16 +605,16 @@ function Calendar() {
   const gridVariants = {
     enter: (direction: "left" | "right" | null) => ({
       x: direction === "left" ? "100%" : direction === "right" ? "-100%" : 0,
-      opacity: 0
+      opacity: 0,
     }),
     center: {
       x: 0,
-      opacity: 1
+      opacity: 1,
     },
     exit: (direction: "left" | "right" | null) => ({
       x: direction === "left" ? "-100%" : direction === "right" ? "100%" : 0,
-      opacity: 0
-    })
+      opacity: 0,
+    }),
   };
 
   // Animation variants for day cells
@@ -537,24 +625,24 @@ function Calendar() {
       scale: 1,
       transition: {
         delay: index * 0.01, // Staggered effect
-        duration: 0.2
-      }
-    })
+        duration: 0.2,
+      },
+    }),
   };
 
   return (
-    <div className="p-4">
-      <div className="flex flex-wrap items-center justify-between gap-y-4 mb-6">
+    <div className="p-4 bg-yellow">
+      <h2 className="text-lg font-bold bg-gold py-4 z-10 text-bronze rounded-lg px-4 shadow-sm mb-4 flex items-center justify-between gap-2">
         <div
-          className="cursor-pointer hover:text-primary transition-colors"
+          className="cursor-pointer hover:text-bronze transition-colors"
           onClick={goToToday}
           title="Click to view today"
         >
           <TextMorph
             as="h1"
-            className="text-xl sm:text-2xl font-bold"
+            className="text-xl sm:text-2xl font-bold text-bronze"
             transition={{
-              type: 'spring',
+              type: "spring",
               stiffness: 250,
               damping: 20,
               mass: 0.5,
@@ -568,7 +656,7 @@ function Calendar() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => navigateMonth("prev")}
-              className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
+              className="p-1.5 sm:p-2 rounded-full  transition-colors flex-shrink-0 text-bronze"
               aria-label="Previous month"
             >
               <ChevronLeft size={18} />
@@ -576,14 +664,18 @@ function Calendar() {
 
             <div className="flex gap-1 sm:gap-2">
               <DropdownMenu>
-                <DropdownMenuTrigger className="text-sm font-medium hover:text-primary transition-colors">
+                <DropdownMenuTrigger className="text-sm font-medium  transition-colors text-bronze font-mono">
                   {monthNames[currentDate.getMonth()]}
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="center">
+                <DropdownMenuContent align="center" className="bg-sand">
                   {monthNames.map((month, index) => (
                     <DropdownMenuItem
                       key={month}
-                      className={currentDate.getMonth() === index ? "bg-gray-100" : ""}
+                      className={
+                        currentDate.getMonth() === index
+                          ? "bg-gold/60 text-bronze"
+                          : "text-bronze"
+                      }
                       onClick={() => handleMonthChange(index.toString())}
                     >
                       <span>{month}</span>
@@ -596,14 +688,18 @@ function Calendar() {
               </DropdownMenu>
 
               <DropdownMenu>
-                <DropdownMenuTrigger className="text-sm font-medium hover:text-primary transition-colors">
+                <DropdownMenuTrigger className="text-sm font-medium  transition-colors text-bronze">
                   {currentDate.getFullYear()}
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="center">
-                  {years.map(year => (
+                <DropdownMenuContent align="center" className="bg-sand">
+                  {years.map((year) => (
                     <DropdownMenuItem
                       key={year}
-                      className={currentDate.getFullYear() === year ? "bg-gray-100" : ""}
+                      className={
+                        currentDate.getFullYear() === year
+                          ? "bg-gold/60 text-bronze"
+                          : "text-bronze"
+                      }
                       onClick={() => handleYearChange(year.toString())}
                     >
                       <span>{year}</span>
@@ -618,38 +714,38 @@ function Calendar() {
 
             <button
               onClick={() => navigateMonth("next")}
-              className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
+              className="p-1.5 sm:p-2 rounded-full  transition-colors flex-shrink-0 text-bronze"
               aria-label="Next month"
             >
               <ChevronRight size={18} />
             </button>
           </div>
         </div>
-      </div>
+      </h2>
 
       {/* Common Timeline Section - 只显示当前选中日期的通用事件 */}
       {selectedDateCommonEvents.length > 0 && (
         <div className="mb-6 space-y-2">
-          {selectedDateCommonEvents.map(event => {
+          {selectedDateCommonEvents.map((event) => {
             const theme = getThemeForAction(event.action_type);
             const IconComponent = theme.icon;
-            const colorClass = theme.color;
 
             return (
               <div
                 key={event.id}
-                className="flex items-center gap-2 p-2 bg-gray-50 rounded-md text-sm border-l-4 shadow-sm w-full"
-                style={{ borderLeftColor: theme.color.split(' ')[0].replace('bg-', '') === 'blue-100' ? '#DBEAFE' :
-                        theme.color.split(' ')[0].replace('bg-', '') === 'purple-100' ? '#F3E8FF' :
-                        theme.color.split(' ')[0].replace('bg-', '') === 'green-100' ? '#DCFCE7' :
-                        theme.color.split(' ')[0].replace('bg-', '') === 'yellow-100' ? '#FEF9C3' :
-                        theme.color.split(' ')[0].replace('bg-', '') === 'red-100' ? '#FEE2E2' :
-                        theme.color.split(' ')[0].replace('bg-', '') === 'indigo-100' ? '#E0E7FF' : '#E5E7EB' }}
+                className="flex items-center justify-between gap-2 p-2 bg-sand rounded-md text-sm border-l-4 shadow-sm w-full border-gold"
               >
-                <div className={`w-5 h-5 rounded-full ${colorClass} flex items-center justify-center flex-shrink-0`}>
+                <div className="flex items-center gap-2">
+                <div
+                  className={`w-5 h-5 rounded-full bg-gold text-bronze flex items-center justify-center flex-shrink-0`}
+                >
                   <IconComponent size={10} />
                 </div>
-                <span className="font-medium">{event.title}</span>
+                <span className="font-medium text-bronze">{event.title}</span>
+                </div>
+                <span className="text-xs text-bronze/70 block ">
+                  {getTimeframe(event.start_date, event.end_date)}
+                </span>
               </div>
             );
           })}
@@ -660,7 +756,7 @@ function Calendar() {
         {dayNames.map((day) => (
           <div
             key={day}
-            className="text-center text-sm font-medium text-gray-500 py-2"
+            className="text-center text-sm font-medium text-bronze py-2"
           >
             {day}
           </div>
@@ -678,7 +774,7 @@ function Calendar() {
             exit="exit"
             transition={{
               x: { duration: 0.3, ease: "easeInOut" },
-              opacity: { duration: 0.2 }
+              opacity: { duration: 0.2 },
             }}
             className="grid grid-cols-7 gap-1 absolute w-full top-0 left-0"
           >
@@ -701,8 +797,10 @@ function Calendar() {
                   onClick={() => day && updateSelectedDate(day)}
                   className={`
                     aspect-square flex flex-col items-center justify-start p-1 rounded-lg relative
-                    ${day ? "cursor-pointer" : ""}
-                    ${commonTimelineColor ? `${commonTimelineColor} bg-opacity-20` : ""}
+                    ${day ? "cursor-pointer" : "bg-sand/5"}
+                    ${day ? "bg-sand/10" : ""}
+                    ${isSelected ? "bg-gold/40" : ""}
+                    ${day ? "border border-sand/30" : ""}
                   `}
                 >
                   {/* Date number - hidden when selected */}
@@ -711,7 +809,7 @@ function Calendar() {
                       <motion.span
                         initial={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="text-sm mb-1"
+                        className="text-sm mb-1 text-bronze"
                       >
                         {day?.getDate()}
                       </motion.span>
@@ -720,29 +818,31 @@ function Calendar() {
 
                   {/* 事件指示器容器 - hidden when selected */}
                   <AnimatePresence>
-                    {day && (dateHasSchoolEvents || hasLorEvents) && !(isSelected && (eventImage || true)) && (
-                      <motion.div
-                        initial={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="absolute top-6 left-0 right-0 flex justify-center space-x-1"
-                      >
-                        {/* 截止日期指示器 */}
-                        {dateHasSchoolEvents && (
-                          <div className="h-1 w-4 rounded-full bg-red-500"></div>
-                        )}
+                    {day &&
+                      (dateHasSchoolEvents || hasLorEvents) &&
+                      !(isSelected && (eventImage || true)) && (
+                        <motion.div
+                          initial={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="absolute top-6 left-0 right-0 flex justify-center space-x-1"
+                        >
+                          {/* 截止日期指示器 */}
+                          {dateHasSchoolEvents && (
+                            <div className="h-1 w-4 rounded-full bg-tomato"></div>
+                          )}
 
-                        {/* 推荐信里程碑指示器 */}
-                        {hasLorEvents && (
-                          <div className="h-1 w-4 rounded-full bg-emerald-500"></div>
-                        )}
-                      </motion.div>
-                    )}
+                          {/* 推荐信里程碑指示器 */}
+                          {hasLorEvents && (
+                            <div className="h-1 w-4 rounded-full bg-grass"></div>
+                          )}
+                        </motion.div>
+                      )}
                   </AnimatePresence>
 
                   {isSelected && eventImage && (
                     <motion.div
                       layoutId="selected-overlay"
-                      className="absolute inset-0 bg-gray-300/40 rounded-lg flex items-center justify-center"
+                      className="absolute inset-0 bg-gold/40 rounded-lg flex items-center justify-center border border-bronze/30"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
@@ -765,7 +865,7 @@ function Calendar() {
                   {isSelected && !eventImage && (
                     <motion.div
                       layoutId="selected-overlay"
-                      className="absolute inset-0 bg-gray-300/40 rounded-lg flex items-center justify-center"
+                      className="absolute inset-0 bg-gold/40 rounded-lg flex items-center justify-center border border-bronze/30"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
@@ -797,16 +897,22 @@ function Calendar() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h2 className="text-lg font-medium mb-4">
-            {selectedDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+          <h2 className="text-lg font-medium mb-4 text-bronze">
+            {selectedDate.toLocaleDateString(undefined, {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+            })}
           </h2>
 
           {loading ? (
             <div className="flex justify-center py-4">
-              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+              <LoadingCard message="Loading events..." />
             </div>
           ) : selectedDateEvents.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">No events scheduled for this day</p>
+            <p className="text-bronze/70 text-center py-4 bg-sand rounded-xl">
+              No events scheduled for this day
+            </p>
           ) : (
             <div className="space-y-3">
               {selectedDateEvents.map((event) => (

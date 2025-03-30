@@ -65,21 +65,21 @@ export function ChatMessage({
       <div
         className={`max-w-[90%] md:max-w-[80%] px-4 py-3 rounded-xl ${
           isCurrentUserMessage
-            ? "bg-blue-100 text-blue-900"
-            : "bg-white border border-gray-200 shadow-sm"
+            ? "bg-gold/60 text-bronze"
+            : "bg-sand border border-bronze/20 shadow-sm"
         }`}
       >
         <div className="flex items-center gap-2 mb-1">
-          <span className="font-medium text-sm">
+          <span className="font-medium text-sm text-bronze">
             {getSenderName()}
           </span>
           {!isCurrentUserMessage && (
             <button
               onClick={copyToClipboard}
-              className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-500"
+              className="p-1 rounded hover:bg-gold/30 transition-colors text-bronze/70"
             >
               {copied ? (
-                <Check size={14} className="text-green-500" />
+                <Check size={14} className="text-bronze" />
               ) : (
                 <Copy size={14} />
               )}
@@ -87,7 +87,7 @@ export function ChatMessage({
           )}
         </div>
 
-        <div className="prose prose-sm max-w-none dark:prose-invert">
+        <div className="prose prose-sm max-w-none dark:prose-invert text-bronze">
           <ReactMarkdown
             components={{
               pre: ({ node, ...props }) => (

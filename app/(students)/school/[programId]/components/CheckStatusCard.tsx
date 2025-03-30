@@ -86,7 +86,7 @@ export default function CheckStatusCard({ programId }: CheckStatusCardProps) {
       case "not_met":
         return <X className="h-5 w-5 text-tomato" />;
       case "partially_met":
-        return <AlertCircle className="h-5 w-5 text-yellow" />;
+        return <AlertCircle className="h-5 w-5 text-gold" />;
       case "unknown":
       default:
         return <HelpCircle className="h-5 w-5 text-bronze/70" />;
@@ -100,7 +100,7 @@ export default function CheckStatusCard({ programId }: CheckStatusCardProps) {
       case "not_met":
         return "bg-tomato/20 text-tomato border-tomato/30";
       case "partially_met":
-        return "bg-yellow/20 text-yellow border-yellow/30";
+        return "bg-gold/20 text-gold border-gold/30";
       case "unknown":
       default:
         return "bg-cement/20 text-cement border-cement/20";

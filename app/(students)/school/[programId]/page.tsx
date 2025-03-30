@@ -201,8 +201,7 @@ export default function ProgramDetailPage({
 
   if (loading) {
     return (
-      <div className="p-4 space-y-6 bg-yellow">
-
+      <div className="p-4 space-y-6">
         {/* Skeleton for buttons */}
         <div className="flex items-center justify-between mb-4">
           <div className="h-9 w-32 bg-sand/60 rounded-full animate-pulse"></div>
@@ -244,7 +243,7 @@ export default function ProgramDetailPage({
 
   if (!program) {
     return (
-      <div className="p-4 space-y-6 bg-yellow">
+      <div className="p-4 space-y-6 ">
         <div className="flex items-center justify-center h-[calc(100vh-180px)]">
           <p className="text-bronze">Program not found</p>
         </div>
@@ -253,7 +252,7 @@ export default function ProgramDetailPage({
   }
 
   return (
-    <div className="p-4 space-y-6 bg-yellow">
+    <div className="p-4 space-y-6">
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={() => router.push("/school")}

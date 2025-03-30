@@ -17,10 +17,10 @@ interface DeadlineEventProps {
 }
 
 // Skeleton loading component
-function ProgramInfoSkeleton() {
+export function ProgramInfoSkeleton() {
   return (
     <div className="animate-pulse">
-      <div className="h-4 w-40 bg-gray-200 rounded"></div>
+      <div className="h-4 w-40 bg-gold/30 rounded"></div>
     </div>
   );
 }
@@ -81,7 +81,7 @@ function ProgramInfo({ programId }: { programId: string }) {
   }
 
   return (
-    <span className="text-xs text-gray-500 block">
+    <span className="text-xs text-bronze/70 block">
       {schoolName && `${schoolName} - `}{programName}
     </span>
   );
@@ -95,14 +95,14 @@ export default function DeadlineEvent({ event }: DeadlineEventProps) {
     <motion.div
       initial={{ x: -10, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className={`p-3 rounded-lg hover:bg-gray-50 transition-colors border-l-4 border-red-500 ${isPastDeadline ? 'opacity-60' : ''}`}
+      className={`p-3 rounded-lg hover:bg-sand/80 transition-colors border-l-4 border-tomato bg-sand ${isPastDeadline ? 'opacity-60' : ''}`}
     >
       <div className="flex-1">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold">{event.title}</h3>
+            <h3 className="font-semibold text-bronze">{event.title}</h3>
             {isPastDeadline && (
-              <span className="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">
+              <span className="text-xs bg-gold/40 text-bronze px-2 py-0.5 rounded-full">
                 Past Due
               </span>
             )}
@@ -113,7 +113,7 @@ export default function DeadlineEvent({ event }: DeadlineEventProps) {
           )}
 
           {event.description && (
-            <p className="mt-2 text-sm text-gray-600">{event.description}</p>
+            <p className="mt-2 text-sm text-bronze/80">{event.description}</p>
           )}
         </div>
       </div>

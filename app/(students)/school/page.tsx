@@ -251,7 +251,7 @@ export default function SchoolPage() {
 
   if (loading || userLoading) {
     return (
-      <div className="p-4 space-y-4 bg-yellow">
+      <div className="p-4 space-y-4">
         {/* Skeleton for title */}
         <div className="h-14 bg-gold/60 rounded-lg px-4 mb-4 animate-pulse"></div>
 
@@ -289,7 +289,7 @@ export default function SchoolPage() {
   }
 
   return (
-    <div className="relative pb-4 bg-yellow">
+    <div className="relative pb-4">
       <div className="p-4 space-y-4">
         <h2 className="text-lg font-bold  top-0 bg-gold py-4 z-10 text-bronze rounded-lg px-4 shadow-sm mb-4 flex items-center gap-2">
           <School className="w-5 h-5 text-bronze" />

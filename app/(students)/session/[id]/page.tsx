@@ -150,5 +150,5 @@ export default function SessionPage({
     }
   };
 
-  return <div className="min-h-[100dvh] bg-yellow">{renderQuiz()}</div>;
+  return <div className="min-h-[100dvh]">{renderQuiz()}</div>;
 }

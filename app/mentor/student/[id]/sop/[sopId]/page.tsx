@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, FileText, Loader2, MessageCircle, CheckCircle, History } from "lucide-react";
+import {
+  ArrowLeft,
+  FileText,
+  Loader2,
+  MessageCircle,
+  CheckCircle,
+  History,
+} from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
@@ -33,7 +40,8 @@ type SOPVersion = {
 
 export default function MentorStudentSOPDetail() {
   const supabase = createClient();
-  const { auth, mentor, fetchMentorData, isMentor, initialized } = useMentorStore();
+  const { auth, mentor, fetchMentorData, isMentor, initialized } =
+    useMentorStore();
   const params = useParams();
   const router = useRouter();
   const studentId = params?.id as string;
@@ -182,12 +190,17 @@ export default function MentorStudentSOPDetail() {
     <div className="w-full min-h-screen bg-background">
       {/* Header */}
       <header className="w-full p-6 flex items-center gap-4 border-b bg-card">
-        <Link href={`/mentor/student/${studentId}/sop`} className="text-primary">
+        <Link
+          href={`/mentor/student/${studentId}/sop`}
+          className="text-primary"
+        >
           <ArrowLeft size={24} />
         </Link>
         <div>
           <h1 className="text-2xl font-bold">{sopDocument?.name || "SOP"}</h1>
-          <p className="text-muted-foreground">{student?.name}'s Statement of Purpose</p>
+          <p className="text-muted-foreground">
+            {student?.name}'s Statement of Purpose
+          </p>
         </div>
       </header>
 
@@ -209,7 +222,12 @@ export default function MentorStudentSOPDetail() {
             <div className="p-4 border-b flex justify-between items-center">
               <div className="flex items-center">
                 <FileText className="h-5 w-5 text-primary mr-3" />
-                <h2 className="font-medium">Latest Version ({latestVersion.name})</h2>
+                <h2 className="font-medium">
+                  Latest Version (
+                  {latestVersion.name ||
+                    `Version ${latestVersion.version_number}`}
+                  )
+                </h2>
               </div>
               <span className="text-sm text-muted-foreground">
                 {formatDate(latestVersion.created_at)}
@@ -231,7 +249,9 @@ export default function MentorStudentSOPDetail() {
           </div>
         ) : (
           <div className="bg-card rounded-lg border p-6 text-center">
-            <p className="text-muted-foreground">No versions available for this SOP</p>
+            <p className="text-muted-foreground">
+              No versions available for this SOP
+            </p>
           </div>
         )}
 
@@ -250,7 +270,11 @@ export default function MentorStudentSOPDetail() {
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
                   className="bg-card rounded-lg border p-4 hover:border-primary/50 transition-colors cursor-pointer flex items-center justify-between"
-                  onClick={() => router.push(`/mentor/student/${studentId}/sop/${sopId}/${version.id}`)}
+                  onClick={() =>
+                    router.push(
+                      `/mentor/student/${studentId}/sop/${sopId}/${version.id}`
+                    )
+                  }
                 >
                   <div className="flex items-center">
                     {version.id === latestVersion?.id ? (

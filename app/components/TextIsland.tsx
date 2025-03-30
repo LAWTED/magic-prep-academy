@@ -121,16 +121,6 @@ export default function TextIsland({
     setShowDynamicIsland(true);
   };
 
-  const handleMouseLeave = () => {
-    // Set timeout to hide the island
-    const timer = setTimeout(() => {
-      setShowDynamicIsland(false);
-    }, 2000);
-
-    // Store the timer reference
-    useEditorStore.getState().dynamicIslandTimeoutRef = timer;
-  };
-
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev > -1 ? prev - 1 : feedbacks.length - 1));
   };
@@ -387,7 +377,6 @@ export default function TextIsland({
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className="fixed bottom-20 inset-x-0 flex justify-center z-50 safe-bottom"
           onMouseEnter={handleHover}
-          onMouseLeave={handleMouseLeave}
         >
           <motion.div
             className="bg-gray-900 text-white rounded-[32px] shadow-lg py-2 px-4 inline-flex flex-col items-center"

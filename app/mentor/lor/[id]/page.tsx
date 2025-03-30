@@ -288,7 +288,6 @@ export default async function RecommendationRequestPage({
                 <div className="mb-4">
                   <TextPreview content={metadata.letter_content} />
                 </div>
-                <CompleteRequestForm requestId={id} status={request.status} />
               </div>
             )}
 

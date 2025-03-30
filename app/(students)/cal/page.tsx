@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import LoadingCard from "@/app/components/LoadingCard";
 import { cn } from "@/lib/utils";
-import { getTimeframe } from "../school/celebration/page";
+import { getTimeframe } from "@/utils/utils";
 
 interface CalendarEvent {
   id: string;

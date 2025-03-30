@@ -8,52 +8,16 @@ import { createClient } from "@/utils/supabase/client";
 import { useUserStore } from "@/store/userStore";
 import { toast } from "sonner";
 import { themeConfig } from "@/app/config/themeConfig";
+import { getTimeframe } from "@/utils/utils";
 
 // Define timeline theme key type
-export type TimelineThemeKey =
+type TimelineThemeKey =
   | "languageTest"
   | "applicationMaterials"
   | "submitApplication"
   | "receiveOffers"
   | "prepareVisa"
   | "startSchool";
-
-// Generate timeframe display string from start and end dates
-export const getTimeframe = (startDate: string, endDate: string) => {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-
-  const monthNames = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  const startMonth = monthNames[start.getMonth()];
-  const endMonth = monthNames[end.getMonth()];
-
-  // Check if start and end dates are the same
-  if (startDate === endDate) {
-    // Return specific date for deadline events
-    return `${startMonth} ${start.getDate()}, ${start.getFullYear()}`;
-  }
-
-  // If different years
-  if (start.getFullYear() !== end.getFullYear()) {
-    return `${startMonth} - ${endMonth} (${end.getFullYear()})`;
-  }
-
-  // Same year
-  return `${startMonth} - ${endMonth}`;
-};
 
 // Timeline event interface
 interface TimelineEvent {

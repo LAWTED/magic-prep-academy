@@ -123,11 +123,11 @@ function SchoolCelebration() {
           if (deadlineDate && /^\d{4}-\d{2}-\d{2}$/.test(deadlineDate)) {
             console.log("Valid deadline date found:", deadlineDate);
 
-            // Create deadline event
+            // Create deadline event with a unique ID
             setProgramDeadlineEvent({
-              id: 3,
-              title: "Submit Deadline",
-              description: "Application submission deadline for this program",
+              id: 999,
+              title: `Program Application Deadline`,
+              description: `Submit your application for ${programDetails?.name || "this program"} by this date`,
               start_date: deadlineDate,
               end_date: deadlineDate,
               action_type: "deadline",
@@ -142,10 +142,9 @@ function SchoolCelebration() {
             const fallbackDate = `${today.getFullYear() + 1}-12-15`; // Next year Dec 15
 
             setProgramDeadlineEvent({
-              id: 3,
-              title: "Submit Deadline (estimated)",
-              description:
-                "Estimated application deadline - please check official program website",
+              id: 999,
+              title: `Program Deadline (estimated)`,
+              description: `Estimated application deadline for ${programDetails?.name || "this program"} - please check official website`,
               start_date: fallbackDate,
               end_date: fallbackDate,
               action_type: "deadline",
@@ -180,25 +179,37 @@ function SchoolCelebration() {
 
   // Get the full application timeline
   const getFullApplicationTimeline = () => {
-    // Use common timeline events from themeConfig
-    const additionalEvents: TimelineEvent[] = Object.entries(
+    // Get common timeline events from themeConfig, excluding submit_application if we have a deadline
+    let eventsToShow: TimelineEvent[] = Object.entries(
       themeConfig.commonTimelineEvents
-    ).map(([action_type, event]) => ({
-      id: event.id,
-      title: event.title,
-      description: event.description,
-      start_date: event.start_date,
-      end_date: event.end_date,
-      action_type: action_type,
-    }));
+    )
+      .filter(([action_type, _]) => {
+        // If we have a deadline, filter out the generic submit_application event
+        if (programDeadlineEvent && action_type === "submit_application") {
+          return false;
+        }
+        return true;
+      })
+      .map(([action_type, event]) => ({
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        start_date: event.start_date,
+        end_date: event.end_date,
+        action_type: action_type,
+      }));
 
-    // Add the deadline event if available
-    const allEvents = programDeadlineEvent
-      ? [...additionalEvents, programDeadlineEvent]
-      : additionalEvents;
+    // Add the program-specific deadline at the position of submit_application (id=3)
+    if (programDeadlineEvent) {
+      const positionedDeadline = {
+        ...programDeadlineEvent,
+        id: 3, // Make sure it goes where submit_application would be
+      };
+      eventsToShow.push(positionedDeadline);
+    }
 
-    // Sort events by id
-    return allEvents.sort((a, b) => a.id - b.id);
+    // Sort events by id to ensure correct chronological order
+    return eventsToShow.sort((a, b) => a.id - b.id);
   };
 
   // Save timeline events to user_program_event table
@@ -297,26 +308,43 @@ function SchoolCelebration() {
   // Get the full timeline (including non-saved events)
   const timelineEvents = getFullApplicationTimeline();
 
+  // Verify the timeline to debug
+  useEffect(() => {
+    if (timelineEvents.length > 0) {
+      console.log("Timeline events:", timelineEvents.map(e => `${e.id}: ${e.title} (${e.action_type})`));
+    }
+  }, [timelineEvents]);
+
   // Get theme for action type
   const getThemeForAction = (action_type: string) => {
-    // Use red theme for deadlines
+    // Use special theme for program deadline
     if (action_type === 'deadline') {
+      // Use the same icon as submit_application but with our custom colors
       return {
         color: "bg-red-100 text-red-600",
-        icon: themeConfig.timeline.icons.submitApplication,
+        icon: themeConfig.actionThemes.submit_application.icon, // Use Globe icon from submit_application
       };
     }
 
-    // For timeline type action (language_test, etc.)
-    const key = action_type.replace(/_/g, '') as TimelineThemeKey;
+    // For other action types, use the actionThemes from themeConfig
+    const actionTheme = themeConfig.actionThemes[action_type as keyof typeof themeConfig.actionThemes];
+
+    if (actionTheme) {
+      return {
+        color: actionTheme.color,
+        icon: actionTheme.icon,
+      };
+    }
+
+    // Fallback theme
     return {
-      color: themeConfig.timeline.colors[key] || "bg-gray-100 text-gray-600",
-      icon: themeConfig.timeline.icons[key] || (() => null),
+      color: "bg-bronze/20 text-bronze",
+      icon: Calendar,
     };
   };
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-[100dvh] p-6 pt-10 overflow-y-auto">
+    <div className="flex flex-col items-center justify-start min-h-[100dvh] p-6 pt-10 overflow-y-auto bg-yellow">
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -329,7 +357,7 @@ function SchoolCelebration() {
             animate={{ scale: 1, rotate: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
           >
-            <Sparkles size={32} className="text-yellow-500" />
+            <Sparkles size={32} className="text-gold" />
           </motion.div>
         </div>
 
@@ -339,7 +367,7 @@ function SchoolCelebration() {
             animate={{ scale: 1, rotate: 0 }}
             transition={{ delay: 0.5, duration: 0.5 }}
           >
-            <Sparkles size={24} className="text-yellow-500" />
+            <Sparkles size={24} className="text-gold" />
           </motion.div>
         </div>
 
@@ -347,17 +375,17 @@ function SchoolCelebration() {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="bg-white p-8 rounded-2xl shadow-lg text-center"
+          className="bg-sand p-8 rounded-2xl shadow-sm border border-bronze/20 text-center"
         >
-          <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
-            <Star size={32} className="text-yellow-500" />
+          <div className="mx-auto w-16 h-16 bg-gold/60 rounded-full flex items-center justify-center mb-4">
+            <Star size={32} className="text-bronze" />
           </div>
 
-          <h1 className="text-2xl font-bold mb-4">
+          <h1 className="text-2xl font-bold mb-4 text-black">
             Add this program to your targets?
           </h1>
 
-          <p className="text-gray-600 mb-6">
+          <p className="text-bronze mb-6">
             Great choice! We'll help you prepare and track your application
             progress for {schoolName}.
           </p>
@@ -369,12 +397,12 @@ function SchoolCelebration() {
           >
             <motion.button
               whileTap={{ scale: 0.95 }}
-              className={`bg-primary text-white py-3 px-6 rounded-lg font-medium flex items-center justify-center gap-2 ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""}`}
+              className={`bg-gold text-bronze py-3 px-6 rounded-lg font-medium flex items-center justify-center gap-2 ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""}`}
               onClick={handleContinue}
               disabled={isSubmitting}
             >
               {isSubmitting ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                <div className="w-5 h-5 border-2 border-bronze border-t-transparent rounded-full animate-spin mr-2"></div>
               ) : (
                 <Check size={20} />
               )}
@@ -382,7 +410,7 @@ function SchoolCelebration() {
             </motion.button>
 
             <button
-              className={`text-gray-500 py-2 ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""}`}
+              className={`text-bronze/70 py-2 ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""}`}
               onClick={() => router.push("/school")}
               disabled={isSubmitting}
             >
@@ -397,21 +425,21 @@ function SchoolCelebration() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: showTimeline ? 1 : 0, y: showTimeline ? 0 : 30 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 mb-12"
+        className="w-full max-w-md bg-sand rounded-2xl shadow-sm border border-bronze/20 p-6 mb-12"
       >
         <div className="flex items-center gap-2 mb-4">
-          <Calendar className="text-primary" />
-          <h2 className="text-xl font-bold">Application Timeline</h2>
+          <Calendar className="text-bronze" />
+          <h2 className="text-xl font-bold text-black">Application Timeline</h2>
         </div>
 
         {isLoading ? (
           <div className="flex justify-center py-6">
-            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-6 h-6 border-2 border-bronze border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : (
           <div className="relative">
             {/* Vertical timeline */}
-            <div className="absolute top-0 bottom-0 left-4 w-0.5 bg-gray-200"></div>
+            <div className="absolute top-0 bottom-0 left-4 w-0.5 bg-bronze/20"></div>
 
             {/* Timeline items */}
             {timelineEvents.map((item, index) => {
@@ -423,7 +451,7 @@ function SchoolCelebration() {
 
               return (
                 <motion.div
-                  key={item.id}
+                  key={`timeline-${item.action_type}-${index}`}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 1.5 + index * 0.15 }}
@@ -437,16 +465,20 @@ function SchoolCelebration() {
                   </div>
 
                   <div className="mb-1 flex justify-between items-center flex-wrap gap-1">
-                    <h3 className="font-bold text-sm md:text-base">
+                    <h3 className={`font-bold text-sm md:text-base text-black ${isDeadlineEvent ? "flex items-center" : ""}`}>
                       {item.title}
                     </h3>
                     <span
-                      className={`text-xs whitespace-nowrap px-2 py-0.5 rounded-full ${isDeadlineEvent ? "bg-green-100 text-green-700 font-medium" : "bg-gray-100 text-gray-600"}`}
+                      className={`text-xs whitespace-nowrap px-2 py-0.5 rounded-full ${
+                        isDeadlineEvent
+                          ? "bg-red-100 text-red-600 font-medium"
+                          : "bg-bronze/10 text-bronze"
+                      }`}
                     >
                       {timeframe}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600">{item.description}</p>
+                  <p className="text-sm text-bronze">{item.description}</p>
                 </motion.div>
               );
             })}
@@ -457,9 +489,9 @@ function SchoolCelebration() {
   );
 }
 
-export default async function SchoolCelebrationPage() {
+export default function SchoolCelebrationPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div className="p-4">Loading celebration...</div>}>
       <SchoolCelebration />
     </Suspense>
   );

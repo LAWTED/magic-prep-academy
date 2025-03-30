@@ -101,16 +101,21 @@ export default function SessionPage({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[100dvh]">
-        <p>Loading...</p>
+      <div className="flex items-center justify-center h-[100dvh] bg-sand">
+        <div className="bg-sand rounded-xl p-8 shadow-sm flex flex-col items-center">
+          <div className="h-10 w-10 rounded-full border-4 border-gold border-t-bronze animate-spin mb-4"></div>
+          <p className="text-bronze font-medium">Loading session...</p>
+        </div>
       </div>
     );
   }
 
   if (!session) {
     return (
-      <div className="flex items-center justify-center h-[100dvh]">
-        <p>Session not found</p>
+      <div className="flex items-center justify-center h-[100dvh] bg-sand">
+        <div className="bg-sand rounded-xl p-8 shadow-sm">
+          <p className="text-bronze">Session not found</p>
+        </div>
       </div>
     );
   }
@@ -137,7 +142,7 @@ export default function SessionPage({
       default:
         return (
           <div className="text-center py-8">
-            <p className="text-gray-500">
+            <p className="text-bronze">
               Unsupported session type: {session.content.type}
             </p>
           </div>
@@ -145,5 +150,5 @@ export default function SessionPage({
     }
   };
 
-  return <div className="min-h-[100dvh] bg-gray-50">{renderQuiz()}</div>;
+  return <div className="min-h-[100dvh] bg-yellow">{renderQuiz()}</div>;
 }

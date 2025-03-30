@@ -47,7 +47,7 @@ export default function StudentsLayout({
 
         <main
           className={cn(
-            "flex-1 w-full mx-auto overflow-y-auto scrollbar-none bg-[#efb854]",
+            "flex-1 w-full mx-auto overflow-y-auto scrollbar-none bg-field",
             !isProfilePage && "max-w-screen-md"
           )}
         >

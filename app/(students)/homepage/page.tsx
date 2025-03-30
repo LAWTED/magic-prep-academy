@@ -1,7 +1,7 @@
 "use client";
 
 import { createClient } from "@/utils/supabase/client";
-import { ChevronRight, Check } from "lucide-react";
+import { ChevronRight, Check, BookCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -120,16 +120,23 @@ export default function HomePage() {
     }
   }, [user, supabase, userLoading]);
 
-  if (loading || userLoading || (user?.subjects?.length > 0 && allModules.length === 0)) {
+  if (
+    loading ||
+    userLoading ||
+    (user?.subjects?.length > 0 && allModules.length === 0)
+  ) {
     return (
-      <div className="max-w-lg mx-auto p-4 bg-[#efb854]">
+      <div className="max-w-lg mx-auto p-4 bg-field">
         {/* Skeleton for title */}
         <div className="h-14 bg-gold/60 rounded-lg px-4 mb-4 animate-pulse"></div>
 
         {/* Skeleton for modules */}
         <div className="space-y-3 pb-10">
           {[...Array(5)].map((_, index) => (
-            <div key={index} className="w-full p-4 bg-sand/80 rounded-xl shadow-sm flex items-center justify-between animate-pulse">
+            <div
+              key={index}
+              className="w-full p-4 bg-sand/80 rounded-xl shadow-sm flex items-center justify-between animate-pulse"
+            >
               <div className="flex-1">
                 <div className="h-5 bg-bronze/20 rounded w-3/4 mb-2"></div>
                 <div className="flex items-center gap-2">
@@ -146,9 +153,10 @@ export default function HomePage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto p-4 bg-[#efb854] ">
+    <div className="max-w-lg mx-auto p-4 bg-field ">
       {/* Learning Modules */}
-      <h2 className="text-lg font-bold sticky top-0 bg-gold/90 py-4 z-10 text-bronze rounded-lg px-4 shadow-sm mb-4">
+      <h2 className="text-lg font-bold  top-0 bg-gold py-4 z-10 text-bronze rounded-lg px-4 shadow-sm mb-4 flex items-center gap-2">
+        <BookCheck className="w-5 h-5 text-bronze" />
         Learning Modules
       </h2>
       <div className="space-y-3 pb-10">
@@ -159,12 +167,14 @@ export default function HomePage() {
             className="w-full p-4 bg-sand rounded-xl shadow-sm flex items-center justify-between active:scale-[0.98] touch-action-manipulation"
           >
             <div className="flex-1">
-              <p className="font-semibold text-left text-black">{module.module_name}</p>
+              <p className="font-semibold text-left text-black">
+                {module.module_name}
+              </p>
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-xs bg-gold/60 text-bronze px-2 py-1 rounded-full">
                   {module.subject_name}
                 </span>
-                <p className="text-xs text-green text-left">
+                <p className="text-xs text-grass text-left">
                   {moduleProgress[module.id]?.progress === "completed" &&
                     "Completed"}
                 </p>
@@ -172,8 +182,8 @@ export default function HomePage() {
             </div>
             <div className="flex items-center gap-3">
               {moduleProgress[module.id]?.progress === "completed" && (
-                <div className="w-6 h-6 rounded-full bg-green/20 flex items-center justify-center">
-                  <Check className="w-4 h-4 text-green" />
+                <div className="w-6 h-6 rounded-full bg-grass/20 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-grass" />
                 </div>
               )}
               <ChevronRight className="w-5 h-5 text-bronze" />

@@ -11,13 +11,13 @@ interface LoadingCardProps {
 
 export default function LoadingCard({
   message = "Loading...",
-  className = ""
+  className = "",
 }: LoadingCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className={`h-full w-full flex flex-col items-center justify-center bg-white rounded-xl p-6  ${className}`}
+      className={`h-full w-full flex flex-col items-center justify-center  rounded-xl p-6  ${className}`}
     >
       <div className="relative w-16 h-16 mb-4">
         <Image
@@ -29,10 +29,7 @@ export default function LoadingCard({
         />
       </div>
       {message && (
-        <TextShimmer
-          className="text-sm font-medium"
-          duration={1.5}
-        >
+        <TextShimmer className="text-sm font-medium text-bronze" duration={1.5}>
           {message}
         </TextShimmer>
       )}

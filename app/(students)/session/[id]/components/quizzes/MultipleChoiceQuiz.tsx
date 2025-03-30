@@ -78,18 +78,18 @@ export default function MultipleChoiceQuiz({
       <div className="mb-6">
         <button
           onClick={() => window.history.back()}
-          className="inline-flex items-center text-primary mb-4"
+          className="inline-flex items-center text-bronze mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
         </button>
-        <h1 className="text-2xl font-bold">{data.title}</h1>
-        <p className="text-gray-600 mt-2">{data.instruction}</p>
+        <h1 className="text-2xl font-bold text-bronze">{data.title}</h1>
+        <p className="text-black/80 mt-2">{data.instruction}</p>
       </div>
 
       {/* Progress Bar */}
-      <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
+      <div className="w-full bg-bronze rounded-full h-2 mb-6">
         <div
-          className="bg-primary h-2 rounded-full"
+          className="bg-lime h-2 rounded-full"
           style={{
             width: `${((currentQuestionIndex + 1) / data.questions.length) * 100}%`,
           }}
@@ -97,23 +97,25 @@ export default function MultipleChoiceQuiz({
       </div>
 
       {completed ? (
-        <div className="text-center py-8">
+        <div className="text-center py-8 bg-sand rounded-xl p-6">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="mb-6"
           >
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-              <Check className="w-10 h-10 text-green-600" />
+            <div className="w-20 h-20 bg-grass/20 rounded-full flex items-center justify-center mx-auto">
+              <Check className="w-10 h-10 text-grass" />
             </div>
           </motion.div>
-          <h2 className="text-xl font-bold mb-2">Congratulations!</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-xl font-bold mb-2 text-bronze">
+            Congratulations!
+          </h2>
+          <p className="text-black/80 mb-6">
             You've completed this quiz section.
           </p>
           <button
             onClick={onComplete}
-            className="px-6 py-3 rounded-xl bg-primary text-white font-medium"
+            className="px-6 py-3 rounded-xl bg-gold text-bronze font-medium"
           >
             Continue
           </button>
@@ -121,8 +123,8 @@ export default function MultipleChoiceQuiz({
       ) : (
         <>
           {/* Question */}
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <h3 className="font-semibold text-lg mb-4">
+          <div className="bg-sand rounded-xl shadow-sm p-6 mb-6">
+            <h3 className="font-semibold text-lg mb-4 text-bronze">
               {currentQuestion.text}
             </h3>
             <div className="space-y-3">
@@ -133,27 +135,27 @@ export default function MultipleChoiceQuiz({
                   onClick={() => handleSelectOption(option.id)}
                   className={`w-full p-4 rounded-lg border-2 text-left flex justify-between items-center ${
                     answers[currentQuestion.id] === option.id
-                      ? "border-primary bg-primary/10"
-                      : "border-gray-200"
+                      ? "border-skyblue bg-skyblue/10"
+                      : "border-cement"
                   } ${
                     feedback && option.id === currentQuestion.correctAnswer
-                      ? "border-green-500 bg-green-50"
+                      ? "border-grass bg-grass/10"
                       : feedback &&
                           answers[currentQuestion.id] === option.id &&
                           option.id !== currentQuestion.correctAnswer
-                        ? "border-red-500 bg-red-50"
+                        ? "border-red bg-red/10"
                         : ""
                   }`}
                   disabled={!!feedback}
                 >
-                  <span>{option.text}</span>
+                  <span className="text-black/80">{option.text}</span>
                   {feedback && option.id === currentQuestion.correctAnswer && (
-                    <Check className="w-5 h-5 text-green-600" />
+                    <Check className="w-5 h-5 text-grass" />
                   )}
                   {feedback &&
                     answers[currentQuestion.id] === option.id &&
                     option.id !== currentQuestion.correctAnswer && (
-                      <X className="w-5 h-5 text-red-600" />
+                      <X className="w-5 h-5 text-red" />
                     )}
                 </motion.button>
               ))}
@@ -165,27 +167,25 @@ export default function MultipleChoiceQuiz({
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`p-4 rounded-lg mb-6 ${
-                feedback.isCorrect ? "bg-green-100" : "bg-red-100"
-              }`}
+              className={`p-4 rounded-lg mb-6 bg-sand`}
             >
               <div className="flex items-start">
                 {feedback.isCorrect ? (
-                  <Check className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
+                  <Check className="w-5 h-5 text-grass mr-2 mt-1 flex-shrink-0" />
                 ) : (
-                  <X className="w-5 h-5 text-red-600 mr-2 mt-1 flex-shrink-0" />
+                  <X className="w-5 h-5 text-tomato mr-2 mt-1 flex-shrink-0" />
                 )}
                 <div>
                   <p
                     className={`font-medium ${
-                      feedback.isCorrect ? "text-green-700" : "text-red-700"
+                      feedback.isCorrect ? "text-grass" : "text-red"
                     }`}
                   >
                     {feedback.isCorrect ? "Correct!" : "Incorrect"}
                   </p>
                   <p
                     className={
-                      feedback.isCorrect ? "text-green-700" : "text-red-700"
+                      feedback.isCorrect ? "text-grass" : "text-red"
                     }
                   >
                     {feedback.explanation}
@@ -198,29 +198,30 @@ export default function MultipleChoiceQuiz({
           {/* Actions */}
           <div className="flex justify-between">
             <div></div>
-            {feedback ? (
-              <button
-                onClick={goToNextQuestion}
-                className="px-6 py-3 rounded-xl bg-primary text-white font-medium flex items-center"
-              >
-                {currentQuestionIndex < data.questions.length - 1
-                  ? "Next Question"
-                  : "Finish Quiz"}
-                <ChevronRight className="ml-1 w-4 h-4" />
-              </button>
-            ) : (
-              <button
-                onClick={checkAnswer}
-                disabled={!answers[currentQuestion.id] || isChecking}
-                className={`px-6 py-3 rounded-xl font-medium ${
-                  answers[currentQuestion.id]
-                    ? "bg-primary text-white"
-                    : "bg-gray-200 text-gray-500"
-                }`}
-              >
-                {isChecking ? "Checking..." : "Check Answer"}
-              </button>
-            )}
+            <div>
+              {!feedback ? (
+                <button
+                  onClick={checkAnswer}
+                  disabled={!answers[currentQuestion.id]}
+                  className={`px-6 py-3 rounded-xl ${
+                    answers[currentQuestion.id]
+                      ? "bg-gold text-bronze"
+                      : "bg-sand text-cement"
+                  } font-medium`}
+                >
+                  Check
+                </button>
+              ) : (
+                <button
+                  onClick={goToNextQuestion}
+                  className="px-6 py-3 rounded-xl bg-gold text-bronze font-medium"
+                >
+                  {currentQuestionIndex < data.questions.length - 1
+                    ? "Next"
+                    : "Finish"}
+                </button>
+              )}
+            </div>
           </div>
         </>
       )}

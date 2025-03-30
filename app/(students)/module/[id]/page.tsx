@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { themeConfig } from "../../../config/themeConfig";
 import { UserXP, UserHearts, Module, Session, SessionProgress } from "@/app/types/index";
 import { useUserStore } from "@/store/userStore";
+import { toast } from "sonner";
 
 
 
@@ -175,9 +176,7 @@ export default function ModulePage({
       });
 
       // Show success message
-      alert(
-        `Congratulations! You earned ¥${XP_REWARD} for completing the module!`
-      );
+      toast.success(`Congratulations! You earned ¥${XP_REWARD} for completing the module!`);
     } catch (error) {
       console.error("Error awarding module completion XP:", error);
     }
@@ -194,7 +193,7 @@ export default function ModulePage({
 
     // Check if user has hearts
     if (!userHearts || userHearts.current_hearts <= 0) {
-      alert("You don't have enough hearts to start this session!");
+      toast.error("You don't have enough hearts to start this session!");
       return;
     }
 
@@ -227,8 +226,39 @@ export default function ModulePage({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[100dvh]">
-        <p>Loading...</p>
+      <div className="w-full min-h-[100dvh] flex flex-col bg-field">
+        {/* Skeleton Header */}
+        <header className="w-full p-4 flex items-center justify-between bg-gold/90 border-b border-bronze/20 sticky top-0 z-10">
+          <div className="flex items-center gap-4">
+            <div className="w-9 h-9 rounded-full bg-bronze/20 animate-pulse"></div>
+            <div className="h-6 w-48 bg-bronze/20 rounded animate-pulse"></div>
+          </div>
+          <div className="w-20 h-9 bg-bronze/20 rounded-xl animate-pulse"></div>
+        </header>
+
+        {/* Skeleton Content */}
+        <div className="grow p-4 space-y-4">
+          {/* Skeleton description */}
+          <div className="h-4 bg-bronze/20 rounded w-3/4 animate-pulse"></div>
+          <div className="h-4 bg-bronze/20 rounded w-1/2 animate-pulse"></div>
+
+          {/* Skeleton sessions */}
+          <div className="grid gap-3 mt-6">
+            {[...Array(4)].map((_, index) => (
+              <div
+                key={index}
+                className="w-full p-4 bg-sand rounded-xl shadow-sm flex items-center gap-4 animate-pulse"
+              >
+                <div className="w-10 h-10 rounded-lg bg-bronze/20"></div>
+                <div className="flex-1">
+                  <div className="h-5 bg-bronze/20 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-bronze/20 rounded w-1/2"></div>
+                </div>
+                <div className="w-6 h-6 rounded-full bg-bronze/20"></div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -236,32 +266,34 @@ export default function ModulePage({
   if (!module) {
     return (
       <div className="flex items-center justify-center h-[100dvh]">
-        <p>Module not found</p>
+        <div className="bg-sand rounded-xl p-8 shadow-sm">
+          <p className="text-bronze">Module not found</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full min-h-[100dvh] flex flex-col bg-gray-50">
+    <div className="w-full min-h-[100dvh] flex flex-col bg-field">
       {/* Header */}
-      <header className="w-full p-4 flex items-center justify-between bg-white border-b sticky top-0 z-10">
+      <header className="w-full p-4 flex items-center justify-between bg-gold/90 border-b border-bronze/20 sticky top-0 z-10">
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push("/homepage")}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-gold rounded-full transition-colors"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5 text-bronze" />
           </button>
-          <h1 className="font-bold text-lg">{module.module_name}</h1>
+          <h1 className="font-bold text-lg text-bronze">{module.module_name}</h1>
         </div>
-        <div className="flex items-center gap-2 bg-white/90 px-3 py-1.5 rounded-xl border">
+        <div className="flex items-center gap-2 bg-sand px-3 py-1.5 rounded-xl border border-bronze/30">
           {themeConfig.hearts(userHearts?.current_hearts || 0)}
         </div>
       </header>
 
       {/* Main Content */}
       <div className="grow p-4 space-y-4">
-        <p className="text-gray-600">{module.description}</p>
+        <p className="text-bronze">{module.description}</p>
 
         {/* Sessions List */}
         <div className="grid gap-3">
@@ -272,16 +304,16 @@ export default function ModulePage({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
               onClick={() => handleStartSession(session.id)}
-              className="w-full p-4 bg-white rounded-xl shadow-sm flex items-center gap-4 hover:bg-gray-50 transition-colors active:scale-[0.98] touch-action-manipulation text-left relative overflow-hidden"
+              className="w-full p-4 bg-sand rounded-xl shadow-sm flex items-center gap-4 active:scale-[0.98] touch-action-manipulation text-left relative overflow-hidden"
             >
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <span className="font-medium text-primary">
+              <div className="w-10 h-10 rounded-lg bg-gold/60 flex items-center justify-center">
+                <span className="font-bold text-bronze">
                   {(index + 1).toString().padStart(2, "0")}
                 </span>
               </div>
               <div className="flex-1">
-                <h3 className="font-medium">{session.session_name}</h3>
-                <p className="text-sm text-gray-500">
+                <h3 className="font-medium text-black">{session.session_name}</h3>
+                <p className="text-sm text-black/80">
                   {session.content.type === "MULTIPLE_CHOICE"
                     ? "Multiple Choice Questions"
                     : session.content.type === "FILL_IN_THE_BLANK"
@@ -293,8 +325,8 @@ export default function ModulePage({
               </div>
               {progress[session.id] && (
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                    <Check className="w-4 h-4 text-green-600" />
+                  <div className="w-6 h-6 rounded-full bg-grass/20 flex items-center justify-center">
+                    <Check className="w-4 h-4 text-grass" />
                   </div>
                 </div>
               )}
@@ -303,8 +335,8 @@ export default function ModulePage({
         </div>
 
         {sessions.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            <p>No sessions available yet</p>
+          <div className="text-center py-8 bg-sand rounded-xl p-6">
+            <p className="text-bronze">No sessions available yet</p>
           </div>
         )}
       </div>

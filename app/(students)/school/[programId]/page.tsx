@@ -201,9 +201,42 @@ export default function ProgramDetailPage({
 
   if (loading) {
     return (
-      <div className="p-4 space-y-6">
-        <div className="flex items-center justify-center h-[calc(100vh-180px)]">
-          <p>Loading...</p>
+      <div className="p-4 space-y-6 bg-yellow">
+
+        {/* Skeleton for buttons */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="h-9 w-32 bg-sand/60 rounded-full animate-pulse"></div>
+          <div className="h-9 w-24 bg-sand/60 rounded-full animate-pulse"></div>
+        </div>
+
+        {/* Skeleton for program details card */}
+        <div className="bg-sand/80 rounded-xl p-4 shadow-sm animate-pulse">
+          <div className="h-8 bg-bronze/20 rounded w-3/4 mb-4"></div>
+          <div className="flex flex-wrap gap-3 mb-3">
+            <div className="h-6 bg-gold/40 rounded-full w-28"></div>
+            <div className="h-6 bg-bronze/20 rounded-full w-48"></div>
+          </div>
+        </div>
+
+        {/* Skeleton for application progress */}
+        <div className="bg-sand/80 rounded-xl p-4 shadow-sm animate-pulse">
+          <div className="h-6 bg-bronze/20 rounded w-1/2 mb-4"></div>
+          <div className="space-y-3">
+            {[...Array(3)].map((_, index) => (
+              <div key={index} className="h-14 bg-bronze/10 rounded-lg"></div>
+            ))}
+          </div>
+          <div className="h-12 bg-gold/40 rounded-lg mt-6"></div>
+        </div>
+
+        {/* Skeleton for program summary */}
+        <div className="bg-sand/80 rounded-xl p-4 shadow-sm animate-pulse">
+          <div className="h-6 bg-bronze/20 rounded w-1/3 mb-3"></div>
+          <div className="space-y-2">
+            <div className="h-4 bg-bronze/20 rounded w-full"></div>
+            <div className="h-4 bg-bronze/20 rounded w-5/6"></div>
+            <div className="h-4 bg-bronze/20 rounded w-4/5"></div>
+          </div>
         </div>
       </div>
     );
@@ -211,20 +244,20 @@ export default function ProgramDetailPage({
 
   if (!program) {
     return (
-      <div className="p-4 space-y-6">
+      <div className="p-4 space-y-6 bg-yellow">
         <div className="flex items-center justify-center h-[calc(100vh-180px)]">
-          <p>Program not found</p>
+          <p className="text-bronze">Program not found</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 space-y-6 bg-yellow">
+      <div className="flex items-center justify-between mb-4">
         <button
           onClick={() => router.push("/school")}
-          className="flex items-center text-gray-600 active:scale-95 transition-transform"
+          className="flex items-center text-bronze active:scale-95 transition-transform"
         >
           <ArrowLeft className="w-4 h-4 mr-1" />
           Back to Schools
@@ -235,31 +268,31 @@ export default function ProgramDetailPage({
           disabled={favoriteLoading}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
             isFavorited
-              ? "bg-primary text-white"
-              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              ? "bg-gold text-bronze"
+              : "bg-sand text-bronze hover:bg-sand/80"
           } ${favoriteLoading ? "opacity-70" : ""}`}
         >
           {isFavorited ? (
             <>
               <BookmarkCheck className="w-4 h-4" />
-              Favorited
+              Target
             </>
           ) : (
             <>
               <Bookmark className="w-4 h-4" />
-              Favorite
+              Target
             </>
           )}
         </button>
       </div>
 
-      <div className="bg-white rounded-xl p-4">
-        <h1 className="text-2xl font-bold mb-1">{program.name}</h1>
+      <div className="bg-sand rounded-xl p-4 shadow-sm border border-bronze/20">
+        <h1 className="text-2xl font-bold mb-1 text-black">{program.name}</h1>
 
         <div className="flex items-center gap-2">
           {subject && (
             <div className="mb-4">
-              <span className="text-sm bg-primary/10 text-primary px-2 py-1 rounded-full flex items-center gap-1 w-fit">
+              <span className="text-sm bg-gold/60 text-bronze px-2 py-1 rounded-full flex items-center gap-1 w-fit">
                 <BookOpen className="w-3 h-3" />
                 {subject.subject_name}
               </span>
@@ -267,7 +300,7 @@ export default function ProgramDetailPage({
           )}
 
           {school && (
-            <div className="flex items-center gap-1 text-gray-600 mb-4">
+            <div className="flex items-center gap-1 text-bronze mb-4">
               <School className="w-4 h-4" />
               <span>
                 {school.name}, {school.location}

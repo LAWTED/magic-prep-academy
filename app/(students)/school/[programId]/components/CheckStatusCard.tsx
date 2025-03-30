@@ -82,28 +82,28 @@ export default function CheckStatusCard({ programId }: CheckStatusCardProps) {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "met":
-        return <Check className="h-5 w-5 text-green-600" />;
+        return <Check className="h-5 w-5 text-grass" />;
       case "not_met":
-        return <X className="h-5 w-5 text-red-600" />;
+        return <X className="h-5 w-5 text-tomato" />;
       case "partially_met":
-        return <AlertCircle className="h-5 w-5 text-yellow-600" />;
+        return <AlertCircle className="h-5 w-5 text-yellow" />;
       case "unknown":
       default:
-        return <HelpCircle className="h-5 w-5 text-gray-500" />;
+        return <HelpCircle className="h-5 w-5 text-bronze/70" />;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "met":
-        return "bg-green-100 text-green-800 border-green-200";
+        return "bg-grass/20 text-grass border-grass/30";
       case "not_met":
-        return "bg-red-100 text-red-800 border-red-200";
+        return "bg-tomato/20 text-tomato border-tomato/30";
       case "partially_met":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+        return "bg-yellow/20 text-yellow border-yellow/30";
       case "unknown":
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "bg-cement/20 text-cement border-cement/20";
     }
   };
 
@@ -131,7 +131,7 @@ export default function CheckStatusCard({ programId }: CheckStatusCardProps) {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+    <div className="bg-sand border border-bronze/20 rounded-xl shadow-sm overflow-hidden">
       {/* Show Check Eligibility button when no results are displayed */}
       {!showResults && !isLoading && (
         <motion.button
@@ -140,12 +140,12 @@ export default function CheckStatusCard({ programId }: CheckStatusCardProps) {
           className="w-full p-4 text-left flex flex-col"
         >
           <div className="flex items-center gap-2 mb-2">
-            <h3 className="font-bold text-primary">Eligibility Check</h3>
+            <h3 className="font-bold text-bronze">Eligibility Check</h3>
           </div>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-bronze/70">
             Check if you meet the requirements for this program
           </p>
-          <div className="mt-3 self-end px-4 py-2 rounded-full text-sm font-medium bg-primary text-white">
+          <div className="mt-3 self-end px-4 py-2 rounded-full text-sm font-medium bg-gold text-bronze">
             Check Eligibility
           </div>
         </motion.button>
@@ -176,12 +176,12 @@ export default function CheckStatusCard({ programId }: CheckStatusCardProps) {
                   className="w-full flex items-center justify-between p-3"
                 >
                   <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-full bg-white shadow-sm">
+                    <div className="p-1.5 rounded-full bg-sand shadow-sm">
                       {getStatusIcon(result.status)}
                     </div>
                     <h5 className="font-medium">{result.label}</h5>
                   </div>
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-white shadow-sm">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-sand shadow-sm">
                     {getStatusText(result.status)}
                   </span>
                 </motion.button>
@@ -192,9 +192,9 @@ export default function CheckStatusCard({ programId }: CheckStatusCardProps) {
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      className="border-t px-4 py-3 bg-white"
+                      className="border-t px-4 py-3 bg-sand"
                     >
-                      <p className="text-sm text-gray-700">{result.explain}</p>
+                      <p className="text-sm text-bronze">{result.explain}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>

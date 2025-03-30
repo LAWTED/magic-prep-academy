@@ -103,7 +103,7 @@ export default function StudentHeader() {
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={() => router.push("/awards")}
-                className="flex items-center gap-2 bg-sand px-3 py-1.5 rounded-xl hover:bg-white/100 transition-colors active:bg-white/80 shadow-sm"
+                className="flex items-center gap-2 bg-sand px-3 py-1.5 rounded-xl  transition-colors active:bg-white/80 shadow-sm"
               >
                 {themeConfig.xpReward(userXP?.total_xp || 0)}
               </motion.button>
@@ -111,11 +111,10 @@ export default function StudentHeader() {
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={() => router.push("/pay")}
-                className="flex items-center gap-2 bg-sand px-3 py-1.5 rounded-xl hover:bg-white/100 transition-colors active:bg-white/80 shadow-sm"
+                className="flex items-center gap-2 bg-sand px-3 py-1.5 rounded-xl  transition-colors active:bg-white/80 shadow-sm"
               >
                 {themeConfig.hearts(userHearts?.current_hearts || 0)}
               </motion.button>
-
             </div>
           </>
         )}

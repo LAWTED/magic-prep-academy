@@ -360,15 +360,15 @@ export default function ApplicationProgressCard({
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
-        return <FileCheck size={16} className="text-green-600" />;
+        return <FileCheck size={16} className="text-success" />;
       case "finished":
-        return <CheckCircle size={16} className="text-blue-600" />;
+        return <CheckCircle size={16} className="text-info" />;
       case "in_progress":
-        return <Clock size={16} className="text-yellow-600" />;
+        return <Clock size={16} className="text-warning" />;
       case "not_started":
-        return <AlertCircle size={16} className="text-gray-400" />;
+        return <AlertCircle size={16} className="text-waiting" />;
       default:
-        return <AlertCircle size={16} className="text-gray-400" />;
+        return <AlertCircle size={16} className="text-waiting" />;
     }
   };
 
@@ -376,12 +376,12 @@ export default function ApplicationProgressCard({
     switch (status) {
       case "completed":
       case "finished":
-        return "bg-green-100 text-green-800 border-green-200";
+        return "bg-success/20 text-success border-success/30";
       case "in_progress":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+        return "bg-warning/20 text-warning border-warning/30";
       case "not_started":
       default:
-        return "bg-gray-100 text-gray-600 border-gray-200";
+        return "bg-waiting/20 text-waiting border-disabled/30";
     }
   };
 
@@ -402,42 +402,41 @@ export default function ApplicationProgressCard({
 
   const renderDrawerContent = () => {
     const documentType = selectedDocumentType === "cv" ? "Resume" : "Statement of Purpose";
-    const colorClass = selectedDocumentType === "cv" ? "blue" : "green";
 
     return (
       <>
-        <DrawerHeader className="flex items-center">
+        <DrawerHeader className="flex items-center bg-sand">
           {selectionStep === 2 && (
             <button
               onClick={goBackToDocuments}
-              className="mr-2 p-1 rounded-full hover:bg-gray-100"
+              className="mr-2 p-1 rounded-full hover:bg-bronze/10"
             >
-              <ArrowLeft size={18} />
+              <ArrowLeft size={18} className="text-bronze" />
             </button>
           )}
-          <DrawerTitle>
+          <DrawerTitle className="text-black">
             {selectionStep === 1
               ? `Select ${documentType}`
               : `Select Version`}
           </DrawerTitle>
         </DrawerHeader>
 
-        <div className="px-4 pb-2">
+        <div className="px-4 pb-2 bg-sand">
           <div className="flex items-center w-full mb-6">
-            <div className={`h-2 flex-1 rounded-full bg-${colorClass}-600`}></div>
-            <div className="mx-2 text-gray-400 text-xs">Step {selectionStep} of 2</div>
-            <div className={`h-2 flex-1 rounded-full ${selectionStep === 2 ? `bg-${colorClass}-600` : "bg-gray-200"}`}></div>
+            <div className={`h-2 flex-1 rounded-full bg-skyblue`}></div>
+            <div className="mx-2 text-bronze/70 text-xs">Step {selectionStep} of 2</div>
+            <div className={`h-2 flex-1 rounded-full ${selectionStep === 2 ? `bg-skyblue` : "bg-bronze/20"}`}></div>
           </div>
         </div>
 
-        <div className="p-4 max-h-[60vh] overflow-y-auto">
+        <div className="p-4 max-h-[60vh] overflow-y-auto bg-sand">
           {isDocumentsLoading ? (
             <div className="flex justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <Loader2 className="h-8 w-8 animate-spin text-bronze" />
             </div>
           ) : selectionStep === 1 ? (
             documents.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-bronze/70">
                 <p>You don't have any {documentType.toLowerCase()} documents yet.</p>
               </div>
             ) : (
@@ -447,22 +446,22 @@ export default function ApplicationProgressCard({
                     key={doc.id}
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
-                    className={`p-4 border rounded-lg cursor-pointer transition-colors hover:border-${colorClass}-500 hover:bg-${colorClass}-50`}
+                    className={`p-4 border border-bronze/20 rounded-lg cursor-pointer transition-colors hover:border-skyblue hover:bg-skyblue/10`}
                     onClick={() => fetchDocumentVersions(doc.id)}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-full bg-${colorClass}-100`}>
-                          <FileText size={20} className={`text-${colorClass}-600`} />
+                        <div className={`p-2 rounded-full bg-skyblue/20`}>
+                          <FileText size={20} className={`text-skyblue`} />
                         </div>
                         <div>
-                          <h3 className="font-medium">{doc.name}</h3>
-                          <p className="text-xs text-gray-500">
+                          <h3 className="font-medium text-black">{doc.name}</h3>
+                          <p className="text-xs text-bronze/70">
                             Last updated: {new Date(doc.updated_at).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
-                      <ChevronRight size={18} className="text-gray-400" />
+                      <ChevronRight size={18} className="text-bronze/70" />
                     </div>
                   </motion.div>
                 ))}
@@ -478,13 +477,13 @@ export default function ApplicationProgressCard({
                     whileTap={{ scale: 0.98 }}
                     disabled={isAttaching}
                     onClick={() => attachDocumentToProgram(version.id)}
-                    className={`w-full p-4 border rounded-lg flex items-center justify-between hover:bg-${colorClass}-50 hover:border-${colorClass}-500`}
+                    className={`w-full p-4 border border-bronze/20 rounded-lg flex items-center justify-between hover:bg-skyblue/10 hover:border-skyblue`}
                   >
                     <div className="text-left">
-                      <p className="font-medium">
+                      <p className="font-medium text-black">
                         {version.name || `Version ${version.version_number}`}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-bronze/70">
                         {new Date(version.created_at).toLocaleDateString()}
                       </p>
                     </div>
@@ -495,9 +494,9 @@ export default function ApplicationProgressCard({
           )}
         </div>
 
-        <DrawerFooter className="flex-row gap-3 justify-end">
+        <DrawerFooter className="flex-row gap-3 justify-end bg-sand">
           <DrawerClose asChild>
-            <button className="px-4 py-2 text-sm font-medium text-gray-600 border rounded-lg">
+            <button className="px-4 py-2 text-sm font-medium text-bronze border border-bronze/20 rounded-lg hover:bg-bronze/10">
               Cancel
             </button>
           </DrawerClose>
@@ -508,25 +507,25 @@ export default function ApplicationProgressCard({
 
   if (isLoading) {
     return (
-      <div className="bg-white border border-gray-200 rounded-xl p-4 md:p-5 shadow-sm">
+      <div className="bg-sand border border-bronze/20 rounded-xl p-4 md:p-5 shadow-sm">
         <div className="h-32 flex items-center justify-center">
-          <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full"></div>
+          <div className="animate-spin h-6 w-6 border-2 border-bronze border-t-transparent rounded-full"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 md:p-5 shadow-sm">
-      <h3 className="font-bold text-lg mb-4">Application Progress</h3>
+    <div className="bg-sand border border-bronze/20 rounded-xl p-4 md:p-5 shadow-sm">
+      <h3 className="font-bold text-lg mb-4 text-black">Application Progress</h3>
 
       <div className="space-y-3">
         {/* Letter of Recommendation */}
-        <div className="border rounded-lg overflow-hidden">
+        <div className="border border-bronze/20 rounded-lg overflow-hidden">
           <div className="flex items-center justify-between p-3">
             <div className="flex items-center gap-2">
-              <FileText size={18} className="text-purple-600" />
-              <h5 className="font-medium">Letter of Recommendation</h5>
+              <FileText size={18} className="text-skyblue" />
+              <h5 className="font-medium text-black">Letter of Recommendation</h5>
             </div>
             <div
               className={`px-2 py-1 rounded-full text-xs flex items-center gap-1 ${getStatusClass(
@@ -542,8 +541,8 @@ export default function ApplicationProgressCard({
 
           {progressData?.lor?.status === "finished" &&
             progressData.lor.mentor_name && (
-              <div className="border-t px-3 py-2 bg-blue-50">
-                <p className="text-xs text-blue-700">
+              <div className="border-t border-bronze/20 px-3 py-2 bg-skyblue/10">
+                <p className="text-xs text-skyblue">
                   Sent to school on{" "}
                   {new Date(
                     progressData.lor.sent_date || ""
@@ -554,11 +553,11 @@ export default function ApplicationProgressCard({
             )}
 
           {progressData?.lor?.status === "not_started" && (
-            <div className="border-t px-3 py-2">
+            <div className="border-t border-bronze/20 px-3 py-2">
               <motion.a
                 href="/tools/lor"
                 whileTap={{ scale: 0.95 }}
-                className="w-full py-2 text-sm font-medium bg-purple-50 text-purple-600 rounded-md flex items-center justify-center gap-1"
+                className="w-full py-2 text-sm font-medium bg-skyblue/10 text-skyblue rounded-md flex items-center justify-center gap-1"
               >
                 <Upload size={14} />
                 <span>Request Recommendation</span>
@@ -568,11 +567,11 @@ export default function ApplicationProgressCard({
         </div>
 
         {/* CV/Resume */}
-        <div className="border rounded-lg overflow-hidden">
+        <div className="border border-bronze/20 rounded-lg overflow-hidden">
           <div className="flex items-center justify-between p-3">
             <div className="flex items-center gap-2">
-              <FileText size={18} className="text-blue-600" />
-              <h5 className="font-medium">CV/Resume</h5>
+              <FileText size={18} className="text-skyblue" />
+              <h5 className="font-medium text-black">CV/Resume</h5>
             </div>
             <div
               className={`px-2 py-1 rounded-full text-xs flex items-center gap-1 ${getStatusClass(
@@ -587,19 +586,19 @@ export default function ApplicationProgressCard({
           </div>
 
           {progressData?.cv?.status === "not_started" && (
-            <div className="border-t px-3 py-2">
+            <div className="border-t border-bronze/20 px-3 py-2">
               <Drawer>
                 <DrawerTrigger asChild>
                   <motion.button
                     whileTap={{ scale: 0.95 }}
                     onClick={() => fetchUserDocuments("cv")}
-                    className="w-full py-2 text-sm font-medium bg-blue-50 text-blue-600 rounded-md flex items-center justify-center gap-1"
+                    className="w-full py-2 text-sm font-medium bg-skyblue/10 text-skyblue rounded-md flex items-center justify-center gap-1"
                   >
                     <Upload size={14} />
                     <span>Upload Resume</span>
                   </motion.button>
                 </DrawerTrigger>
-                <DrawerContent>
+                <DrawerContent className="bg-sand border-t border-bronze/20">
                   {renderDrawerContent()}
                 </DrawerContent>
               </Drawer>
@@ -608,11 +607,11 @@ export default function ApplicationProgressCard({
         </div>
 
         {/* Statement of Purpose */}
-        <div className="border rounded-lg overflow-hidden">
+        <div className="border border-bronze/20 rounded-lg overflow-hidden">
           <div className="flex items-center justify-between p-3">
             <div className="flex items-center gap-2">
-              <FileText size={18} className="text-green-600" />
-              <h5 className="font-medium">Statement of Purpose</h5>
+              <FileText size={18} className="text-skyblue" />
+              <h5 className="font-medium text-black">Statement of Purpose</h5>
             </div>
             <div
               className={`px-2 py-1 rounded-full text-xs flex items-center gap-1 ${getStatusClass(
@@ -627,19 +626,19 @@ export default function ApplicationProgressCard({
           </div>
 
           {progressData?.sop?.status === "not_started" && (
-            <div className="border-t px-3 py-2">
+            <div className="border-t border-bronze/20 px-3 py-2">
               <Drawer>
                 <DrawerTrigger asChild>
                   <motion.button
                     whileTap={{ scale: 0.95 }}
                     onClick={() => fetchUserDocuments("sop")}
-                    className="w-full py-2 text-sm font-medium bg-green-50 text-green-600 rounded-md flex items-center justify-center gap-1"
+                    className="w-full py-2 text-sm font-medium bg-skyblue/10 text-skyblue rounded-md flex items-center justify-center gap-1"
                   >
                     <Upload size={14} />
                     <span>Upload Statement of Purpose</span>
                   </motion.button>
                 </DrawerTrigger>
-                <DrawerContent>
+                <DrawerContent className="bg-sand border-t border-bronze/20">
                   {renderDrawerContent()}
                 </DrawerContent>
               </Drawer>
@@ -648,16 +647,16 @@ export default function ApplicationProgressCard({
         </div>
 
         {/* Application Status */}
-        <div className="border rounded-lg overflow-hidden">
+        <div className="border border-bronze/20 rounded-lg overflow-hidden">
           <div className="flex items-center justify-between p-3">
             <div className="flex items-center gap-2">
-              <CheckCircle size={18} className="text-indigo-600" />
-              <h5 className="font-medium">Application Submitted</h5>
+              <CheckCircle size={18} className="text-skyblue" />
+              <h5 className="font-medium text-black">Application Submitted</h5>
             </div>
             <div className={`px-2 py-1 rounded-full text-xs flex items-center gap-1 ${
               progressData?.application_submitted
-                ? "bg-green-100 text-green-800 border-green-200"
-                : "bg-gray-100 text-gray-600 border-gray-200"
+                ? "bg-success/20 text-success border-success/30"
+                : "bg-waiting/20 text-waiting border-disabled/30"
             }`}>
               <span>
                 {progressData?.application_submitted ? "Yes" : "No"}
@@ -666,15 +665,15 @@ export default function ApplicationProgressCard({
           </div>
 
           {!progressData?.application_submitted && (
-            <div className="border-t px-3 py-2">
+            <div className="border-t border-bronze/20 px-3 py-2">
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={toggleApplicationSubmitted}
                 disabled={isSubmitting || !canSubmitApplication()}
                 className={`w-full py-2 text-sm font-medium rounded-md flex items-center justify-center gap-1
                   ${canSubmitApplication()
-                    ? "bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
-                    : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}
+                    ? "bg-warning/20 text-warning hover:bg-warning/30"
+                    : "bg-waiting/20 text-waiting cursor-not-allowed"}`}
               >
                 {isSubmitting ? (
                   <Loader2 size={14} className="animate-spin" />
@@ -685,7 +684,7 @@ export default function ApplicationProgressCard({
               </motion.button>
 
               {!canSubmitApplication() && (
-                <p className="mt-2 text-xs text-center text-amber-600">
+                <p className="mt-2 text-xs text-center text-bronze">
                   Complete all required documents to submit application
                 </p>
               )}
@@ -693,12 +692,12 @@ export default function ApplicationProgressCard({
           )}
 
           {progressData?.application_submitted && (
-            <div className="border-t px-3 py-2">
+            <div className="border-t border-bronze/20 px-3 py-2">
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={toggleApplicationSubmitted}
                 disabled={isSubmitting}
-                className="w-full py-2 text-sm font-medium bg-gray-50 text-gray-600 hover:bg-gray-100 rounded-md flex items-center justify-center gap-1"
+                className="w-full py-2 text-sm font-medium bg-waiting/20 text-waiting hover:bg-waiting/30 rounded-md flex items-center justify-center gap-1"
               >
                 {isSubmitting ? (
                   <Loader2 size={14} className="animate-spin" />

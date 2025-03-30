@@ -82,18 +82,18 @@ export default function FillInTheBlankQuiz({
       <div className="mb-6">
         <button
           onClick={() => window.history.back()}
-          className="inline-flex items-center text-primary mb-4"
+          className="inline-flex items-center text-bronze mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
         </button>
-        <h1 className="text-2xl font-bold">{data.title}</h1>
-        <p className="text-gray-600 mt-2">{data.instruction}</p>
+        <h1 className="text-2xl font-bold text-bronze">{data.title}</h1>
+        <p className="text-black/80 mt-2">{data.instruction}</p>
       </div>
 
       {/* Progress Bar */}
-      <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
+      <div className="w-full bg-bronze rounded-full h-2 mb-6">
         <div
-          className="bg-primary h-2 rounded-full"
+          className="bg-lime h-2 rounded-full"
           style={{
             width: `${((currentQuestionIndex + 1) / data.questions.length) * 100}%`,
           }}
@@ -101,23 +101,23 @@ export default function FillInTheBlankQuiz({
       </div>
 
       {completed ? (
-        <div className="text-center py-8">
+        <div className="text-center py-8 bg-sand rounded-xl p-6">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="mb-6"
           >
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-              <Check className="w-10 h-10 text-green-600" />
+            <div className="w-20 h-20 bg-lime rounded-full flex items-center justify-center mx-auto">
+              <Check className="w-10 h-10 text-white" />
             </div>
           </motion.div>
-          <h2 className="text-xl font-bold mb-2">Congratulations!</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-xl font-bold mb-2 text-bronze">Congratulations!</h2>
+          <p className="text-black/80 mb-6">
             You've completed this quiz section.
           </p>
           <button
             onClick={onComplete}
-            className="px-6 py-3 rounded-xl bg-primary text-white font-medium"
+            className="px-6 py-3 rounded-xl bg-gold text-bronze font-medium"
           >
             Continue
           </button>
@@ -125,12 +125,12 @@ export default function FillInTheBlankQuiz({
       ) : (
         <>
           {/* Question */}
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <div className="text-lg mb-6">
+          <div className="bg-sand rounded-xl shadow-sm p-6 mb-6">
+            <div className="text-lg mb-6 text-black/80">
               {textParts.length > 0 && (
                 <div className="flex flex-wrap items-center">
                   <span>{textParts[0]}</span>
-                  <div className="mx-2 my-2 min-w-[150px] border-b-2 border-primary">
+                  <div className="mx-2 my-2 min-w-[150px] border-b-2 border-bronze">
                     <input
                       type="text"
                       value={answers[currentQuestion.id] || ""}
@@ -138,9 +138,9 @@ export default function FillInTheBlankQuiz({
                       className={`w-full bg-transparent px-2 py-1 outline-none ${
                         feedback
                           ? feedback.isCorrect
-                            ? "text-green-600 font-medium"
-                            : "text-red-600 font-medium"
-                          : ""
+                            ? "text-grass font-medium"
+                            : "text-tomato font-medium"
+                          : "text-black/80"
                       }`}
                       placeholder="Your answer"
                       disabled={!!feedback}
@@ -155,7 +155,7 @@ export default function FillInTheBlankQuiz({
             <div className="mb-2">
               <button
                 onClick={() => setShowHint(!showHint)}
-                className="text-primary flex items-center text-sm"
+                className="text-bronze flex items-center text-sm"
                 disabled={!!feedback}
               >
                 <HelpCircle className="w-4 h-4 mr-1" />
@@ -168,7 +168,7 @@ export default function FillInTheBlankQuiz({
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
-                className="p-3 bg-blue-50 rounded-lg text-blue-700 text-sm"
+                className="p-3 bg-gold/10 rounded-lg text-bronze text-sm"
               >
                 <p>{currentQuestion.hint}</p>
               </motion.div>
@@ -180,26 +180,28 @@ export default function FillInTheBlankQuiz({
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`p-4 rounded-lg mb-6 ${
-                feedback.isCorrect ? "bg-green-100" : "bg-red-100"
+              className={`p-4 rounded-lg mb-6 bg-sand ${
+                feedback.isCorrect ? "text-lime" : "text-tomato"
               }`}
             >
               <div className="flex items-start">
                 {feedback.isCorrect ? (
-                  <Check className="w-5 h-5 text-green-600 mr-2 mt-1 flex-shrink-0" />
+                  <Check className="w-5 h-5 text-grass mr-2 mt-1 flex-shrink-0" />
                 ) : (
-                  <X className="w-5 h-5 text-red-600 mr-2 mt-1 flex-shrink-0" />
+                  <X className="w-5 h-5 text-tomato mr-2 mt-1 flex-shrink-0" />
                 )}
                 <div>
-                  <p
-                    className={`font-medium ${
-                      feedback.isCorrect ? "text-green-700" : "text-red-700"
+                  <p className={`font-medium ${
+                      feedback.isCorrect ? "text-grass" : "text-tomato"
                     }`}
                   >
                     {feedback.isCorrect ? "Correct!" : "Incorrect"}
                   </p>
                   {!feedback.isCorrect && (
-                    <p className="text-red-700">
+                    <p className={`text-bronze ${
+                      feedback.isCorrect ? "text-grass" : "text-tomato"
+                    }`}
+                    >
                       Correct answer: {feedback.correctAnswer}
                     </p>
                   )}
@@ -211,29 +213,30 @@ export default function FillInTheBlankQuiz({
           {/* Actions */}
           <div className="flex justify-between">
             <div></div>
-            {feedback ? (
-              <button
-                onClick={goToNextQuestion}
-                className="px-6 py-3 rounded-xl bg-primary text-white font-medium flex items-center"
-              >
-                {currentQuestionIndex < data.questions.length - 1
-                  ? "Next Question"
-                  : "Finish Quiz"}
-                <ChevronRight className="ml-1 w-4 h-4" />
-              </button>
-            ) : (
-              <button
-                onClick={checkAnswer}
-                disabled={!answers[currentQuestion.id] || isChecking}
-                className={`px-6 py-3 rounded-xl font-medium ${
-                  answers[currentQuestion.id]
-                    ? "bg-primary text-white"
-                    : "bg-gray-200 text-gray-500"
-                }`}
-              >
-                {isChecking ? "Checking..." : "Check Answer"}
-              </button>
-            )}
+            <div>
+              {!feedback ? (
+                <button
+                  onClick={checkAnswer}
+                  disabled={!answers[currentQuestion.id] || isChecking}
+                  className={`px-6 py-3 rounded-xl ${
+                    answers[currentQuestion.id] && !isChecking
+                      ? "bg-gold text-bronze"
+                      : "bg-cement text-white/70"
+                  } font-medium`}
+                >
+                  Check
+                </button>
+              ) : (
+                <button
+                  onClick={goToNextQuestion}
+                  className="px-6 py-3 rounded-xl bg-gold text-bronze font-medium"
+                >
+                  {currentQuestionIndex < data.questions.length - 1
+                    ? "Next"
+                    : "Finish"}
+                </button>
+              )}
+            </div>
           </div>
         </>
       )}

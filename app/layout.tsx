@@ -40,15 +40,14 @@ export function generateViewport(): Viewport {
     userScalable: false,
     viewportFit: "cover",
     themeColor: [
-      { media: "(prefers-color-scheme: light)", color: "#FFFFFF" },
-      { media: "(prefers-color-scheme: dark)", color: "#FFFFFF" },
+      { media: "(prefers-color-scheme: light)", color: "#ead488" },
+      { media: "(prefers-color-scheme: dark)", color: "#ead488" },
     ],
   };
 }
 
 const nunito = Nunito({
   subsets: ["latin"],
-
 });
 
 export default function RootLayout({
@@ -58,7 +57,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={nunito.className} suppressHydrationWarning>
-      <body className="bg-background text-foreground overscroll-y-contain">
+      <body className=" text-foreground overscroll-y-contain bg-gradient-to-b from-gold to-sand from-20% to-80%">
         <Toaster
           position="bottom-center"
           richColors

@@ -15,13 +15,13 @@ import { QUIZ_TYPES } from "./const";
 export const themeConfig = {
   xpReward: (num: number) => (
     <span className="flex items-center gap-1 text-bronze font-bold">
-      <CircleDollarSign className="w-4 h-4 text-green font-bold " />
+      <CircleDollarSign className="w-4 h-4 text-grass  font-bold " />
       {num}
     </span>
   ),
   hearts: (num: number) => (
     <span className="flex items-center gap-1 text-bronze font-bold">
-      <Heart className="w-4 h-4 fill-current text-red font-bold" />
+      <Heart className="w-4 h-4 fill-current text-tomato font-bold" />
       {num}
     </span>
   ),
@@ -108,7 +108,7 @@ export const themeConfig = {
       pic: "/images/cal/application_materials.png",
     },
     receive_offers: {
-      id: 4,
+      id: 5,
       title: "Receive Offers",
       description: "Receive admission notices and confirm your acceptance",
       start_date: "2026-02-01",
@@ -116,7 +116,7 @@ export const themeConfig = {
       pic: "/images/cal/receive_offers.png",
     },
     prepare_visa: {
-      id: 5,
+      id: 6,
       title: "Prepare Visa",
       description: "Apply for and obtain your student visa",
       start_date: "2026-04-16",
@@ -124,7 +124,7 @@ export const themeConfig = {
       pic: "/images/cal/prepare_visa.png",
     },
     start_school: {
-      id: 6,
+      id: 7,
       title: "Start School",
       description: "Arrive at the university and begin your first semester",
       start_date: "2026-08-01",

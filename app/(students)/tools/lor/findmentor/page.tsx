@@ -8,6 +8,7 @@ import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/userStore";
+import { toast } from 'sonner';
 
 interface Mentor {
   id: string;
@@ -299,7 +300,7 @@ export default function FindMentorPage() {
 
     } catch (error) {
       console.error('Error submitting request:', error);
-      alert('There was an error submitting your request. Please try again.');
+      toast.error('There was an error submitting your request. Please try again.');
       setSubmitting(false);
     }
   };

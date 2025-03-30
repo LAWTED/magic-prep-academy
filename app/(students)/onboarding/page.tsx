@@ -23,7 +23,9 @@ export default function OnboardingPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const totalSteps = 4;
-  const [subjects, setSubjects] = useState<{ id: string; subject_name: string }[]>([]);
+  const [subjects, setSubjects] = useState<
+    { id: string; subject_name: string }[]
+  >([]);
 
   // Form data
   const [username, setUsername] = useState("");
@@ -38,8 +40,8 @@ export default function OnboardingPage() {
     async function fetchSubjects() {
       try {
         const { data, error } = await supabase
-          .from('subjects')
-          .select('id, subject_name');
+          .from("subjects")
+          .select("id, subject_name");
 
         if (error) throw error;
 
@@ -47,7 +49,7 @@ export default function OnboardingPage() {
           setSubjects(data);
         }
       } catch (error) {
-        console.error('Error fetching subjects:', error);
+        console.error("Error fetching subjects:", error);
       }
     }
 
@@ -112,7 +114,7 @@ export default function OnboardingPage() {
     try {
       setLoading(true);
 
-      console.log('selectedSubjects', selectedSubjects);
+      console.log("selectedSubjects", selectedSubjects);
       const updates = {
         auth_id: userId,
         name: username,
@@ -138,16 +140,16 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-start h-[100dvh] p-4 w-full max-w-md mx-auto">
+    <div className="flex flex-col items-center justify-start h-[100dvh] p-4 w-full max-w-md mx-auto bg-yellow">
       {/* Progress Bar */}
       <div className="w-full mb-8 mt-4">
-        <div className="w-full bg-gray-200 rounded-full h-2.5">
+        <div className="w-full bg-bronze/30 rounded-full h-2.5">
           <div
-            className="bg-primary h-2.5 rounded-full transition-all duration-300 ease-out"
+            className="bg-bronze h-2.5 rounded-full transition-all duration-300 ease-out"
             style={{ width: `${(step / totalSteps) * 100}%` }}
           ></div>
         </div>
-        <div className="flex justify-between mt-2 text-xs text-gray-500">
+        <div className="flex justify-between mt-2 text-xs text-bronze">
           <span>Let's set up your profile</span>
           <span>
             {step}/{totalSteps}
@@ -163,7 +165,7 @@ export default function OnboardingPage() {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
           transition={{ duration: 0.2 }}
-          className="w-full"
+          className="w-full bg-sand backdrop-blur-sm p-6 rounded-lg shadow-md border border-bronze/20"
         >
           {step === 1 && (
             <div className="flex flex-col items-center space-y-6 w-full">
@@ -173,8 +175,10 @@ export default function OnboardingPage() {
                 transition={{ delay: 0.2 }}
                 className="text-center"
               >
-                <h1 className="text-2xl font-bold mb-2">What's your name?</h1>
-                <p className="text-gray-500">This is how we'll address you.</p>
+                <h1 className="text-2xl font-bold mb-2 text-bronze">
+                  What's your name?
+                </h1>
+                <p className="text-black/70">This is how we'll address you.</p>
               </motion.div>
 
               <div className="w-full max-w-xs">
@@ -183,14 +187,14 @@ export default function OnboardingPage() {
                   placeholder="Enter your name"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="text-lg text-center h-14"
+                  className="text-lg text-center h-14 border-bronze/30 focus:border-bronze focus:ring-bronze/30"
                 />
               </div>
 
               <Button
                 onClick={nextStep}
                 disabled={!username.trim()}
-                className="w-full max-w-xs h-12 text-lg mt-4"
+                className="w-full max-w-xs h-12 text-lg mt-4 bg-bronze  text-sand"
               >
                 Continue
               </Button>
@@ -205,8 +209,10 @@ export default function OnboardingPage() {
                 transition={{ delay: 0.2 }}
                 className="text-center"
               >
-                <h1 className="text-2xl font-bold mb-2">Choose your avatar</h1>
-                <p className="text-gray-500">
+                <h1 className="text-2xl font-bold mb-2 text-bronze">
+                  Choose your avatar
+                </h1>
+                <p className="text-black/70">
                   Who will be your learning companion?
                 </p>
               </motion.div>
@@ -225,7 +231,7 @@ export default function OnboardingPage() {
                     <div
                       className={`relative w-28 h-28 rounded-full overflow-hidden mb-2 border-4 ${
                         selectedAvatar === avatar.name
-                          ? "border-primary"
+                          ? "border-bronze"
                           : "border-transparent"
                       }`}
                     >
@@ -239,8 +245,8 @@ export default function OnboardingPage() {
                     <span
                       className={`font-medium ${
                         selectedAvatar === avatar.name
-                          ? "text-primary"
-                          : "text-gray-600"
+                          ? "text-bronze"
+                          : "text-black/70"
                       }`}
                     >
                       {avatar.name}
@@ -250,13 +256,17 @@ export default function OnboardingPage() {
               </div>
 
               <div className="w-full max-w-xs flex justify-between">
-                <Button onClick={prevStep} variant="outline" className="w-24">
+                <Button
+                  onClick={prevStep}
+                  variant="outline"
+                  className="w-24 border-bronze/30 text-bronze hover:bg-bronze/10"
+                >
                   Back
                 </Button>
                 <Button
                   onClick={nextStep}
                   disabled={!selectedAvatar}
-                  className="w-24"
+                  className="w-24 bg-bronze hover:bg-bronze/90 text-sand"
                 >
                   Next
                 </Button>
@@ -272,8 +282,10 @@ export default function OnboardingPage() {
                 transition={{ delay: 0.2 }}
                 className="text-center"
               >
-                <h1 className="text-2xl font-bold mb-2">Where are you from?</h1>
-                <p className="text-gray-500">Tell us your location</p>
+                <h1 className="text-2xl font-bold mb-2 text-bronze">
+                  Where are you from?
+                </h1>
+                <p className="text-black/70">Tell us your location</p>
               </motion.div>
 
               <div className="w-full max-w-xs">
@@ -282,18 +294,22 @@ export default function OnboardingPage() {
                   placeholder="Enter your location"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="text-lg text-center h-14"
+                  className="text-lg text-center h-14 border-bronze/30 focus:border-bronze focus:ring-bronze/30"
                 />
               </div>
 
               <div className="w-full max-w-xs flex justify-between">
-                <Button onClick={prevStep} variant="outline" className="w-24">
+                <Button
+                  onClick={prevStep}
+                  variant="outline"
+                  className="w-24 border-bronze/30 text-bronze hover:bg-bronze/10"
+                >
                   Back
                 </Button>
                 <Button
                   onClick={nextStep}
                   disabled={!location.trim()}
-                  className="w-24"
+                  className="w-24 bg-bronze hover:bg-bronze/90 text-sand"
                 >
                   Next
                 </Button>
@@ -309,10 +325,10 @@ export default function OnboardingPage() {
                 transition={{ delay: 0.2 }}
                 className="text-center"
               >
-                <h1 className="text-2xl font-bold mb-2">
+                <h1 className="text-2xl font-bold mb-2 text-bronze">
                   Select your interests
                 </h1>
-                <p className="text-gray-500">
+                <p className="text-black/70">
                   What subjects are you interested in?
                 </p>
               </motion.div>
@@ -322,9 +338,15 @@ export default function OnboardingPage() {
                   <Badge
                     key={subject.id}
                     variant={
-                      selectedSubjects.includes(subject.id) ? "default" : "outline"
+                      selectedSubjects.includes(subject.id)
+                        ? "default"
+                        : "outline"
                     }
-                    className="cursor-pointer hover:opacity-80 transition-all px-3 py-2 text-sm"
+                    className={`cursor-pointer hover:opacity-80 transition-all px-3 py-2 text-sm ${
+                      selectedSubjects.includes(subject.id)
+                        ? "bg-bronze text-sand hover:bg-bronze/90"
+                        : "border-bronze/30 text-bronze hover:bg-bronze/10"
+                    }`}
                     onClick={() => toggleSubject(subject.id)}
                   >
                     {subject.subject_name}
@@ -333,13 +355,17 @@ export default function OnboardingPage() {
               </div>
 
               <div className="w-full max-w-xs flex justify-between">
-                <Button onClick={prevStep} variant="outline" className="w-24">
+                <Button
+                  onClick={prevStep}
+                  variant="outline"
+                  className="w-24 border-bronze/30 text-bronze hover:bg-bronze/10"
+                >
                   Back
                 </Button>
                 <Button
                   onClick={completeOnboarding}
                   disabled={selectedSubjects.length === 0 || loading}
-                  className="w-24"
+                  className="w-24 bg-bronze hover:bg-bronze/90 text-sand"
                 >
                   {loading ? "Saving..." : "Finish"}
                 </Button>

@@ -1,5 +1,16 @@
 # Magic Prep Academy
 
+Welcome to Magic Prep Academy! This is a platform for students to prepare for their graduate school applications.(Especially for Doge Lovers)
+
+## Features
+
+
+- [x] Create a Student Account `student`
+- [x] Create a Mentor Account `mentor`
+- [x] Mentor generates a personalized game for you. `mentor`
+- [x] Deal with the questions. `student`
+
+
 
 
 

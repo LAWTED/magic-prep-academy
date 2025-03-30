@@ -136,24 +136,22 @@ export default function AwardsPage() {
   };
 
   // Get avatar path based on user's avatar_name
-  const avatarPath = user
-    ? `/images/avatars/${user.avatar_name}.png`
-    : "";
+  const avatarPath = user ? `/images/avatars/${user.avatar_name}.png` : "";
 
   if (loading || !user) {
     return (
-      <div className="p-4 space-y-6 overflow-auto">
+      <div className="p-4 space-y-6 overflow-auto bg-yellow">
         <div className="flex items-center justify-center h-[calc(100vh-180px)]">
-          <p>Loading...</p>
+          <p className="text-bronze">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 space-y-6 overflow-auto">
-      <h2 className="text-xl font-medium">Magic Awards</h2>
-      <p className="text-sm text-muted-foreground">
+    <div className="p-4 space-y-6 overflow-auto pb-20 bg-yellow">
+      <h2 className="text-2xl font-bold text-bronze">Magic Awards</h2>
+      <p className="text-sm text-bronze/70">
         Spend your XP to unlock magical badges and items!
       </p>
 
@@ -168,7 +166,7 @@ export default function AwardsPage() {
             return (
               <motion.div
                 key={award.id}
-                className="bg-white rounded-xl shadow-sm overflow-hidden border"
+                className="bg-sand backdrop-blur-sm rounded-xl shadow-md overflow-hidden border border-bronze/20"
                 whileTap={{ scale: 0.98 }}
               >
                 <div className="aspect-square relative">
@@ -180,27 +178,29 @@ export default function AwardsPage() {
                   />
                 </div>
                 <div className="p-3 space-y-2">
-                  <h3 className="font-medium text-sm">{award.name}</h3>
-                  <p className="text-xs text-muted-foreground line-clamp-2">
+                  <h3 className="font-bold text-sm text-bronze">
+                    {award.name}
+                  </h3>
+                  <p className="text-xs text-black/70 line-clamp-2">
                     {award.description || "A magical award!"}
                   </p>
 
                   {isPurchased ? (
-                    <div className="flex items-center justify-center w-full bg-green-100 text-green-700 py-2 rounded-md text-sm mt-2">
+                    <div className="flex items-center justify-center w-full bg-bronze/20 text-bronze font-medium py-2 rounded-md text-sm mt-2">
                       Earned
                     </div>
                   ) : (
                     <button
                       onClick={() => purchaseAward(award.id, award.price)}
                       disabled={!canAfford || isProcessing}
-                      className={`flex items-center justify-center w-full py-2 rounded-md text-sm mt-2 ${
+                      className={`flex items-center justify-center w-full py-2 rounded-md text-sm mt-2 transition-all ${
                         canAfford
-                          ? "bg-primary text-white active:scale-[0.98]"
-                          : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          ? "bg-lime text-bronze active:scale-[0.98] "
+                          : "bg-cement/20 text-cement cursor-not-allowed"
                       }`}
                     >
                       {isProcessing ? (
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-5 h-5 border-2 border-sand border-t-transparent rounded-full animate-spin"></div>
                       ) : (
                         <>{themeConfig.xpReward(award.price)}</>
                       )}
@@ -214,8 +214,10 @@ export default function AwardsPage() {
 
       {awards.filter((award) => !award.is_purchasable).length > 0 && (
         <>
-          <h2 className="text-xl font-medium mt-8">Achievement Awards</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="text-2xl font-bold text-bronze mt-8">
+            Achievement Awards
+          </h2>
+          <p className="text-sm text-bronze/70">
             Special awards earned through gameplay achievements!
           </p>
 
@@ -228,7 +230,7 @@ export default function AwardsPage() {
                 return (
                   <div
                     key={award.id}
-                    className={`bg-white rounded-xl shadow-sm overflow-hidden border ${!isPurchased ? "opacity-50" : ""}`}
+                    className={`bg-sand backdrop-blur-sm rounded-xl shadow-md overflow-hidden border border-bronze/20 ${!isPurchased ? "opacity-50" : ""}`}
                   >
                     <div className="aspect-square relative">
                       <Image
@@ -239,17 +241,19 @@ export default function AwardsPage() {
                       />
                     </div>
                     <div className="p-3 space-y-2">
-                      <h3 className="font-medium text-sm">{award.name}</h3>
-                      <p className="text-xs text-muted-foreground line-clamp-2">
+                      <h3 className="font-bold text-sm text-bronze">
+                        {award.name}
+                      </h3>
+                      <p className="text-xs text-black/70 line-clamp-2">
                         {award.description || "A special achievement!"}
                       </p>
 
                       {isPurchased ? (
-                        <div className="flex items-center justify-center w-full bg-green-100 text-green-700 py-2 rounded-md text-sm mt-2">
+                        <div className="flex items-center justify-center w-full bg-bronze/20 text-bronze font-medium py-2 rounded-md text-sm mt-2">
                           Earned
                         </div>
                       ) : (
-                        <div className="flex items-center justify-center w-full bg-gray-100 text-gray-500 py-2 rounded-md text-sm mt-2">
+                        <div className="flex items-center justify-center w-full bg-cement/20 text-cement py-2 rounded-md text-sm mt-2">
                           Locked
                         </div>
                       )}

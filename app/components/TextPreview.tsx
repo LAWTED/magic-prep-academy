@@ -49,7 +49,7 @@ export default function TextPreview({
       <div className="flex justify-end">
         <motion.button
           whileTap={{ scale: 0.95 }}
-          className="p-2 rounded-full hover:bg-gray-100"
+          className="p-2 rounded-full text-bronze"
           title="Download PDF"
           onClick={handleDownloadPDF}
           disabled={isDownloading}

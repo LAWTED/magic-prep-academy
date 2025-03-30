@@ -94,6 +94,7 @@ export default function ApplicationProgressCard({
   const [isAttaching, setIsAttaching] = useState(false);
   const [selectionStep, setSelectionStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [attachingProgress, setAttachingProgress] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProgress = async () => {
@@ -192,9 +193,11 @@ export default function ApplicationProgressCard({
     if (!user?.id || !selectedDocumentType || !selectedDocument) return;
 
     setIsAttaching(true);
+    setAttachingProgress("Preparing document...");
 
     try {
       // Get the existing progress data
+      setAttachingProgress("Checking application status...");
       const { data, error } = await supabase
         .from("user_programs_progress")
         .select("id, content")
@@ -223,6 +226,7 @@ export default function ApplicationProgressCard({
         },
       };
 
+      setAttachingProgress("Updating application progress...");
       if (data?.id) {
         // Update existing record
         const { error: updateError } = await supabase
@@ -250,13 +254,89 @@ export default function ApplicationProgressCard({
         if (insertError) throw insertError;
       }
 
+      // Get document details
+      setAttachingProgress("Getting document details...");
+      const { data: documentData, error: documentError } = await supabase
+        .from("documents")
+        .select("name, type")
+        .eq("id", selectedDocument)
+        .single();
+
+      if (documentError) throw documentError;
+
+      // Get document version details
+      const { data: versionData, error: versionError } = await supabase
+        .from("document_versions")
+        .select("name, version_number")
+        .eq("id", versionId)
+        .single();
+
+      if (versionError) throw versionError;
+
+      // Get program details
+      setAttachingProgress("Getting program details...");
+      const { data: programData, error: programError } = await supabase
+        .from("programs")
+        .select("name, school_id")
+        .eq("id", programId)
+        .single();
+
+      if (programError) throw programError;
+
+      // Get school name
+      let schoolName = "Unknown School";
+      if (programData.school_id) {
+        const { data: schoolData } = await supabase
+          .from("schools")
+          .select("name")
+          .eq("id", programData.school_id)
+          .single();
+
+        if (schoolData) {
+          schoolName = schoolData.name;
+        }
+      }
+
+      // Create event in user_program_event table
+      setAttachingProgress("Recording event...");
+      const documentType = selectedDocumentType === "cv" ? "Resume" : "Statement of Purpose";
+      const actionType = `${selectedDocumentType}_attached`;
+      const today = new Date().toISOString().split("T")[0]; // Get just the date part
+
+      const { error: eventError } = await supabase
+        .from("user_program_event")
+        .insert({
+          user_id: user.id,
+          program_id: programId,
+          action_type: actionType,
+          start_date: today,
+          end_date: today,
+          title: `${documentType} Sent to ${schoolName}`,
+          description: `You sent your ${documentType} to ${programData.name} at ${schoolName}.`,
+          content: {
+            document_id: selectedDocument,
+            document_version_id: versionId,
+            document_name: documentData.name,
+            document_type: documentData.type,
+            version_name: versionData.name || `Version ${versionData.version_number}`,
+            program_name: programData.name,
+            school_name: schoolName,
+          },
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+
+      if (eventError) throw eventError;
+
       // Update local state
+      setAttachingProgress("Finalizing...");
       setProgressData(progressContent as ProgressData);
       toast.success(`Successfully attached document to your application`);
     } catch (error) {
       console.error("Error attaching document:", error);
       toast.error("Failed to attach document to your application");
     } finally {
+      setAttachingProgress(null);
       setIsAttaching(false);
     }
   };
@@ -418,7 +498,7 @@ export default function ApplicationProgressCard({
     return (
       <>
         <DrawerHeader className="flex items-center bg-sand">
-          {selectionStep === 2 && (
+          {selectionStep === 2 && !isAttaching && (
             <button
               onClick={goBackToDocuments}
               className="mr-2 p-1 rounded-full hover:bg-bronze/10"
@@ -427,24 +507,49 @@ export default function ApplicationProgressCard({
             </button>
           )}
           <DrawerTitle className="text-black">
-            {selectionStep === 1 ? `Select ${documentType}` : `Select Version`}
+            {isAttaching
+              ? "Attaching Document"
+              : selectionStep === 1
+                ? `Select ${documentType}`
+                : `Select Version`}
           </DrawerTitle>
         </DrawerHeader>
 
         <div className="px-4 pb-2 bg-sand">
-          <div className="flex items-center w-full mb-6">
-            <div className={`h-2 flex-1 rounded-full bg-skyblue`}></div>
-            <div className="mx-2 text-bronze/70 text-xs">
-              Step {selectionStep} of 2
+          {isAttaching ? (
+            <div className="flex flex-col items-center w-full py-2">
+              <div className="h-2 w-full rounded-full bg-skyblue relative overflow-hidden">
+                <div className="absolute inset-0 bg-skyblue/40 animate-pulse"></div>
+              </div>
+              <div className="mt-2 text-bronze/70 text-xs">
+                {attachingProgress || "Processing..."}
+              </div>
             </div>
-            <div
-              className={`h-2 flex-1 rounded-full ${selectionStep === 2 ? `bg-skyblue` : "bg-bronze/20"}`}
-            ></div>
-          </div>
+          ) : (
+            <div className="flex items-center w-full mb-6">
+              <div className={`h-2 flex-1 rounded-full bg-skyblue`}></div>
+              <div className="mx-2 text-bronze/70 text-xs">
+                Step {selectionStep} of 2
+              </div>
+              <div
+                className={`h-2 flex-1 rounded-full ${selectionStep === 2 ? `bg-skyblue` : "bg-bronze/20"}`}
+              ></div>
+            </div>
+          )}
         </div>
 
         <div className="p-4 max-h-[60vh] overflow-y-auto bg-sand">
-          {isDocumentsLoading ? (
+          {isAttaching ? (
+            <div className="flex flex-col items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-skyblue mb-4" />
+              <p className="text-bronze text-center">
+                Attaching your {documentType.toLowerCase()} to the application...
+              </p>
+              <p className="text-xs text-bronze/70 mt-2 text-center">
+                This may take a moment
+              </p>
+            </div>
+          ) : isDocumentsLoading ? (
             <div className="flex justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-bronze" />
             </div>
@@ -494,7 +599,9 @@ export default function ApplicationProgressCard({
                     whileTap={{ scale: 0.98 }}
                     disabled={isAttaching}
                     onClick={() => attachDocumentToProgram(version.id)}
-                    className={`w-full p-4 border border-bronze/20 rounded-lg flex items-center justify-between hover:bg-skyblue/10 hover:border-skyblue`}
+                    className={`w-full p-4 border border-bronze/20 rounded-lg flex items-center justify-between hover:bg-skyblue/10 hover:border-skyblue ${
+                      isAttaching ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                   >
                     <div className="text-left">
                       <p className="font-medium text-black">
@@ -512,11 +619,13 @@ export default function ApplicationProgressCard({
         </div>
 
         <DrawerFooter className="flex-row gap-3 justify-end bg-sand">
-          <DrawerClose asChild>
-            <button className="px-4 py-2 text-sm font-medium text-bronze border border-bronze/20 rounded-lg hover:bg-bronze/10">
-              Cancel
-            </button>
-          </DrawerClose>
+          {!isAttaching && (
+            <DrawerClose asChild>
+              <button className="px-4 py-2 text-sm font-medium text-bronze border border-bronze/20 rounded-lg hover:bg-bronze/10">
+                Cancel
+              </button>
+            </DrawerClose>
+          )}
         </DrawerFooter>
       </>
     );

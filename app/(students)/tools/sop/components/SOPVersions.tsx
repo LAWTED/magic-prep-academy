@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Document_VERSIONS_METADATA } from "@/app/types";
+import LoadingCard from "@/app/components/LoadingCard";
+
 type SOPVersion = {
   id: string;
   document_id: string;
@@ -187,14 +189,13 @@ export default function SOPVersions({
     <div>
       <div className="space-y-4">
         {isLoading ? (
-          <div className="flex justify-center items-center py-12 bg-white rounded-xl shadow-sm border p-5">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="ml-2 text-gray-500">Loading versions...</span>
+          <div className="flex justify-center py-8">
+            <LoadingCard message="Loading versions..." />
           </div>
         ) : versions.length === 0 ? (
-          <div className="text-center py-12 px-4 bg-white rounded-xl shadow-sm border">
-            <p className="text-gray-500 mb-2">No versions found</p>
-            <p className="text-sm text-gray-400">
+          <div className="text-center py-12 px-4 bg-sand rounded-xl shadow-sm border border-bronze/20">
+            <p className="text-black mb-2">No versions found</p>
+            <p className="text-sm text-bronze/80">
               This SOP doesn't have any versions yet
             </p>
           </div>
@@ -202,7 +203,7 @@ export default function SOPVersions({
           versions.map((version) => (
             <div
               key={version.id}
-              className={`bg-white rounded-xl shadow-sm border p-5 hover:border-blue-200 transition-colors ${
+              className={`bg-sand rounded-xl shadow-sm border border-bronze/20 p-5 hover:border-bronze/40 transition-colors ${
                 editingVersion !== version.id ? "cursor-pointer" : ""
               }`}
               onClick={() => handleCardClick(version)}
@@ -217,13 +218,13 @@ export default function SOPVersions({
                       type="text"
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
-                      className="flex-1 border rounded-lg p-2 mr-2"
+                      className="flex-1 border border-bronze/30 rounded-lg p-2 mr-2 bg-sand/70"
                       autoFocus
                     />
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={(e) => handleSaveEdit(version.id, e)}
-                      className="text-green-600"
+                      className="text-bronze"
                     >
                       <CheckCircle size={18} />
                     </motion.button>
@@ -231,21 +232,21 @@ export default function SOPVersions({
                 ) : (
                   <>
                     <div className="flex items-center">
-                      <h3 className="font-medium text-lg">
+                      <h3 className="font-medium text-lg text-bronze">
                         {version.name || `Version ${version.version_number}`}
                       </h3>
                       {version.version_number ===
                         Math.max(...versions.map((v) => v.version_number)) && (
-                        <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">
+                        <span className="ml-2 bg-gold/30 text-bronze text-xs px-2 py-0.5 rounded-full">
                           Latest
                         </span>
                       )}
                     </div>
                     <div className="flex items-center">
-                      <span className="text-xs text-gray-500 mr-2">
+                      <span className="text-xs text-black mr-2">
                         {formatDate(version.created_at)}
                       </span>
-                      <ChevronRight size={16} className="text-gray-400" />
+                      <ChevronRight size={16} className="text-bronze" />
                     </div>
                   </>
                 )}
@@ -254,7 +255,7 @@ export default function SOPVersions({
               <div className="flex flex-wrap gap-2 mt-4">
                 <motion.button
                   whileTap={{ scale: 0.95 }}
-                  className="text-xs bg-amber-50 text-amber-600 hover:bg-amber-100 py-1.5 px-3 rounded-lg flex items-center"
+                  className="text-xs bg-gold/50 text-bronze hover:bg-gold/70 py-1.5 px-3 rounded-lg flex items-center"
                   onClick={(e) => handleStartEdit(version, e)}
                 >
                   <Edit size={14} className="mr-1.5" />
@@ -263,7 +264,7 @@ export default function SOPVersions({
 
                 <motion.button
                   whileTap={{ scale: 0.95 }}
-                  className="text-xs bg-red-50 text-red-600 hover:bg-red-100 py-1.5 px-3 rounded-lg flex items-center"
+                  className="text-xs bg-red-50 text-tomato bg-tomato/30  py-1.5 px-3 rounded-lg flex items-center"
                   onClick={(e) => handleDeleteVersion(version.id, e)}
                 >
                   <Trash2 size={14} className="mr-1.5" />

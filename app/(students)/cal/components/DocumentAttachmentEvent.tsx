@@ -1,30 +1,33 @@
 "use client";
 
-import { Mail } from "lucide-react";
+import { FileText } from "lucide-react";
 import { motion } from "framer-motion";
-import { themeConfig } from "@/app/config/themeConfig";
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { ProgramInfoSkeleton } from "./DeadlineEvent";
 
-interface LORMilestoneProps {
+interface DocumentAttachmentEventProps {
   event: {
     id: string;
     title: string;
     description: string;
     start_date: string;
     program_id: string;
+    action_type: string; // "cv_attached" or "sop_attached"
     content?: {
-      mentor_name?: string;
-      school_name?: string;
-      program_name?: string;
       document_id?: string;
+      document_version_id?: string;
+      document_name?: string;
+      document_type?: string;
+      version_name?: string;
+      program_name?: string;
+      school_name?: string;
       [key: string]: any;
     };
   };
 }
 
-// 根据项目ID获取项目和学校信息
+// Program info component (reused from LORMilestone)
 function ProgramInfo({ programId }: { programId: string }) {
   const [programName, setProgramName] = useState<string>("");
   const [schoolName, setSchoolName] = useState<string>("");
@@ -34,7 +37,7 @@ function ProgramInfo({ programId }: { programId: string }) {
   useEffect(() => {
     async function fetchProgramInfo() {
       try {
-        // 获取项目信息
+        // Get program info
         const { data: programData, error: programError } = await supabase
           .from("programs")
           .select("name, content, school_id")
@@ -46,13 +49,13 @@ function ProgramInfo({ programId }: { programId: string }) {
           return;
         }
 
-        // 设置项目名称
+        // Set program name
         const displayName =
           programData.name ||
           (programData.content?.name ? programData.content.name : "Program");
         setProgramName(displayName);
 
-        // 获取学校信息
+        // Get school info
         if (programData.school_id) {
           const { data: schoolData, error: schoolError } = await supabase
             .from("schools")
@@ -88,29 +91,33 @@ function ProgramInfo({ programId }: { programId: string }) {
   );
 }
 
-export default function LORMilestone({ event }: LORMilestoneProps) {
-  // 尝试从描述中解析内容
+export default function DocumentAttachmentEvent({
+  event,
+}: DocumentAttachmentEventProps) {
   const content = event.content || {};
+  const isCV = event.action_type === "cv_attached";
 
   return (
     <motion.div
       initial={{ x: -10, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="p-3 rounded-lg hover:bg-sand/80 transition-colors border-l-4 border-grass bg-sand"
+      className="p-3 rounded-lg hover:bg-sand/80 transition-colors border-l-4 border-skyblue bg-sand"
     >
       <div className="flex-1">
-        <h3 className="font-semibold text-black">{event.title}</h3>
+        <h3 className="font-semibold text-black">
+          {event.title ||
+            (isCV ? "Resume Attached" : "Statement of Purpose Attached")}
+        </h3>
 
-        <div className=" text-sm text-bronze/80 space-y-1">
-          {/* 推荐信特有信息 */}
-          {content.mentor_name && <p>Mentor: {content.mentor_name}</p>}
-          {content.school_name && <p>School: {content.school_name}</p>}
-          {content.program_name && <p>Program: {content.program_name}</p>}
+        <div className="text-sm text-bronze/80 space-y-1">
+          {/* Document specific info */}
+          {content.document_name && <p>Document: {content.document_name}</p>}
+          {content.version_name && <p>Version: {content.version_name}</p>}
 
-          {/* 如果没有解析到结构化内容，显示原始描述 */}
-          {!content.mentor_name &&
-            !content.school_name &&
-            event.description && <p>{event.description}</p>}
+          {/* If no structured content, show original description */}
+          {!content.document_name && event.description && (
+            <p>{event.description}</p>
+          )}
         </div>
       </div>
     </motion.div>

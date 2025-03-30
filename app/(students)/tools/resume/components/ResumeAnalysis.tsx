@@ -5,6 +5,7 @@ import { FileText, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { ResumeAnalysisData } from "@/app/types";
+import LoadingCard from "@/app/components/LoadingCard";
 
 type ResumeAnalysisProps = {
   resumeContent: any;
@@ -69,21 +70,20 @@ export default function ResumeAnalysis({
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-        <p className="text-gray-600">Analyzing your resume content...</p>
+      <div className="flex flex-col items-center justify-center py-8">
+        <LoadingCard message="Analyzing your resume content..." />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="border border-red-200 bg-red-50 rounded-xl p-6 my-4">
+      <div className="border border-bronze/20 bg-sand rounded-xl p-6 my-4">
         <div className="flex items-start">
-          <AlertCircle className="text-red-600 mr-3 mt-0.5 flex-shrink-0" size={20} />
+          <AlertCircle className="text-tomato mr-3 mt-0.5 flex-shrink-0" size={20} />
           <div>
-            <h3 className="font-semibold text-red-700 mb-1">Analysis Failed</h3>
-            <p className="text-sm text-red-700">{error}</p>
+            <h3 className="font-semibold text-tomato mb-1">Analysis Failed</h3>
+            <p className="text-sm text-black">{error}</p>
           </div>
         </div>
       </div>
@@ -96,24 +96,24 @@ export default function ResumeAnalysis({
 
   return (
     <div className="space-y-6">
-      <div className="border rounded-xl p-6">
+      <div className="border border-bronze/20 bg-sand rounded-xl p-6">
         <div className="flex items-center mb-4">
-          <FileText className="text-blue-600 mr-3" size={24} />
+          <FileText className="text-bronze mr-3" size={24} />
           <div className="flex-1">
-            <p className="font-medium">{fileName || "Resume Content Analysis"}</p>
+            <p className="font-medium text-bronze">{fileName || "Resume Content Analysis"}</p>
           </div>
         </div>
 
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
-            <h3 className="font-semibold">Overall Score</h3>
-            <span className="text-xl font-bold">
+            <h3 className="font-semibold text-bronze">Overall Score</h3>
+            <span className="text-xl font-bold text-bronze">
               {analysisData.overallScore}/100
             </span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2.5">
+          <div className="w-full bg-yellow/30 rounded-full h-2.5">
             <div
-              className="bg-blue-600 h-2.5 rounded-full"
+              className="bg-bronze h-2.5 rounded-full"
               style={{ width: `${analysisData.overallScore}%` }}
             ></div>
           </div>
@@ -121,83 +121,83 @@ export default function ResumeAnalysis({
 
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div>
-            <p className="text-sm text-gray-500 mb-1">Content</p>
+            <p className="text-sm text-bronze mb-1">Content</p>
             <div className="flex items-center">
-              <div className="w-full bg-gray-200 rounded-full h-2 mr-2">
+              <div className="w-full bg-yellow/30 rounded-full h-2 mr-2">
                 <div
-                  className="bg-green-500 h-2 rounded-full"
+                  className="bg-grass h-2 rounded-full"
                   style={{ width: `${analysisData.scores.content.score}%` }}
                 ></div>
               </div>
-              <span className="text-xs font-medium">
+              <span className="text-xs font-medium text-bronze">
                 {analysisData.scores.content.score}
               </span>
             </div>
-            <p className="text-xs mt-1 text-gray-600">{analysisData.scores.content.feedback}</p>
+            <p className="text-xs mt-1 text-black">{analysisData.scores.content.feedback}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500 mb-1">Quality</p>
+            <p className="text-sm text-bronze mb-1">Quality</p>
             <div className="flex items-center">
-              <div className="w-full bg-gray-200 rounded-full h-2 mr-2">
+              <div className="w-full bg-yellow/30 rounded-full h-2 mr-2">
                 <div
-                  className="bg-yellow-500 h-2 rounded-full"
+                  className="bg-gold h-2 rounded-full"
                   style={{ width: `${analysisData.scores.quality.score}%` }}
                 ></div>
               </div>
-              <span className="text-xs font-medium">
+              <span className="text-xs font-medium text-bronze">
                 {analysisData.scores.quality.score}
               </span>
             </div>
-            <p className="text-xs mt-1 text-gray-600">{analysisData.scores.quality.feedback}</p>
+            <p className="text-xs mt-1 text-black">{analysisData.scores.quality.feedback}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500 mb-1">Impact</p>
+            <p className="text-sm text-bronze mb-1">Impact</p>
             <div className="flex items-center">
-              <div className="w-full bg-gray-200 rounded-full h-2 mr-2">
+              <div className="w-full bg-yellow/30 rounded-full h-2 mr-2">
                 <div
-                  className="bg-blue-500 h-2 rounded-full"
+                  className="bg-skyblue h-2 rounded-full"
                   style={{ width: `${analysisData.scores.impact.score}%` }}
                 ></div>
               </div>
-              <span className="text-xs font-medium">
+              <span className="text-xs font-medium text-bronze">
                 {analysisData.scores.impact.score}
               </span>
             </div>
-            <p className="text-xs mt-1 text-gray-600">{analysisData.scores.impact.feedback}</p>
+            <p className="text-xs mt-1 text-black">{analysisData.scores.impact.feedback}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500 mb-1">Clarity</p>
+            <p className="text-sm text-bronze mb-1">Clarity</p>
             <div className="flex items-center">
-              <div className="w-full bg-gray-200 rounded-full h-2 mr-2">
+              <div className="w-full bg-yellow/30 rounded-full h-2 mr-2">
                 <div
-                  className="bg-red-500 h-2 rounded-full"
+                  className="bg-tomato h-2 rounded-full"
                   style={{ width: `${analysisData.scores.clarity.score}%` }}
                 ></div>
               </div>
-              <span className="text-xs font-medium">
+              <span className="text-xs font-medium text-bronze">
                 {analysisData.scores.clarity.score}
               </span>
             </div>
-            <p className="text-xs mt-1 text-gray-600">{analysisData.scores.clarity.feedback}</p>
+            <p className="text-xs mt-1 text-black">{analysisData.scores.clarity.feedback}</p>
           </div>
         </div>
 
         <div className="mt-4 mb-2">
-          <h3 className="font-semibold text-sm mb-2">Overall Feedback</h3>
-          <p className="text-sm text-gray-700">{analysisData.overallFeedback}</p>
+          <h3 className="font-semibold text-sm text-bronze mb-2">Overall Feedback</h3>
+          <p className="text-sm text-black">{analysisData.overallFeedback}</p>
         </div>
       </div>
 
       {/* Action Steps */}
-      <div className="border rounded-xl p-6">
-        <h3 className="font-semibold mb-4">Improvement Suggestions</h3>
+      <div className="border border-bronze/20 bg-sand rounded-xl p-6">
+        <h3 className="font-semibold text-bronze mb-4">Improvement Suggestions</h3>
         <ul className="space-y-3">
           {analysisData.actionableSteps.map((step, index) => (
             <li key={index} className="flex items-start">
-              <span className="w-6 h-6 flex items-center justify-center bg-amber-100 text-amber-600 rounded-full shrink-0 mr-3">
+              <span className="w-6 h-6 flex items-center justify-center bg-gold/40 text-bronze rounded-full shrink-0 mr-3">
                 {index + 1}
               </span>
-              <p className="text-sm">{step}</p>
+              <p className="text-sm text-black">{step}</p>
             </li>
           ))}
         </ul>

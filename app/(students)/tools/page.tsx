@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { FileText, Award, BookOpen, FileCode } from "lucide-react";
+import { FileText, Award, BookOpen, FileCode, Wrench } from "lucide-react";
 
 export default function ToolsPage() {
   const tools = [
@@ -13,8 +13,8 @@ export default function ToolsPage() {
       icon: Award,
       href: "/tools/lor",
       description: "Create and manage recommendation letters",
-      color: "bg-purple-100",
-      iconColor: "text-purple-600",
+      color: "bg-sand",
+      iconColor: "text-bronze",
     },
     {
       name: "Resume",
@@ -22,8 +22,8 @@ export default function ToolsPage() {
       icon: FileText,
       href: "/tools/resume",
       description: "Build and optimize your resume",
-      color: "bg-blue-100",
-      iconColor: "text-blue-600",
+      color: "bg-sand",
+      iconColor: "text-bronze",
     },
     {
       name: "SoP",
@@ -31,8 +31,8 @@ export default function ToolsPage() {
       icon: BookOpen,
       href: "/tools/sop",
       description: "Create compelling statements of purpose",
-      color: "bg-green-100",
-      iconColor: "text-green-600",
+      color: "bg-sand",
+      iconColor: "text-bronze",
     },
     {
       name: "PHS",
@@ -40,31 +40,31 @@ export default function ToolsPage() {
       icon: FileCode,
       href: "/tools/phs",
       description: "Craft your personal history statement",
-      color: "bg-amber-100",
-      iconColor: "text-amber-600",
+      color: "bg-sand",
+      iconColor: "text-bronze",
     },
   ];
 
   return (
-    <div className="p-4 flex flex-col gap-4">
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold">Tools</h1>
-        <p className="text-gray-600">Boost your application process</p>
-      </div>
+    <div className="p-4 flex flex-col gap-4 bg-yellow">
+      <h2 className="text-lg font-bold bg-gold py-4 z-10 text-bronze rounded-lg px-4 shadow-sm mb-4 flex items-center gap-2">
+        <Wrench className="w-5 h-5 text-bronze" />
+        Tools
+      </h2>
 
       <div className="grid grid-cols-2 gap-4">
         {tools.map((tool) => (
           <Link key={tool.name} href={tool.href}>
             <motion.div
               whileTap={{ scale: 0.95 }}
-              className={`rounded-xl ${tool.color} p-4 h-full flex flex-col justify-between shadow-sm`}
+              className={`rounded-xl ${tool.color} p-4 h-full flex flex-col justify-between shadow-sm border border-bronze/20`}
             >
               <div className={`${tool.iconColor} mb-2`}>
                 <tool.icon size={24} />
               </div>
               <div>
-                <h3 className="font-bold text-lg">{tool.name}</h3>
-                <p className="text-xs text-gray-700">{tool.fullName}</p>
+                <h3 className="font-bold text-lg text-black">{tool.name}</h3>
+                <p className="text-xs text-cement">{tool.fullName}</p>
               </div>
             </motion.div>
           </Link>

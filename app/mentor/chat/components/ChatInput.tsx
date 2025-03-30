@@ -1,7 +1,7 @@
 import { RefreshCw, Send } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ChatPerson } from "./types";
+import { ChatPerson } from "@/app/(students)/chat/components/types";
 
 type ChatInputProps = {
   onSendMessage: (message: string) => void;
@@ -9,7 +9,11 @@ type ChatInputProps = {
   placeholder?: string;
 };
 
-export function ChatInput({ onSendMessage, isDisabled = false, placeholder = "Type a message..." }: ChatInputProps) {
+export function ChatInput({
+  onSendMessage,
+  isDisabled = false,
+  placeholder = "Type a message...",
+}: ChatInputProps) {
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -41,8 +45,8 @@ export function ChatInput({ onSendMessage, isDisabled = false, placeholder = "Ty
   };
 
   return (
-    <div className="px-4 py-2 ">
-      <div className="flex border border-bronze/20 rounded-xl overflow-hidden bg-sand shadow-sm">
+    <div className="px-4 py-2">
+      <div className="flex border rounded-xl overflow-hidden">
         <div className="flex-1 relative">
           <textarea
             ref={inputRef}
@@ -53,7 +57,7 @@ export function ChatInput({ onSendMessage, isDisabled = false, placeholder = "Ty
             }}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
-            className="w-full px-4 py-3 resize-none focus:outline-none text-sm md:text-base border-none bg-sand text-black placeholder:text-bronze/30"
+            className="w-full px-4 py-3 resize-none focus:outline-none text-sm md:text-base border-none"
             rows={1}
             style={{ maxHeight: "120px" }}
           />
@@ -66,8 +70,8 @@ export function ChatInput({ onSendMessage, isDisabled = false, placeholder = "Ty
             disabled={!inputValue.trim() || isDisabled}
             className={`rounded-full p-2 ${
               inputValue.trim() && !isDisabled
-                ? "bg-gold text-bronze"
-                : "bg-sand/50 text-bronze/70"
+                ? "bg-primary text-white"
+                : "bg-gray-200 text-gray-500"
             }`}
           >
             {isDisabled ? (

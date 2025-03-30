@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import SOPVersions from "../components/SOPVersions";
 import TextPreview from "@/app/components/TextPreview";
 import { Document_METADATA, Document_VERSIONS_METADATA } from "@/app/types";
+import LoadingCard from "@/app/components/LoadingCard";
 
 type SOPDocument = {
   id: string;
@@ -75,7 +76,7 @@ export default function SOPVersionsPage() {
     } catch (error) {
       console.error("Error fetching SOP document:", error);
       setError(
-        "Failed to load SOP. It might not exist or you may not have permission to view it.",
+        "Failed to load SOP. It might not exist or you may not have permission to view it."
       );
       toast.error("Failed to load SOP document");
     } finally {
@@ -129,14 +130,14 @@ export default function SOPVersionsPage() {
   const renderPreview = () => {
     if (!latestVersion || !latestVersion.metadata?.content) {
       return (
-        <div className="bg-white rounded-xl shadow-sm border p-5 mb-6">
+        <div className="bg-sand rounded-xl shadow-sm border border-bronze/20 p-5 mb-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold flex items-center">
-              <Eye size={18} className="mr-2 text-gray-500" />
+            <h2 className="text-lg font-semibold flex items-center text-bronze">
+              <Eye size={18} className="mr-2 text-bronze" />
               No Content Available
             </h2>
           </div>
-          <p className="text-gray-500">
+          <p className="text-black">
             This SOP doesn't have any content available for preview.
           </p>
         </div>
@@ -144,13 +145,14 @@ export default function SOPVersionsPage() {
     }
 
     return (
-      <div className="bg-white rounded-xl shadow-sm border p-5 mb-6">
+      <div className="bg-sand rounded-xl shadow-sm border border-bronze/20 p-5 mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold flex items-center">
-            <Eye size={18} className="mr-2 text-gray-500" />
-            Latest Preview ({latestVersion.name || "Version " + latestVersion.version_number})
+          <h2 className="text-lg font-semibold flex items-center text-bronze">
+            <Eye size={18} className="mr-2 text-bronze" />
+            Latest Preview (
+            {latestVersion.name || "Version " + latestVersion.version_number})
           </h2>
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-cement">
             {new Date(latestVersion.created_at).toLocaleDateString()}
           </span>
         </div>
@@ -158,7 +160,7 @@ export default function SOPVersionsPage() {
         <TextPreview
           content={latestVersion.metadata.content}
           maxHeight="max-h-64"
-          className="text-gray-800"
+          className="text-black"
           fileName={`sop-version-${latestVersion.version_number}.pdf`}
         />
       </div>
@@ -166,28 +168,30 @@ export default function SOPVersionsPage() {
   };
 
   return (
-    <div className="p-4 pb-20 w-full">
+    <div className="p-4 pb-20 w-full bg-yellow">
       <div className="flex items-center mb-6">
         <Link href="/tools/sop">
           <motion.div
             whileTap={{ scale: 0.9 }}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100"
+            className="w-10 h-10 flex items-center justify-center rounded-full  text-bronze"
           >
             <ArrowLeft size={20} />
           </motion.div>
         </Link>
         {isLoading ? (
-          <h1 className="ml-3 text-2xl font-bold">Loading SOP...</h1>
+          <h1 className="ml-3 text-2xl font-bold text-bronze">
+            Loading SOP...
+          </h1>
         ) : (
-          <h1 className="ml-3 text-2xl font-bold">
+          <h1 className="ml-3 text-2xl font-bold text-bronze">
             {sopDocument?.name || "SOP Not Found"}
           </h1>
         )}
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+        <div className="flex justify-center py-8">
+          <LoadingCard message="Loading SOP..." />
         </div>
       ) : sopDocument ? (
         <>
@@ -198,7 +202,7 @@ export default function SOPVersionsPage() {
               onClick={() => {
                 router.push(`/tools/sop/${documentId}/edit`);
               }}
-              className="flex items-center gap-1 py-2 px-4 bg-blue-100 text-blue-600 rounded-full font-medium"
+              className="flex items-center gap-1 py-2 px-4 bg-gold text-bronze rounded-lg font-medium"
             >
               <Edit size={16} />
               <span>Edit</span>
@@ -229,18 +233,18 @@ export default function SOPVersionsPage() {
                 } else {
                   // If there's no SOP content
                   toast.info(
-                    "No SOP content available to share with the mentor",
+                    "No SOP content available to share with the mentor"
                   );
                 }
               }}
-              className="flex items-center gap-1 py-2 px-4 bg-purple-100 text-purple-600 rounded-full font-medium"
+              className="flex items-center gap-1 py-2 px-4 bg-sand text-skyblue rounded-lg font-medium"
             >
               <MessageCircle size={16} />
-              <span>Chat with PhD</span>
+              <span>Ask PhD Mentor</span>
             </motion.button>
 
             <div className="flex items-center ml-auto">
-              <div className="flex items-center gap-1 py-1 px-3 bg-emerald-100 text-emerald-700 rounded-full">
+              <div className="flex items-center gap-1 py-1 px-3 bg-lime text-grass rounded-lg">
                 <MessageCircle size={14} />
                 <span className="text-sm font-medium">
                   {feedbackCount}{" "}
@@ -252,7 +256,9 @@ export default function SOPVersionsPage() {
 
           {renderPreview()}
 
-          <h2 className="text-xl font-semibold mb-4">Version History</h2>
+          <h2 className="text-xl font-semibold mb-4 text-bronze">
+            Version History
+          </h2>
           <SOPVersions
             documentId={documentId}
             documentName={sopDocument?.name || ""}
@@ -261,10 +267,10 @@ export default function SOPVersionsPage() {
           />
         </>
       ) : (
-        <div className="text-center py-8 bg-white rounded-xl shadow-sm border p-5">
-          <p className="text-gray-500 mb-2">SOP not found</p>
+        <div className="text-center py-8 bg-sand rounded-xl shadow-sm border border-bronze/20 p-5">
+          <p className="text-black mb-2">SOP not found</p>
           <Link href="/tools/sop">
-            <span className="text-blue-600 hover:underline">
+            <span className="text-bronze hover:underline">
               Return to SOP List
             </span>
           </Link>

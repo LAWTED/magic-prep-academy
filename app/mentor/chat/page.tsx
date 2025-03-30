@@ -16,15 +16,15 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChatMessage } from "@/app/(students)/chat/components/ChatMessage";
-import { ChatInput } from "@/app/(students)/chat/components/ChatInput";
+import { ChatMessage } from "@/app/mentor/chat/components/ChatMessage";
+import { ChatInput } from "@/app/mentor/chat/components/ChatInput";
 import { motion } from "framer-motion";
 import {
   ChatPerson,
   Message as ChatMessageType,
 } from "@/app/(students)/chat/components/types";
 import useFcmToken from "@/hooks/useFcmToken";
-import { NotificationToggle } from "@/app/(students)/chat/components/NotificationToggle";
+import { NotificationToggle } from "@/app/mentor/chat/components/NotificationToggle";
 
 interface Message {
   id: string;
@@ -80,7 +80,7 @@ function MentorChat() {
   const supabase = createClient();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const userIdParam = searchParams.get("userId");
+  const userIdParam = searchParams?.get("userId");
   const [mentorProfile, setMentorProfile] = useState<any>(null);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
@@ -246,14 +246,17 @@ function MentorChat() {
         // Fetch student's FCM token for notifications
         if (selectedSession.student_id) {
           const { data: studentData, error: studentError } = await supabase
-            .from('users')
-            .select('fcm_token')
-            .eq('id', selectedSession.student_id)
+            .from("users")
+            .select("fcm_token")
+            .eq("id", selectedSession.student_id)
             .single();
 
           if (!studentError && studentData?.fcm_token) {
             setStudentFcmToken(studentData.fcm_token);
-            console.log("Student FCM token fetched:", studentData.fcm_token.substring(0, 10) + "...");
+            console.log(
+              "Student FCM token fetched:",
+              studentData.fcm_token.substring(0, 10) + "..."
+            );
           } else {
             console.log("Could not fetch student FCM token:", studentError);
           }
@@ -268,7 +271,10 @@ function MentorChat() {
   useEffect(() => {
     if (!selectedChatId || !mentorProfile) return;
 
-    console.log("Setting up realtime subscription for chat ID:", selectedChatId);
+    console.log(
+      "Setting up realtime subscription for chat ID:",
+      selectedChatId
+    );
 
     // 使用一个简单的通道名称
     const channelId = `chat-${selectedChatId}`;
@@ -344,7 +350,7 @@ function MentorChat() {
 
     try {
       // 立即更新本地消息列表，以便快速显示消息
-      setMessages(prevMessages => [...prevMessages, newMessage]);
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
 
       // Get current messages from database
       const { data, error } = await supabase
@@ -400,7 +406,7 @@ function MentorChat() {
               senderName: mentorProfile.name,
               token: studentFcmToken,
               message: inputText,
-              chatSessionId: selectedChatId
+              chatSessionId: selectedChatId,
             }),
           });
         } catch (notifyError) {
@@ -471,9 +477,9 @@ function MentorChat() {
             />
           )}
 
-        <button className="text-gray-400 cursor-not-allowed" disabled>
-          <Cog size={24} />
-        </button>
+          <button className="text-gray-400 cursor-not-allowed" disabled>
+            <Cog size={24} />
+          </button>
         </div>
       </header>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import APAPreview from "../../../tools/resume/components/APAPreview";
+import APAPreview from "@/app/(students)/tools/resume/components/APAPreview";
 
 interface ResumePreviewProps {
   resumeData: any;
@@ -14,7 +14,7 @@ export default function ResumePreview({
   if (!resumeData) return null;
 
   return (
-    <div className="mt-4 border-t pt-4 border-bronze">
+    <div className="mt-4 border-t pt-4">
       <APAPreview
         resumeData={resumeData.content || resumeData}
         fileName={"Resume"}

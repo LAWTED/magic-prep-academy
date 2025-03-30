@@ -6,7 +6,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
-import { toast } from "sonner";
 
 interface LoRRequestPreviewProps {
   requestId: string;
@@ -83,7 +82,7 @@ export default function LoRRequestPreview({
 
     } catch (error) {
       console.error('Error updating LOR request:', error);
-      toast.error('There was an error updating the request. Please try again.');
+      alert('There was an error updating the request. Please try again.');
     } finally {
       setIsUpdating(false);
     }
@@ -93,13 +92,13 @@ export default function LoRRequestPreview({
   const getStatusIcon = () => {
     switch (status) {
       case 'accepted':
-        return <Check size={16} className="text-success" />;
+        return <Check size={16} className="text-green-600" />;
       case 'rejected':
-        return <X size={16} className="text-error" />;
+        return <X size={16} className="text-red-600" />;
       case 'completed':
-        return <Award size={16} className="text-info" />;
+        return <Award size={16} className="text-blue-600" />;
       default:
-        return <Clock size={16} className="text-warning" />;
+        return <Clock size={16} className="text-yellow-600" />;
     }
   };
 
@@ -107,13 +106,13 @@ export default function LoRRequestPreview({
   const getStatusBadgeClass = () => {
     switch (status) {
       case 'accepted':
-        return 'bg-success/20 text-success';
+        return 'bg-green-100 text-green-800';
       case 'rejected':
-        return 'bg-error/20 text-error';
+        return 'bg-red-100 text-red-800';
       case 'completed':
-        return 'bg-info/20 text-info';
+        return 'bg-blue-100 text-blue-800';
       default:
-        return 'bg-warning/20 text-warning';
+        return 'bg-yellow-100 text-yellow-800';
     }
   };
 
@@ -134,12 +133,12 @@ export default function LoRRequestPreview({
   };
 
   return (
-    <div className="mt-4 border-t pt-4 border-bronze">
-      <div className="bg-sand rounded-lg p-4 border border-bronze/20">
+    <div className="mt-4 border-t pt-4">
+      <div className="bg-purple-50 rounded-lg p-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center">
-            <FileText size={18} className="text-bronze mr-2" />
-            <h3 className="text-bronze font-medium">LOR Request</h3>
+            <FileText size={18} className="text-purple-600 mr-2" />
+            <h3 className="text-purple-800 font-medium">Letter of Recommendation Request</h3>
           </div>
 
           <div className={`px-2 py-1 rounded-full text-xs flex items-center ${getStatusBadgeClass()}`}>
@@ -148,7 +147,7 @@ export default function LoRRequestPreview({
           </div>
         </div>
 
-        <p className="text-sm text-bronze/80 mb-3">
+        <p className="text-sm text-purple-700 mb-3">
           For {programName} at {schoolName}
         </p>
 
@@ -161,7 +160,7 @@ export default function LoRRequestPreview({
                 whileTap={{ scale: 0.95 }}
                 onClick={() => handleUpdateStatus('accepted')}
                 disabled={isUpdating}
-                className="flex-1 py-2 rounded-lg font-medium bg-success text-white text-sm flex items-center justify-center"
+                className="flex-1 py-2 rounded-lg font-medium bg-green-600 text-white text-sm flex items-center justify-center"
               >
                 {isUpdating ? (
                   <span className="flex items-center">
@@ -180,7 +179,7 @@ export default function LoRRequestPreview({
                 whileTap={{ scale: 0.95 }}
                 onClick={() => handleUpdateStatus('rejected')}
                 disabled={isUpdating}
-                className="flex-1 py-2 rounded-lg font-medium bg-error text-white text-sm flex items-center justify-center"
+                className="flex-1 py-2 rounded-lg font-medium bg-red-600 text-white text-sm flex items-center justify-center"
               >
                 {isUpdating ? (
                   <span className="flex items-center">
@@ -202,7 +201,7 @@ export default function LoRRequestPreview({
             <Link href={lorPath} className="block w-full">
               <motion.button
                 whileTap={{ scale: 0.95 }}
-                className="w-full py-2 rounded-lg font-medium bg-skyblue text-white text-sm flex items-center justify-center"
+                className="w-full py-2 rounded-lg font-medium bg-purple-600 text-white text-sm flex items-center justify-center"
               >
                 <ExternalLink size={14} className="mr-1" />
                 {status === 'accepted' ? 'View Recommendation Letter' :

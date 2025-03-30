@@ -9,6 +9,7 @@ import {
   Stamp,
   GraduationCap,
   Mail,
+  File,
 } from "lucide-react";
 import { QUIZ_TYPES } from "./const";
 
@@ -75,6 +76,14 @@ export const themeConfig = {
     recommendation_letter_sent: {
       color: "bg-lime/30 text-grass border-lime/30",
       icon: Mail,
+    },
+    cv_attached: {
+      color: "bg-skyblue/20 text-skyblue border-skyblue/20",
+      icon: FileText,
+    },
+    sop_attached: {
+      color: "bg-skyblue/20 text-skyblue border-skyblue/20",
+      icon: FileText,
     },
   } as const,
 

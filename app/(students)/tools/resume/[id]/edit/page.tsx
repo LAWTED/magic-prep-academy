@@ -18,23 +18,31 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 // Custom header component to match ChatHeader style
-function ResumeEditorHeader({ selectedPerson, documentId }: { selectedPerson: ChatPerson, documentId: string }) {
+function ResumeEditorHeader({
+  selectedPerson,
+  documentId,
+}: {
+  selectedPerson: ChatPerson;
+  documentId: string;
+}) {
   return (
-    <header className="sticky top-0 z-10 w-full p-4 flex items-center justify-between border-b bg-background">
+    <header className="sticky top-0 z-10 w-full p-4 flex items-center justify-between  bg-gold shadow-md">
       <div className="flex items-center gap-2">
         <Link href={`/tools/resume/${documentId}`}>
-          <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-            <ArrowLeft size={18} />
+          <button className="p-2 rounded-full  transition-colors">
+            <ArrowLeft size={18} className="text-bronze" />
           </button>
         </Link>
 
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 flex items-center justify-center overflow-hidden rounded-full">
-            <div className="w-full h-full flex items-center justify-center bg-blue-100">
-              <selectedPerson.icon className={`h-5 w-5 ${selectedPerson.color}`} />
+          <div className="w-10 h-10 flex items-center justify-center overflow-hidden rounded-full border-4 border-sand">
+            <div className="w-full h-full flex items-center justify-center bg-gold text-bronze">
+              <selectedPerson.icon
+                className={`h-5 w-5 bg-gold text-bronze`}
+              />
             </div>
           </div>
-          <h1 className="text-xl font-bold">{selectedPerson.name}</h1>
+          <h1 className="text-xl font-bold text-bronze">{selectedPerson.name}</h1>
         </div>
       </div>
     </header>
@@ -262,7 +270,10 @@ function ResumeEdit() {
   return (
     <div className="flex flex-col h-full">
       {/* Use the custom header component */}
-      <ResumeEditorHeader selectedPerson={selectedPerson} documentId={documentId} />
+      <ResumeEditorHeader
+        selectedPerson={selectedPerson}
+        documentId={documentId}
+      />
 
       <div className="flex-1 flex flex-col overflow-y-auto">
         {isLoading ? (

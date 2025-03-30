@@ -306,28 +306,28 @@ export default function FindMentorPage() {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 bg-yellow min-h-screen">
       <div className="flex items-center mb-6">
         <Link href="/tools/lor">
           <motion.div
             whileTap={{ scale: 0.9 }}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100"
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-sand text-bronze"
           >
             <ArrowLeft size={20} />
           </motion.div>
         </Link>
-        <h1 className="ml-3 text-2xl font-bold">Request a Letter</h1>
+        <h1 className="ml-3 text-2xl font-bold text-bronze">Request a Letter</h1>
       </div>
 
       {/* Progress Bar */}
       <div className="w-full mb-8">
-        <div className="w-full bg-gray-200 rounded-full h-2.5">
+        <div className="w-full bg-bronze rounded-full h-2.5">
           <div
-            className="bg-purple-600 h-2.5 rounded-full transition-all duration-300 ease-out"
+            className="bg-lime h-2.5 rounded-full transition-all duration-300 ease-out"
             style={{ width: `${(step / totalSteps) * 100}%` }}
           ></div>
         </div>
-        <div className="flex justify-between mt-2 text-xs text-gray-500">
+        <div className="flex justify-between mt-2 text-xs text-bronze/70">
           <span>Request a recommendation letter</span>
           <span>
             {step}/{totalSteps}
@@ -348,20 +348,20 @@ export default function FindMentorPage() {
           {/* Step 1: Select a Mentor */}
           {step === 1 && (
             <div className="space-y-6">
-              <div className="rounded-xl bg-purple-50 p-6 shadow-sm">
-                <h2 className="text-xl font-semibold mb-2">Select a Mentor</h2>
-                <p className="text-gray-700 mb-4">
+              <div className="rounded-xl bg-sand border border-bronze/20 p-6 shadow-sm">
+                <h2 className="text-xl font-semibold mb-2 text-bronze">Select a Mentor</h2>
+                <p className="text-bronze/80 mb-4">
                   Choose a mentor who can provide a recommendation for your applications.
                 </p>
 
                 {/* Search input */}
                 <div className="relative mb-6">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search size={18} className="text-gray-400" />
+                    <Search size={18} className="text-bronze/50" />
                   </div>
                   <input
                     type="text"
-                    className="bg-white w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="bg-yellow/50 w-full pl-10 pr-4 py-2 rounded-lg border border-bronze/30 focus:outline-none focus:ring-2 focus:ring-gold/50 text-bronze"
                     placeholder="Search mentors by name or subject"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -371,7 +371,7 @@ export default function FindMentorPage() {
                 {/* Mentors list */}
                 {isLoading ? (
                   <div className="flex justify-center py-10">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-500"></div>
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gold"></div>
                   </div>
                 ) : filteredMentors.length > 0 ? (
                   <div className="space-y-3 max-h-[400px] overflow-y-auto">
@@ -382,12 +382,12 @@ export default function FindMentorPage() {
                         onClick={() => setSelectedMentor(mentor.id === selectedMentor ? null : mentor.id)}
                         className={`p-4 rounded-lg border ${
                           selectedMentor === mentor.id
-                            ? "border-purple-500 bg-purple-50"
-                            : "border-gray-200 bg-white"
+                            ? "border-gold bg-yellow/50"
+                            : "border-bronze/20 bg-sand/70"
                         } cursor-pointer transition-all duration-200`}
                       >
                         <div className="flex items-center">
-                          <div className="w-12 h-12 rounded-full bg-purple-200 flex items-center justify-center overflow-hidden">
+                          <div className="w-12 h-12 rounded-full bg-yellow/50 flex items-center justify-center overflow-hidden">
                             {mentor.avatar_name ? (
                               <Image
                                 src={`/images/avatars/${mentor.avatar_name}.png`}
@@ -401,30 +401,30 @@ export default function FindMentorPage() {
                                   const parent = e.currentTarget.parentElement;
                                   if (parent) {
                                     const span = document.createElement('span');
-                                    span.className = 'font-bold text-purple-700';
+                                    span.className = 'font-bold text-bronze';
                                     span.innerText = mentor.name.charAt(0);
                                     parent.appendChild(span);
                                   }
                                 }}
                               />
                             ) : (
-                              <span className="font-bold text-purple-700">{mentor.name.charAt(0)}</span>
+                              <span className="font-bold text-bronze">{mentor.name.charAt(0)}</span>
                             )}
                           </div>
                           <div className="ml-3 flex-1">
-                            <h3 className="font-semibold text-lg">{mentor.name}</h3>
-                            <p className="text-sm text-gray-600">{getMentorSubjects(mentor)}</p>
+                            <h3 className="font-semibold text-lg text-bronze">{mentor.name}</h3>
+                            <p className="text-sm text-bronze/70">{getMentorSubjects(mentor)}</p>
                           </div>
                           <div className={`w-6 h-6 rounded-full border-2 ${
                             selectedMentor === mentor.id
-                              ? "border-purple-500 bg-purple-500"
-                              : "border-gray-300"
+                              ? "border-gold bg-gold"
+                              : "border-bronze/30"
                           } flex items-center justify-center`}>
                             {selectedMentor === mentor.id && (
                               <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
-                                className="w-3 h-3 bg-white rounded-full"
+                                className="w-3 h-3 bg-sand rounded-full"
                               />
                             )}
                           </div>
@@ -434,7 +434,7 @@ export default function FindMentorPage() {
                   </div>
                 ) : (
                   <div className="py-8 text-center">
-                    <p className="text-gray-500">No mentors found matching your search.</p>
+                    <p className="text-bronze/50">No mentors found matching your search.</p>
                   </div>
                 )}
 
@@ -445,8 +445,8 @@ export default function FindMentorPage() {
                   onClick={nextStep}
                   className={`mt-6 w-full py-3 rounded-lg font-semibold
                     ${selectedMentor
-                      ? "bg-purple-600 text-white"
-                      : "bg-gray-200 text-gray-500 cursor-not-allowed"}`}
+                      ? "bg-gold/70 text-bronze"
+                      : "bg-sand/50 text-bronze/50 cursor-not-allowed"}`}
                 >
                   Continue
                 </motion.button>
@@ -457,20 +457,20 @@ export default function FindMentorPage() {
           {/* Step 2: Select a Program */}
           {step === 2 && (
             <div className="space-y-6">
-              <div className="rounded-xl bg-purple-50 p-6 shadow-sm">
-                <h2 className="text-xl font-semibold mb-2">Select a Program</h2>
-                <p className="text-gray-700 mb-4">
+              <div className="rounded-xl bg-sand border border-bronze/20 p-6 shadow-sm">
+                <h2 className="text-xl font-semibold mb-2 text-bronze">Select a Program</h2>
+                <p className="text-bronze/80 mb-4">
                   Choose the program you're applying to.
                 </p>
 
                 {/* Search input */}
                 <div className="relative mb-6">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search size={18} className="text-gray-400" />
+                    <Search size={18} className="text-bronze/50" />
                   </div>
                   <input
                     type="text"
-                    className="bg-white w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="bg-yellow/50 w-full pl-10 pr-4 py-2 rounded-lg border border-bronze/30 focus:outline-none focus:ring-2 focus:ring-gold/50 text-bronze"
                     placeholder="Search programs or schools"
                     value={programSearchQuery}
                     onChange={(e) => setProgramSearchQuery(e.target.value)}
@@ -480,7 +480,7 @@ export default function FindMentorPage() {
                 {/* Programs list */}
                 {isLoading ? (
                   <div className="flex justify-center py-10">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-500"></div>
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gold"></div>
                   </div>
                 ) : filteredPrograms.length > 0 ? (
                   <div className="space-y-3 max-h-[400px] overflow-y-auto">
@@ -491,27 +491,27 @@ export default function FindMentorPage() {
                         onClick={() => setSelectedProgram(program.id === selectedProgram ? null : program.id)}
                         className={`p-4 rounded-lg border ${
                           selectedProgram === program.id
-                            ? "border-purple-500 bg-purple-50"
-                            : "border-gray-200 bg-white"
+                            ? "border-gold bg-yellow/50"
+                            : "border-bronze/20 bg-sand/70"
                         } cursor-pointer transition-all duration-200`}
                       >
                         <div className="flex items-center">
                           <div className="ml-0 flex-1">
-                            <h3 className="font-semibold text-lg">{program.name}</h3>
-                            <p className="text-sm text-gray-600">
+                            <h3 className="font-semibold text-lg text-bronze">{program.name}</h3>
+                            <p className="text-sm text-bronze/70">
                               {schools.find(s => s.id === program.school_id)?.name}
                             </p>
                           </div>
                           <div className={`w-6 h-6 rounded-full border-2 ${
                             selectedProgram === program.id
-                              ? "border-purple-500 bg-purple-500"
-                              : "border-gray-300"
+                              ? "border-gold bg-gold"
+                              : "border-bronze/30"
                           } flex items-center justify-center`}>
                             {selectedProgram === program.id && (
                               <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
-                                className="w-3 h-3 bg-white rounded-full"
+                                className="w-3 h-3 bg-sand rounded-full"
                               />
                             )}
                           </div>
@@ -521,7 +521,7 @@ export default function FindMentorPage() {
                   </div>
                 ) : (
                   <div className="py-8 text-center">
-                    <p className="text-gray-500">No programs found matching your search.</p>
+                    <p className="text-bronze/50">No programs found matching your search.</p>
                   </div>
                 )}
 
@@ -530,7 +530,7 @@ export default function FindMentorPage() {
                   <motion.button
                     whileTap={{ scale: 0.95 }}
                     onClick={prevStep}
-                    className="w-1/3 py-3 rounded-lg font-semibold bg-gray-200 text-gray-700"
+                    className="w-1/3 py-3 rounded-lg font-semibold bg-sand/50 text-bronze"
                   >
                     Back
                   </motion.button>
@@ -541,8 +541,8 @@ export default function FindMentorPage() {
                     onClick={nextStep}
                     className={`w-2/3 py-3 rounded-lg font-semibold
                       ${selectedProgram
-                        ? "bg-purple-600 text-white"
-                        : "bg-gray-200 text-gray-500 cursor-not-allowed"}`}
+                        ? "bg-gold/70 text-bronze"
+                        : "bg-sand/50 text-bronze/50 cursor-not-allowed"}`}
                   >
                     Continue
                   </motion.button>
@@ -554,9 +554,9 @@ export default function FindMentorPage() {
           {/* Step 3: Add Notes */}
           {step === 3 && (
             <div className="space-y-6">
-              <div className="rounded-xl bg-purple-50 p-6 shadow-sm">
-                <h2 className="text-xl font-semibold mb-2">Add Notes</h2>
-                <p className="text-gray-700 mb-4">
+              <div className="rounded-xl bg-sand border border-bronze/20 p-6 shadow-sm">
+                <h2 className="text-xl font-semibold mb-2 text-bronze">Add Notes</h2>
+                <p className="text-bronze/80 mb-4">
                   Add any additional notes for your mentor about your recommendation request.
                 </p>
 
@@ -566,29 +566,29 @@ export default function FindMentorPage() {
                     placeholder="Enter any details about your application, achievements, or specific points you'd like your mentor to highlight..."
                     value={notes}
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value)}
-                    className="w-full min-h-[150px] rounded-lg border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full min-h-[150px] rounded-lg border border-bronze/30 p-3 focus:outline-none focus:ring-2 focus:ring-gold/50 bg-yellow/50 text-bronze"
                   />
                 </div>
 
                 {/* Summary section */}
-                <div className="bg-white p-4 rounded-lg mb-6">
-                  <h3 className="font-semibold text-lg mb-2">Request Summary</h3>
+                <div className="bg-yellow/20 p-4 rounded-lg mb-6 border border-bronze/10">
+                  <h3 className="font-semibold text-lg mb-2 text-bronze">Request Summary</h3>
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Mentor:</span>
-                      <span className="font-medium">
+                      <span className="text-bronze/70">Mentor:</span>
+                      <span className="font-medium text-bronze">
                         {mentors.find(m => m.id === selectedMentor)?.name || ""}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Program:</span>
-                      <span className="font-medium">
+                      <span className="text-bronze/70">Program:</span>
+                      <span className="font-medium text-bronze">
                         {programs.find(p => p.id === selectedProgram)?.name || ""}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">School:</span>
-                      <span className="font-medium">
+                      <span className="text-bronze/70">School:</span>
+                      <span className="font-medium text-bronze">
                         {getSchoolName(selectedProgram || "")}
                       </span>
                     </div>
@@ -600,7 +600,7 @@ export default function FindMentorPage() {
                   <motion.button
                     whileTap={{ scale: 0.95 }}
                     onClick={prevStep}
-                    className="w-1/3 py-3 rounded-lg font-semibold bg-gray-200 text-gray-700"
+                    className="w-1/3 py-3 rounded-lg font-semibold bg-sand/50 text-bronze"
                   >
                     Back
                   </motion.button>
@@ -609,7 +609,7 @@ export default function FindMentorPage() {
                     whileTap={{ scale: 0.95 }}
                     onClick={handleSubmit}
                     disabled={submitting}
-                    className="w-2/3 py-3 rounded-lg font-semibold bg-purple-600 text-white"
+                    className="w-2/3 py-3 rounded-lg font-semibold bg-gold/70 text-bronze"
                   >
                     {submitting ? "Submitting..." : "Submit Request"}
                   </motion.button>

@@ -15,6 +15,7 @@ import { useUserStore } from "@/store/userStore";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Document_METADATA } from "@/app/types";
+import LoadingCard from "@/app/components/LoadingCard";
 
 type ResumeItem = {
   id: string;
@@ -132,104 +133,95 @@ export default function ResumeList() {
   return (
     <div className="space-y-4">
       {isLoading ? (
-        <div className="flex justify-center items-center p-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <span className="ml-2 text-gray-500">Loading resumes...</span>
+        <div className="flex justify-center py-8">
+          <LoadingCard message="Loading resumes..." />
         </div>
       ) : resumes.length === 0 ? (
-        <div className="text-center py-12 px-4 border rounded-xl bg-gray-50">
-          <p className="text-gray-500 mb-2">No resumes found</p>
-          <p className="text-sm text-gray-400">
-            Use the Upload Resume button to get started
-          </p>
+        <div className="text-center py-8 text-black">
+          <p>You haven't uploaded any resumes yet.</p>
         </div>
       ) : (
-        resumes.map((resume) => (
-          <div
-            key={resume.id}
-            className="border rounded-xl p-5 hover:border-blue-200 transition-colors cursor-pointer relative"
-            onClick={() => handleViewVersions(resume)}
-          >
-            {editMode === resume.id ? (
+        <div className="space-y-4">
+          {resumes.map((resume) => (
+            <div
+              key={resume.id}
+              className="border-b border-bronze/10 pb-4 last:border-0 last:pb-0"
+              onClick={() => handleViewVersions(resume)}
+            >
+              {editMode === resume.id ? (
+                <div
+                  className="flex items-center mb-3"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="flex-1 border rounded-lg p-2 mr-2"
+                    autoFocus
+                  />
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={(e) => handleSaveEdit(resume.id, e)}
+                    className="text-green-600"
+                  >
+                    <CheckCircle size={18} />
+                  </motion.button>
+                </div>
+              ) : (
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-medium text-black">{resume.name}</h3>
+                    <p className="text-sm text-bronze">
+                      {resume.metadata?.format || "Unknown"} Format
+                    </p>
+                    <p className="text-xs text-cement mt-1">
+                      Updated on {formatDate(resume.updated_at)}
+                    </p>
+                  </div>
+                  <div className="flex items-center bg-gold/30 px-3 py-1 rounded-full">
+                    <span className="text-xs capitalize text-bronze">
+                      Resume
+                    </span>
+                  </div>
+                </div>
+              )}
+
               <div
-                className="flex items-center mb-3"
+                className="flex flex-wrap gap-2 mt-3"
                 onClick={(e) => e.stopPropagation()}
               >
-                <input
-                  type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="flex-1 border rounded-lg p-2 mr-2"
-                  autoFocus
-                />
                 <motion.button
                   whileTap={{ scale: 0.95 }}
-                  onClick={(e) => handleSaveEdit(resume.id, e)}
-                  className="text-green-600"
+                  className="text-sm font-medium bg-skyblue/20 hover:bg-skyblue/30 text-skyblue py-1.5 px-3 rounded-lg flex items-center"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewVersions(resume);
+                  }}
                 >
-                  <CheckCircle size={18} />
+                  <Eye size={14} className="mr-1.5" />
+                  View Versions
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={(e) => handleStartEdit(resume, e)}
+                  className="py-2 px-3 rounded-lg font-medium text-sm bg-gold/70 text-bronze flex items-center justify-center"
+                >
+                  <Edit size={14} className="mr-1.5" />
+                  Rename
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={(e) => handleDelete(resume.id, e)}
+                  className="py-2 px-3 rounded-lg font-medium text-sm bg-tomato/30 text-tomato flex items-center justify-center"
+                >
+                  <Trash2 size={14} className="mr-1.5" />
+                  Delete
                 </motion.button>
               </div>
-            ) : (
-              <div className="flex justify-between items-center mb-3">
-                <div className="flex items-center">
-                  <h3 className="font-medium text-lg">{resume.name}</h3>
-                </div>
-                <div className="flex items-center">
-                  <span className="text-xs text-gray-500 mr-2">
-                    {formatDate(resume.updated_at)}
-                  </span>
-                  <ChevronRight size={16} className="text-gray-400" />
-                </div>
-              </div>
-            )}
-
-            <div className="flex flex-wrap items-center text-sm mb-4 text-gray-600">
-              <span className="bg-gray-100 rounded-full px-3 py-1 text-xs mr-2 mb-1">
-                {resume.metadata?.format || "Unknown"} Format
-              </span>
-              {resume.metadata?.original_file_name && (
-                <span className="text-xs truncate max-w-[250px]">
-                  From: {resume.metadata.original_file_name}
-                </span>
-              )}
             </div>
-
-            <div
-              className="flex flex-wrap gap-2"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                className="text-xs bg-gray-100 hover:bg-gray-200 py-1.5 px-3 rounded-lg flex items-center"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleViewVersions(resume);
-                }}
-              >
-                <Eye size={14} className="mr-1.5" />
-                View Versions
-              </motion.button>
-
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={(e) => handleStartEdit(resume, e)}
-                className="text-xs bg-amber-50 text-amber-600 hover:bg-amber-100 py-1.5 px-3 rounded-lg flex items-center"
-              >
-                <Edit size={14} className="mr-1.5" />
-                Rename
-              </motion.button>
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={(e) => handleDelete(resume.id, e)}
-                className="text-xs bg-red-50 text-red-600 hover:bg-red-100 py-1.5 px-3 rounded-lg flex items-center"
-              >
-                <Trash2 size={14} className="mr-1.5" />
-                Delete
-              </motion.button>
-            </div>
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </div>
   );

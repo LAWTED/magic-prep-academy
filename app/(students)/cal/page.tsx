@@ -435,6 +435,35 @@ function Calendar() {
     return getRecommendationLetterEvents(date).length > 0;
   };
 
+  // Get document attachment events (CV/SOP) for a date
+  const getDocumentAttachmentEvents = (date: Date | null) => {
+    if (!date) return [];
+
+    // Use the date's year, month, and day parts for comparison to avoid timezone issues
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const dateStr = `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
+
+    return events.filter((event) => {
+      // Get the date parts of the event dates
+      const startDateParts = event.start_date.split("T")[0];
+      const endDateParts = event.end_date.split("T")[0];
+
+      return (
+        dateStr >= startDateParts &&
+        dateStr <= endDateParts &&
+        (event.action_type === "cv_attached" || event.action_type === "sop_attached")
+      );
+    });
+  };
+
+  // Check if date has document attachment events
+  const hasDocumentAttachmentEvents = (date: Date | null) => {
+    if (!date) return false;
+    return getDocumentAttachmentEvents(date).length > 0;
+  };
+
   // Check if date has school-specific events
   const hasSchoolEvents = (date: Date | null) => {
     if (!date) return false;
@@ -472,6 +501,8 @@ function Calendar() {
   // Get all events for a date (now only returns database events)
   const getAllEventsForDate = (date: Date | null) => {
     if (!date) return [];
+
+    // Just return all events from the database - document events are already included
     return getEventsForDate(date);
   };
 
@@ -538,7 +569,13 @@ function Calendar() {
       return "/images/cal/stamp.png";
     }
 
-    // If no common events, check for recommendation letter events
+    // If no common events, check for document attachment events (CV/SOP)
+    const documentEvents = getDocumentAttachmentEvents(date);
+    if (documentEvents.length > 0) {
+      return "/images/cal/document_added.png"; // Using a document icon for CV/SOP attachments
+    }
+
+    // If no document events, check for recommendation letter events
     const recommendationEvents = getRecommendationLetterEvents(date);
     if (recommendationEvents.length > 0) {
       return "/images/cal/application_materials.png"; // Using application materials icon for recommendation letters
@@ -741,7 +778,7 @@ function Calendar() {
                   >
                     <IconComponent size={10} />
                   </div>
-                  <span className="font-medium text-bronze">{event.title}</span>
+                  <span className="font-medium text-black">{event.title}</span>
                 </div>
                 <span className="text-xs text-bronze/70 block ">
                   {getTimeframe(event.start_date, event.end_date)}
@@ -782,6 +819,7 @@ function Calendar() {
               const isSelected = isSelectedDate(day);
               const dateHasSchoolEvents = hasSchoolEvents(day);
               const hasLorEvents = hasRecommendationLetterEvents(day);
+              const hasDocEvents = hasDocumentAttachmentEvents(day);
               const commonTimelineColor = getCommonTimelineColorForDate(day);
               const schoolEvents = day ? getSchoolEventsForDate(day) : [];
               const eventImage = getEventImageForDate(day);
@@ -819,7 +857,7 @@ function Calendar() {
                   {/* 事件指示器容器 - hidden when selected */}
                   <AnimatePresence>
                     {day &&
-                      (dateHasSchoolEvents || hasLorEvents) &&
+                      (dateHasSchoolEvents || hasLorEvents || hasDocEvents) &&
                       !(isSelected && (eventImage || true)) && (
                         <motion.div
                           initial={{ opacity: 1 }}
@@ -834,6 +872,11 @@ function Calendar() {
                           {/* 推荐信里程碑指示器 */}
                           {hasLorEvents && (
                             <div className="h-1 w-4 rounded-full bg-grass"></div>
+                          )}
+
+                          {/* 文档附件指示器 */}
+                          {hasDocEvents && (
+                            <div className="h-1 w-4 rounded-full bg-skyblue"></div>
                           )}
                         </motion.div>
                       )}
@@ -897,12 +940,8 @@ function Calendar() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h2 className="text-lg font-medium mb-4 text-bronze">
-            {selectedDate.toLocaleDateString(undefined, {
-              weekday: "long",
-              month: "long",
-              day: "numeric",
-            })}
+          <h2 className="text-lg font-medium mb-4 text-black">
+            {selectedDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
           </h2>
 
           {loading ? (

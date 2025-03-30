@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import ResumeVersions from "../components/ResumeVersions";
 import APAPreview from "../components/APAPreview";
 import { Document_METADATA, Document_VERSIONS_METADATA } from "@/app/types";
+import LoadingCard from "@/app/components/LoadingCard";
 
 type ResumeDocument = {
   id: string;
@@ -108,14 +109,14 @@ export default function ResumeVersionsPage() {
   const renderPreview = () => {
     if (!latestVersion) {
       return (
-        <div className="bg-white rounded-xl shadow-sm border p-5 mb-6">
+        <div className="bg-sand rounded-xl shadow-sm border border-bronze/20 p-5 mb-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold flex items-center">
-              <Eye size={18} className="mr-2 text-gray-500" />
+            <h2 className="text-lg font-semibold flex items-center text-bronze">
+              <Eye size={18} className="mr-2 text-bronze" />
               No Versions Available
             </h2>
           </div>
-          <p className="text-gray-500">
+          <p className="text-black">
             This resume doesn't have any versions yet. Edit the resume to create
             a new version.
           </p>
@@ -124,29 +125,30 @@ export default function ResumeVersionsPage() {
     }
 
     return (
-      <div className="bg-white rounded-xl shadow-sm border p-5 mb-6">
+      <div className="bg-sand rounded-xl shadow-sm border border-bronze/20 p-5 mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold flex items-center">
-            <Eye size={18} className="mr-2 text-gray-500" />
-            Latest Preview ({latestVersion.name || "Version " + latestVersion.version_number})
+          <h2 className="text-lg font-semibold flex items-center text-bronze">
+            <Eye size={18} className="mr-2 text-bronze" />
+            Latest Preview (
+            {latestVersion.name || "Version " + latestVersion.version_number})
           </h2>
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-cement">
             {new Date(latestVersion.created_at).toLocaleDateString()}
           </span>
         </div>
 
         <div className="prose max-w-none">
           {typeof latestVersion.metadata.content === "string" ? (
-            <div className="apa-format font-serif leading-loose whitespace-pre-wrap p-6 bg-slate-50 border border-slate-200 rounded-md">
+            <div className="apa-format font-serif leading-loose whitespace-pre-wrap p-6 bg-yellow/30 border border-bronze/10 rounded-md">
               {/* APA Format Styling */}
               <div className="text-center mb-8">
-                <h1 className="text-2xl font-bold mb-1">
+                <h1 className="text-2xl font-bold mb-1 text-bronze">
                   {resumeDocument?.name}
                 </h1>
-                <p className="text-sm mb-2">{user?.email}</p>
-                <p className="text-sm">Magic Prep Academy</p>
+                <p className="text-sm mb-2 text-black">{user?.email}</p>
+                <p className="text-sm text-black">Magic Prep Academy</p>
               </div>
-              <div className="apa-content">
+              <div className="apa-content text-black">
                 {latestVersion.metadata.content}
               </div>
             </div>
@@ -160,11 +162,11 @@ export default function ResumeVersionsPage() {
         </div>
 
         {latestVersion.name && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <h3 className="text-sm font-medium text-gray-700 mb-1">
+          <div className="mt-4 pt-4 border-t border-bronze/10">
+            <h3 className="text-sm font-medium text-bronze mb-1">
               Version Name:
             </h3>
-            <p className="text-sm text-gray-600">{latestVersion.name}</p>
+            <p className="text-sm text-black">{latestVersion.name}</p>
           </div>
         )}
       </div>
@@ -185,34 +187,36 @@ export default function ResumeVersionsPage() {
   };
 
   return (
-    <div className="p-4 pb-20 w-full">
+    <div className="p-4 pb-20 w-full bg-yellow">
       <div className="flex items-center mb-6">
         <Link href="/tools/resume">
           <motion.div
             whileTap={{ scale: 0.9 }}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100"
+            className="w-10 h-10 flex items-center justify-center rounded-full  text-bronze"
           >
             <ArrowLeft size={20} />
           </motion.div>
         </Link>
         {isLoading ? (
-          <h1 className="ml-3 text-2xl font-bold">Loading Resume...</h1>
+          <h1 className="ml-3 text-2xl font-bold text-bronze">
+            Loading Resume...
+          </h1>
         ) : (
-          <h1 className="ml-3 text-2xl font-bold">
+          <h1 className="ml-3 text-2xl font-bold text-bronze">
             {resumeDocument?.name || "Resume Not Found"}
           </h1>
         )}
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+        <div className="flex justify-center py-8">
+          <LoadingCard message="Loading resume..." />
         </div>
       ) : error ? (
-        <div className="text-center py-8 bg-white rounded-xl shadow-sm border p-5">
-          <p className="text-red-500 mb-2">{error}</p>
+        <div className="text-center py-8 bg-sand rounded-xl shadow-sm border border-bronze/20 p-5">
+          <p className="text-tomato mb-2">{error}</p>
           <Link href="/tools/resume">
-            <span className="text-blue-600 hover:underline">
+            <span className="text-bronze hover:underline">
               Return to Resume List
             </span>
           </Link>
@@ -252,7 +256,7 @@ export default function ResumeVersionsPage() {
                   toast.info("No resume data available to edit");
                 }
               }}
-              className="flex items-center gap-1 py-2 px-4 bg-blue-100 text-blue-600 rounded-full font-medium"
+              className="flex items-center gap-1 py-2 px-4 bg-gold text-bronze rounded-lg font-medium"
             >
               <Edit size={16} />
               <span>Edit</span>
@@ -292,10 +296,10 @@ export default function ResumeVersionsPage() {
                   );
                 }
               }}
-              className="flex items-center gap-1 py-2 px-4 bg-purple-100 text-purple-600 rounded-full font-medium"
+              className="flex items-center gap-1 py-2 px-4 bg-sand text-skyblue rounded-lg font-medium"
             >
               <MessageCircle size={16} />
-              <span>Chat with PhD</span>
+              <span>Ask PhD Mentor</span>
             </motion.button>
           </div>
 
@@ -311,10 +315,10 @@ export default function ResumeVersionsPage() {
           />
         </>
       ) : (
-        <div className="text-center py-8 bg-white rounded-xl shadow-sm border p-5">
-          <p className="text-gray-500 mb-2">Resume not found</p>
+        <div className="text-center py-8 bg-sand rounded-xl shadow-sm border border-bronze/20 p-5">
+          <p className="text-black mb-2">Resume not found</p>
           <Link href="/tools/resume">
-            <span className="text-blue-600 hover:underline">
+            <span className="text-bronze hover:underline">
               Return to Resume List
             </span>
           </Link>

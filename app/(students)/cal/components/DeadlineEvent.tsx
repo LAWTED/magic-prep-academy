@@ -100,7 +100,7 @@ export default function DeadlineEvent({ event }: DeadlineEventProps) {
       <div className="flex-1">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-bronze">{event.title}</h3>
+            <h3 className="font-semibold text-black">{event.title}</h3>
             {isPastDeadline && (
               <span className="text-xs bg-gold/40 text-bronze px-2 py-0.5 rounded-full">
                 Past Due

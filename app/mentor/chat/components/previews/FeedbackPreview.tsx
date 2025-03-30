@@ -22,7 +22,7 @@ export default function FeedbackPreview({
   suggestionsCount,
 }: FeedbackPreviewProps) {
   return (
-    <div className="mt-4 border-t pt-4 border-bronze">
+    <div className="mt-4 border-t pt-4">
       <div className="bg-blue-50 rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center">

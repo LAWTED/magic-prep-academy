@@ -96,26 +96,17 @@ export default function ResumeVersionDetailPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
-        <p className="text-gray-600">Loading resume version...</p>
-      </div>
-    );
-  }
-
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <div className="w-full max-w-3xl bg-red-50 border border-red-200 rounded-xl p-6">
-          <h2 className="text-xl text-red-700 font-medium mb-2">
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-yellow">
+        <div className="w-full max-w-3xl bg-sand border border-bronze/20 rounded-xl p-6">
+          <h2 className="text-xl text-tomato font-medium mb-2">
             Error Loading Resume
           </h2>
-          <p className="text-red-600">{error}</p>
+          <p className="text-black">{error}</p>
           <button
             onClick={handleBack}
-            className="mt-4 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            className="mt-4 px-4 py-2 bg-gold text-bronze rounded-lg hover:bg-gold/80 transition-colors"
           >
             Go Back
           </button>
@@ -124,21 +115,34 @@ export default function ResumeVersionDetailPage() {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-yellow">
+        <Loader2 className="h-8 w-8 text-bronze animate-spin" />
+        <p className="mt-4 text-bronze">Loading resume...</p>
+      </div>
+    );
+  }
+
+  const hasResumeData = resumeData && typeof resumeData === 'object' && Object.keys(resumeData).length > 0;
+
   return (
-    <div className="min-h-screen p-4 md:p-6">
+    <div className="min-h-screen p-4 md:p-6 bg-yellow">
       <div className="w-full max-w-5xl mx-auto">
         {/* Header */}
         <div className="flex items-center mb-6">
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={handleBack}
-            className="mr-4 p-2 rounded-full hover:bg-gray-100"
+            className="mr-4 p-2 rounded-full hover:bg-sand text-bronze"
           >
             <ArrowLeft size={20} />
           </motion.button>
           <div>
-            <h1 className="text-xl font-semibold">{documentName}</h1>
-            <p className="text-sm text-gray-500">
+            <h1 className="text-xl font-semibold text-bronze">
+              {documentName}
+            </h1>
+            <p className="text-sm text-bronze">
               {versionName || `Version ${versionNumber}`}
             </p>
           </div>
@@ -149,7 +153,7 @@ export default function ResumeVersionDetailPage() {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={handleAskMentor}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg flex items-center justify-center"
+            className="w-full bg-sand text-skyblue py-3 px-4 rounded-lg flex items-center justify-center"
           >
             <MessageCircle size={20} className="mr-2" />
             Ask PhD Mentor
@@ -157,7 +161,7 @@ export default function ResumeVersionDetailPage() {
         </div>
 
         {/* Analysis Section - Top */}
-        {Object.keys(resumeData).length > 0 && (
+        {hasResumeData && (
           <ResumeAnalysis
             resumeContent={resumeData}
             fileName={`${documentName} - ${versionName || `Version ${versionNumber}`}`}
@@ -167,18 +171,18 @@ export default function ResumeVersionDetailPage() {
         {/* Resume Content - Without Card Wrap */}
         <div className="mt-6">
           <div className="flex items-center mb-4">
-            <FileText className="text-blue-600 mr-3" size={20} />
-            <h2 className="text-lg font-medium">Resume Content</h2>
+            <FileText className="text-bronze mr-3" size={20} />
+            <h2 className="text-lg font-medium text-bronze">Resume Content</h2>
           </div>
 
-          {Object.keys(resumeData).length > 0 ? (
+          {hasResumeData ? (
             <APAPreview
               resumeData={resumeData}
               fileName={`${documentName} - ${versionName || `Version ${versionNumber}`}`}
             />
           ) : (
-            <div className="bg-white rounded-xl p-8 text-center">
-              <p className="text-gray-500">
+            <div className="bg-sand rounded-xl border border-bronze/20 p-8 text-center">
+              <p className="text-black">
                 No content available for this version
               </p>
             </div>

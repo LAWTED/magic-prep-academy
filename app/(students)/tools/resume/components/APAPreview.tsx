@@ -227,13 +227,13 @@ export default function APAPreview({
   };
 
   return (
-    <div className="bg-white rounded-lg border p-6 max-w-2xl mx-auto">
+    <div className="bg-sand text-black rounded-lg p-6 max-w-2xl mx-auto">
       {/* Header with actions */}
       <div className="mb-6 flex justify-end space-x-2">
         {documentId && (
           <motion.button
             whileTap={{ scale: 0.95 }}
-            className="p-2 rounded-full hover:bg-gray-100"
+            className="p-2 rounded-full  text-bronze"
             title="Save as new version"
             onClick={handleSave}
             disabled={isSaving}
@@ -246,7 +246,7 @@ export default function APAPreview({
         )}
         <motion.button
           whileTap={{ scale: 0.95 }}
-          className="p-2 rounded-full hover:bg-gray-100"
+          className="p-2 rounded-full  text-bronze"
           title="Download PDF"
           onClick={handleDownloadPDF}
         >

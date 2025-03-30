@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useUserStore } from "@/store/userStore";
 import { toast } from "sonner";
+import LoadingCard from "@/app/components/LoadingCard";
 
 interface RequestItem {
   id: string;
@@ -304,34 +305,38 @@ export default function LoRPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
-        return <FileCheck size={16} className="text-green-600" />;
+        return <FileCheck size={16} className="text-grass" />;
       case "finished":
-        return <CheckCircle size={16} className="text-blue-600" />;
+        return <CheckCircle size={16} className="text-skyblue" />;
       case "pending":
-        return <Clock size={16} className="text-yellow-600" />;
+        return <Clock size={16} className="text-bronze" />;
       default:
-        return <Clock size={16} className="text-gray-600" />;
+        return <Clock size={16} className="text-cement" />;
     }
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 bg-yellow">
       <div className="flex items-center mb-6">
         <Link href="/tools">
           <motion.div
             whileTap={{ scale: 0.9 }}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100"
+            className="w-10 h-10 flex items-center justify-center rounded-full text-bronze"
           >
             <ArrowLeft size={20} />
           </motion.div>
         </Link>
-        <h1 className="ml-3 text-2xl font-bold">Letter of Recommendation</h1>
+        <h1 className="ml-3 text-2xl font-bold text-bronze">
+          Letter of Recommendation
+        </h1>
       </div>
 
       <div className="space-y-6">
-        <div className="rounded-xl bg-purple-50 p-6 shadow-sm">
-          <h2 className="text-xl font-semibold mb-2">Request a Letter</h2>
-          <p className="text-gray-700 mb-4">
+        <div className="rounded-xl bg-sand p-6 shadow-sm border border-bronze/20">
+          <h2 className="text-xl font-semibold mb-2 text-bronze">
+            Request a Letter
+          </h2>
+          <p className="text-black mb-4">
             Get a recommendation letter from your mentors for your college
             applications.
           </p>
@@ -339,7 +344,7 @@ export default function LoRPage() {
           <Link href="/tools/lor/findmentor">
             <motion.button
               whileTap={{ scale: 0.95 }}
-              className="mt-4 w-full py-3 rounded-lg font-semibold bg-purple-600 text-white"
+              className="mt-4 w-full py-3 rounded-lg font-semibold bg-gold text-bronze"
             >
               Find a Mentor
             </motion.button>
@@ -348,7 +353,7 @@ export default function LoRPage() {
           <Link href="/chat?person=phd-mentor">
             <motion.button
               whileTap={{ scale: 0.95 }}
-              className="mt-3 w-full py-3 rounded-lg font-semibold bg-indigo-600 text-white"
+              className="mt-3 w-full py-3 rounded-lg font-semibold bg-gold/70 text-bronze"
             >
               Ask a PhD Mentor
             </motion.button>
@@ -356,34 +361,38 @@ export default function LoRPage() {
         </div>
 
         {/* Requests List */}
-        <div className="rounded-xl bg-white border border-gray-200 p-6 shadow-sm">
-          <h2 className="text-xl font-semibold mb-4">Your Requests</h2>
+        <div className="rounded-xl bg-sand border border-bronze/20 p-6 shadow-sm">
+          <h2 className="text-xl font-semibold mb-4 text-bronze">
+            Your Requests
+          </h2>
 
           {isLoading ? (
             <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+              <LoadingCard message="Loading requests..." />
             </div>
           ) : requests.length > 0 ? (
             <div className="space-y-4">
               {requests.map((request) => (
                 <div
                   key={request.id}
-                  className="border-b border-gray-100 pb-4 last:border-0 last:pb-0"
+                  className="border-b border-bronze/10 pb-4 last:border-0 last:pb-0"
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-medium">{request.program_name}</h3>
-                      <p className="text-sm text-gray-600">
+                      <h3 className="font-medium text-black">
+                        {request.program_name}
+                      </h3>
+                      <p className="text-sm text-bronze">
                         {request.school_name}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-cement mt-1">
                         Requested from {request.mentor_name} on{" "}
                         {request.created_at}
                       </p>
                     </div>
-                    <div className="flex items-center bg-gray-100 px-3 py-1 rounded-full">
+                    <div className="flex items-center bg-gold/30 px-3 py-1 rounded-full">
                       {getStatusIcon(request.status)}
-                      <span className="text-xs ml-1 capitalize">
+                      <span className="text-xs ml-1 capitalize text-bronze">
                         {request.status}
                       </span>
                     </div>
@@ -395,7 +404,7 @@ export default function LoRPage() {
                       whileTap={{ scale: 0.95 }}
                       onClick={() => sendToSchool(request)}
                       disabled={sendingToSchool === request.id}
-                      className="mt-3 w-full py-2 rounded-lg font-medium text-sm bg-blue-600 text-white flex items-center justify-center"
+                      className="mt-3 w-full py-2 rounded-lg font-medium text-sm bg-gold text-bronze flex items-center justify-center"
                     >
                       {sendingToSchool === request.id ? (
                         <span className="flex items-center">
@@ -414,7 +423,7 @@ export default function LoRPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-black">
               <p>You haven't made any requests yet.</p>
             </div>
           )}

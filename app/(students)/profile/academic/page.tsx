@@ -60,9 +60,33 @@ export default function AcademicProfilePage() {
 
         // Initialize data if doesn't exist
         if (!data) {
+          const defaultFormData = {
+            gpa: { score: undefined },
+            gre: {
+              verbal: undefined,
+              quantitative: undefined,
+              analytical: undefined,
+            },
+            languageScore: {
+              toefl: {
+                reading: undefined,
+                writing: undefined,
+                speaking: undefined,
+                listening: undefined,
+              },
+              ielts: {
+                reading: undefined,
+                writing: undefined,
+                speaking: undefined,
+                listening: undefined,
+              },
+              duolingo: { score: undefined },
+            },
+          };
+
           const newAcademicData = {
             user_id: user.id,
-            content: formData,
+            content: defaultFormData,
           };
 
           const { data: createdData, error: createError } = await supabase
@@ -75,20 +99,53 @@ export default function AcademicProfilePage() {
             console.error("Error creating academic data:", createError);
           } else {
             setAcademicData(createdData);
-            setFormData(createdData.content || formData);
+            setFormData(createdData.content || defaultFormData);
             console.log("Created new academic data:", createdData);
           }
         } else {
           setAcademicData(data);
           // Ensure we have a properly structured formData by merging with defaults
-          const mergedContent = {
-            gpa: { ...formData.gpa, ...(data.content?.gpa || {}) },
-            gre: { ...formData.gre, ...(data.content?.gre || {}) },
+          const defaultFormData = {
+            gpa: { score: undefined },
+            gre: {
+              verbal: undefined,
+              quantitative: undefined,
+              analytical: undefined,
+            },
             languageScore: {
-              toefl: { ...formData.languageScore?.toefl, ...(data.content?.languageScore?.toefl || {}) },
-              ielts: { ...formData.languageScore?.ielts, ...(data.content?.languageScore?.ielts || {}) },
-              duolingo: { ...formData.languageScore?.duolingo, ...(data.content?.languageScore?.duolingo || {}) },
-            }
+              toefl: {
+                reading: undefined,
+                writing: undefined,
+                speaking: undefined,
+                listening: undefined,
+              },
+              ielts: {
+                reading: undefined,
+                writing: undefined,
+                speaking: undefined,
+                listening: undefined,
+              },
+              duolingo: { score: undefined },
+            },
+          };
+
+          const mergedContent = {
+            gpa: { ...defaultFormData.gpa, ...(data.content?.gpa || {}) },
+            gre: { ...defaultFormData.gre, ...(data.content?.gre || {}) },
+            languageScore: {
+              toefl: {
+                ...defaultFormData.languageScore?.toefl,
+                ...(data.content?.languageScore?.toefl || {}),
+              },
+              ielts: {
+                ...defaultFormData.languageScore?.ielts,
+                ...(data.content?.languageScore?.ielts || {}),
+              },
+              duolingo: {
+                ...defaultFormData.languageScore?.duolingo,
+                ...(data.content?.languageScore?.duolingo || {}),
+              },
+            },
           };
           setFormData(mergedContent);
           console.log("Loaded existing academic data:", data);
@@ -103,7 +160,7 @@ export default function AcademicProfilePage() {
     if (!userLoading && user) {
       fetchAcademicData();
     }
-  }, [user, supabase, userLoading, formData]);
+  }, [user, supabase, userLoading]);
 
   const handleChange = (
     section: string,
@@ -180,18 +237,18 @@ export default function AcademicProfilePage() {
   }, [academicData, formData]);
 
   return (
-    <div className="grow flex flex-col w-full mx-auto pb-16 max-w-screen-md">
+    <div className="grow flex flex-col w-full mx-auto pb-16 max-w-screen-md bg-yellow min-h-screen">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-background flex items-center justify-between p-4 border-b w-full">
+      <header className="sticky top-0 z-10 bg-gold flex items-center justify-between p-4  w-full">
         <div className="flex items-center gap-3">
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => router.push("/profile")}
-            className="focus:outline-none"
+            className="focus:outline-none text-bronze"
           >
             <ArrowLeft className="h-6 w-6" />
           </motion.button>
-          <h1 className="text-xl font-bold">Academic Profile</h1>
+          <h1 className="text-xl font-bold text-bronze">Academic Profile</h1>
         </div>
 
         <motion.button
@@ -207,9 +264,9 @@ export default function AcademicProfilePage() {
           className={`px-4 py-2 rounded-full flex items-center gap-2 text-sm ${
             editMode
               ? hasChanges
-                ? "bg-primary text-primary-foreground"
-                : "bg-primary/80 text-primary-foreground"
-              : "bg-primary/10 text-primary"
+                ? "bg-gold/70 text-bronze"
+                : "bg-gold/50 text-bronze"
+              : "bg-sand/50 text-bronze"
           }`}
         >
           {editMode ? (
@@ -229,41 +286,135 @@ export default function AcademicProfilePage() {
       {/* Main Content */}
       <main className="p-4 w-full mx-auto space-y-6">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+          <div className="bg-tomato/10 border border-tomato/30 text-tomato px-4 py-3 rounded-lg text-sm">
             {error}
           </div>
         )}
 
         {loading ? (
           <div className="space-y-4">
-            <div className="h-20 bg-gray-200 animate-pulse rounded-xl"></div>
-            <div className="h-40 bg-gray-200 animate-pulse rounded-xl"></div>
+            <div className="h-20 bg-sand/50 animate-pulse rounded-xl"></div>
+            <div className="h-40 bg-sand/50 animate-pulse rounded-xl"></div>
           </div>
         ) : (
           <>
             {/* GPA Section */}
-            <section className="bg-white rounded-xl p-6 shadow-sm">
-              <h2 className="text-lg font-semibold mb-4">GPA</h2>
+            <section className="bg-sand border border-bronze/20 rounded-xl p-6 shadow-sm">
+              <h2 className="text-lg font-semibold mb-4 text-bronze">GPA</h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">
+                  <label className="block text-sm text-bronze/80 mb-1">
                     Score (4.0 scale)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="4"
+                    value={formData.gpa?.score || ""}
+                    onChange={(e) =>
+                      handleChange("gpa", null, "score", e.target.value)
+                    }
+                    disabled={!editMode}
+                    className={`w-full p-2 rounded-lg border ${
+                      editMode
+                        ? "border-bronze/30 bg-yellow/50"
+                        : "border-transparent bg-sand/70"
+                    } text-bronze`}
+                    placeholder="Enter your GPA"
+                  />
+                </div>
+              </div>
+              {!editMode && !formData.gpa?.score && (
+                <p className="p-2 bg-sand/70 rounded-lg text-bronze/80 mt-2">
+                  No GPA information provided
+                </p>
+              )}
+            </section>
+
+            {/* GRE Section */}
+            <section className="bg-sand border border-bronze/20 rounded-xl p-6 shadow-sm">
+              <h2 className="text-lg font-semibold mb-4 text-bronze">GRE</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm text-bronze/80 mb-1">
+                    Verbal
                   </label>
                   {editMode ? (
                     <input
                       type="number"
-                      step="0.1"
                       min="0"
-                      max="4.0"
-                      value={formData.gpa?.score ?? ""}
+                      max="30"
+                      value={formData.gre?.verbal ?? ""}
                       onChange={(e) =>
-                        handleChange("gpa", null, "score", e.target.value)
+                        handleChange("gre", null, "verbal", e.target.value)
                       }
-                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                      className={`w-full p-2 rounded-lg border ${
+                        editMode
+                          ? "border-bronze/30 bg-yellow/50"
+                          : "border-transparent bg-sand/70"
+                      } text-bronze`}
                     />
                   ) : (
-                    <p className="p-2 bg-gray-50 rounded-lg">
-                      {formData.gpa?.score ?? "Not specified"}
+                    <p className="p-2 bg-sand/70 rounded-lg text-bronze/80">
+                      {formData.gre?.verbal ?? "Not specified"}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm text-bronze/80 mb-1">
+                    Quantitative
+                  </label>
+                  {editMode ? (
+                    <input
+                      type="number"
+                      min="0"
+                      max="30"
+                      value={formData.gre?.quantitative ?? ""}
+                      onChange={(e) =>
+                        handleChange(
+                          "gre",
+                          null,
+                          "quantitative",
+                          e.target.value
+                        )
+                      }
+                      className={`w-full p-2 rounded-lg border ${
+                        editMode
+                          ? "border-bronze/30 bg-yellow/50"
+                          : "border-transparent bg-sand/70"
+                      } text-bronze`}
+                    />
+                  ) : (
+                    <p className="p-2 bg-sand/70 rounded-lg text-bronze/80">
+                      {formData.gre?.quantitative ?? "Not specified"}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm text-bronze/80 mb-1">
+                    Analytical
+                  </label>
+                  {editMode ? (
+                    <input
+                      type="number"
+                      min="0"
+                      max="30"
+                      value={formData.gre?.analytical ?? ""}
+                      onChange={(e) =>
+                        handleChange("gre", null, "analytical", e.target.value)
+                      }
+                      className={`w-full p-2 rounded-lg border ${
+                        editMode
+                          ? "border-bronze/30 bg-yellow/50"
+                          : "border-transparent bg-sand/70"
+                      } text-bronze`}
+                    />
+                  ) : (
+                    <p className="p-2 bg-sand/70 rounded-lg text-bronze/80">
+                      {formData.gre?.analytical ?? "Not specified"}
                     </p>
                   )}
                 </div>
@@ -271,15 +422,17 @@ export default function AcademicProfilePage() {
             </section>
 
             {/* Language Scores Section */}
-            <section className="bg-white rounded-xl p-6 shadow-sm">
-              <h2 className="text-lg font-semibold mb-4">Language Tests</h2>
+            <section className="bg-sand border border-bronze/20 rounded-xl p-6 shadow-sm">
+              <h2 className="text-lg font-semibold mb-4 text-bronze">
+                Language Tests
+              </h2>
 
               {/* TOEFL */}
               <div className="mb-6">
-                <h3 className="text-md font-medium mb-3">TOEFL</h3>
+                <h3 className="text-md font-medium mb-3 text-bronze">TOEFL</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">
+                    <label className="block text-sm text-bronze/80 mb-1">
                       Reading
                     </label>
                     {editMode ? (
@@ -296,10 +449,14 @@ export default function AcademicProfilePage() {
                             e.target.value
                           )
                         }
-                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                        className={`w-full p-2 rounded-lg border ${
+                          editMode
+                            ? "border-bronze/30 bg-yellow/50"
+                            : "border-transparent bg-sand/70"
+                        } text-bronze`}
                       />
                     ) : (
-                      <p className="p-2 bg-gray-50 rounded-lg">
+                      <p className="p-2 bg-sand/70 rounded-lg text-bronze/80">
                         {formData.languageScore?.toefl?.reading ??
                           "Not specified"}
                       </p>
@@ -307,7 +464,7 @@ export default function AcademicProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">
+                    <label className="block text-sm text-bronze/80 mb-1">
                       Writing
                     </label>
                     {editMode ? (
@@ -324,10 +481,14 @@ export default function AcademicProfilePage() {
                             e.target.value
                           )
                         }
-                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                        className={`w-full p-2 rounded-lg border ${
+                          editMode
+                            ? "border-bronze/30 bg-yellow/50"
+                            : "border-transparent bg-sand/70"
+                        } text-bronze`}
                       />
                     ) : (
-                      <p className="p-2 bg-gray-50 rounded-lg">
+                      <p className="p-2 bg-sand/70 rounded-lg text-bronze/80">
                         {formData.languageScore?.toefl?.writing ??
                           "Not specified"}
                       </p>
@@ -335,7 +496,7 @@ export default function AcademicProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">
+                    <label className="block text-sm text-bronze/80 mb-1">
                       Speaking
                     </label>
                     {editMode ? (
@@ -352,10 +513,14 @@ export default function AcademicProfilePage() {
                             e.target.value
                           )
                         }
-                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                        className={`w-full p-2 rounded-lg border ${
+                          editMode
+                            ? "border-bronze/30 bg-yellow/50"
+                            : "border-transparent bg-sand/70"
+                        } text-bronze`}
                       />
                     ) : (
-                      <p className="p-2 bg-gray-50 rounded-lg">
+                      <p className="p-2 bg-sand/70 rounded-lg text-bronze/80">
                         {formData.languageScore?.toefl?.speaking ??
                           "Not specified"}
                       </p>
@@ -363,7 +528,7 @@ export default function AcademicProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">
+                    <label className="block text-sm text-bronze/80 mb-1">
                       Listening
                     </label>
                     {editMode ? (
@@ -380,10 +545,14 @@ export default function AcademicProfilePage() {
                             e.target.value
                           )
                         }
-                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                        className={`w-full p-2 rounded-lg border ${
+                          editMode
+                            ? "border-bronze/30 bg-yellow/50"
+                            : "border-transparent bg-sand/70"
+                        } text-bronze`}
                       />
                     ) : (
-                      <p className="p-2 bg-gray-50 rounded-lg">
+                      <p className="p-2 bg-sand/70 rounded-lg text-bronze/80">
                         {formData.languageScore?.toefl?.listening ??
                           "Not specified"}
                       </p>
@@ -394,10 +563,10 @@ export default function AcademicProfilePage() {
 
               {/* IELTS */}
               <div className="mb-6">
-                <h3 className="text-md font-medium mb-3">IELTS</h3>
+                <h3 className="text-md font-medium mb-3 text-bronze">IELTS</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">
+                    <label className="block text-sm text-bronze/80 mb-1">
                       Reading
                     </label>
                     {editMode ? (
@@ -415,10 +584,14 @@ export default function AcademicProfilePage() {
                             e.target.value
                           )
                         }
-                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                        className={`w-full p-2 rounded-lg border ${
+                          editMode
+                            ? "border-bronze/30 bg-yellow/50"
+                            : "border-transparent bg-sand/70"
+                        } text-bronze`}
                       />
                     ) : (
-                      <p className="p-2 bg-gray-50 rounded-lg">
+                      <p className="p-2 bg-sand/70 rounded-lg text-bronze/80">
                         {formData.languageScore?.ielts?.reading ??
                           "Not specified"}
                       </p>
@@ -426,7 +599,7 @@ export default function AcademicProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">
+                    <label className="block text-sm text-bronze/80 mb-1">
                       Writing
                     </label>
                     {editMode ? (
@@ -444,10 +617,14 @@ export default function AcademicProfilePage() {
                             e.target.value
                           )
                         }
-                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                        className={`w-full p-2 rounded-lg border ${
+                          editMode
+                            ? "border-bronze/30 bg-yellow/50"
+                            : "border-transparent bg-sand/70"
+                        } text-bronze`}
                       />
                     ) : (
-                      <p className="p-2 bg-gray-50 rounded-lg">
+                      <p className="p-2 bg-sand/70 rounded-lg text-bronze/80">
                         {formData.languageScore?.ielts?.writing ??
                           "Not specified"}
                       </p>
@@ -455,7 +632,7 @@ export default function AcademicProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">
+                    <label className="block text-sm text-bronze/80 mb-1">
                       Speaking
                     </label>
                     {editMode ? (
@@ -473,10 +650,14 @@ export default function AcademicProfilePage() {
                             e.target.value
                           )
                         }
-                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                        className={`w-full p-2 rounded-lg border ${
+                          editMode
+                            ? "border-bronze/30 bg-yellow/50"
+                            : "border-transparent bg-sand/70"
+                        } text-bronze`}
                       />
                     ) : (
-                      <p className="p-2 bg-gray-50 rounded-lg">
+                      <p className="p-2 bg-sand/70 rounded-lg text-bronze/80">
                         {formData.languageScore?.ielts?.speaking ??
                           "Not specified"}
                       </p>
@@ -484,7 +665,7 @@ export default function AcademicProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">
+                    <label className="block text-sm text-bronze/80 mb-1">
                       Listening
                     </label>
                     {editMode ? (
@@ -502,10 +683,14 @@ export default function AcademicProfilePage() {
                             e.target.value
                           )
                         }
-                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                        className={`w-full p-2 rounded-lg border ${
+                          editMode
+                            ? "border-bronze/30 bg-yellow/50"
+                            : "border-transparent bg-sand/70"
+                        } text-bronze`}
                       />
                     ) : (
-                      <p className="p-2 bg-gray-50 rounded-lg">
+                      <p className="p-2 bg-sand/70 rounded-lg text-bronze/80">
                         {formData.languageScore?.ielts?.listening ??
                           "Not specified"}
                       </p>

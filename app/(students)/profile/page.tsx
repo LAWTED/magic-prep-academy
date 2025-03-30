@@ -91,14 +91,14 @@ export default function ProfilePage() {
       description: "GPA, test scores, and language proficiency",
       href: "/profile/academic",
       icon: GraduationCap,
-      color: "bg-blue-100 text-blue-600",
+      color: "bg-sand/50 text-bronze",
     },
     {
       name: "Personal Information",
       description: "Your profile details and preferences",
       href: "#",
       icon: User,
-      color: "bg-green-100 text-green-600",
+      color: "bg-sand/50 text-bronze",
       disabled: true,
     },
     {
@@ -106,7 +106,7 @@ export default function ProfilePage() {
       description: "Enable push notifications for messages and updates",
       href: "#",
       icon: Bell,
-      color: "bg-yellow-100 text-yellow-600",
+      color: "bg-sand/50 text-bronze",
       onClick: () => setShowNotificationModal(true),
     },
     {
@@ -114,24 +114,24 @@ export default function ProfilePage() {
       description: "Application preferences and account settings",
       href: "#",
       icon: Settings,
-      color: "bg-purple-100 text-purple-600",
+      color: "bg-sand/50 text-bronze",
       disabled: true,
     },
   ];
 
   return (
-    <div className="flex-1 flex flex-col w-full mx-auto pb-16 max-w-screen-md">
+    <div className="flex-1 flex flex-col w-full mx-auto pb-16 max-w-screen-md bg-yellow min-h-screen">
       {/* Header */}
-      <header className="bg-background flex items-center justify-between p-4 border-b w-full">
+      <header className="flex items-center justify-between p-4 border-b border-bronze/20 w-full">
         <div className="flex items-center gap-3">
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => router.push("/homepage")}
-            className="focus:outline-none"
+            className="focus:outline-none text-bronze"
           >
             <ArrowLeft className="h-6 w-6" />
           </motion.button>
-          <h1 className="text-xl font-bold">Profile</h1>
+          <h1 className="text-xl font-bold text-bronze">Profile</h1>
         </div>
       </header>
 
@@ -139,17 +139,17 @@ export default function ProfilePage() {
       <main className="p-4 w-full mx-auto">
         {loading ? (
           <div className="space-y-4">
-            <div className="h-24 bg-gray-200 animate-pulse rounded-xl"></div>
-            <div className="h-16 bg-gray-200 animate-pulse rounded-xl"></div>
-            <div className="h-16 bg-gray-200 animate-pulse rounded-xl"></div>
-            <div className="h-16 bg-gray-200 animate-pulse rounded-xl"></div>
+            <div className="h-24 bg-sand/50 animate-pulse rounded-xl"></div>
+            <div className="h-16 bg-sand/50 animate-pulse rounded-xl"></div>
+            <div className="h-16 bg-sand/50 animate-pulse rounded-xl"></div>
+            <div className="h-16 bg-sand/50 animate-pulse rounded-xl"></div>
           </div>
         ) : (
           <div className="space-y-6">
             {/* User info card */}
-            <div className="bg-white rounded-xl p-6 shadow-sm">
+            <div className="bg-sand border border-bronze/20 rounded-xl p-6 shadow-sm">
               <div className="flex items-center gap-4">
-                <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-primary">
+                <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gold">
                   <Image
                     src={avatarPath}
                     alt={user?.name || "User"}
@@ -158,8 +158,8 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold">{user?.name}</h2>
-                  <p className="text-gray-600">
+                  <h2 className="text-xl font-bold text-bronze">{user?.name}</h2>
+                  <p className="text-bronze/80">
                     {user?.region || "No location set"}
                   </p>
                 </div>
@@ -176,7 +176,7 @@ export default function ProfilePage() {
                 >
                   <Link
                     href={option.disabled ? "#" : (option.href || "#")}
-                    className={`block bg-white rounded-xl p-4 shadow-sm ${
+                    className={`block bg-sand border border-bronze/20 rounded-xl p-4 shadow-sm ${
                       option.disabled ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                     onClick={(e) => {
@@ -193,18 +193,18 @@ export default function ProfilePage() {
                         <option.icon className="h-5 w-5" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-medium">{option.name}</h3>
-                        <p className="text-sm text-gray-500">
+                        <h3 className="font-medium text-bronze">{option.name}</h3>
+                        <p className="text-sm text-bronze/70">
                           {option.description}
                         </p>
                       </div>
                       {option.disabled && (
-                        <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">
+                        <span className="text-xs bg-gold/30 text-bronze px-2 py-1 rounded-full">
                           Coming Soon
                         </span>
                       )}
                       {option.name === "Notifications" && notificationPermissionStatus === "granted" && (
-                        <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full">
+                        <span className="text-xs bg-gold/30 text-bronze px-2 py-1 rounded-full">
                           Enabled
                         </span>
                       )}
@@ -220,21 +220,21 @@ export default function ProfilePage() {
       {/* Notification Modal */}
       {showNotificationModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold mb-4">Enable Notifications</h3>
-            <p className="mb-4">
+          <div className="bg-sand rounded-xl p-6 max-w-md w-full border border-bronze/20">
+            <h3 className="text-xl font-bold mb-4 text-bronze">Enable Notifications</h3>
+            <p className="mb-4 text-bronze/80">
               Get notified about new messages, updates, and reminders from your mentors.
             </p>
             <div className="flex items-center justify-between mt-6">
               <button
                 onClick={() => setShowNotificationModal(false)}
-                className="px-4 py-2 rounded-lg border border-gray-300"
+                className="px-4 py-2 rounded-lg border border-bronze/30 text-bronze"
               >
                 Cancel
               </button>
               <button
                 onClick={handleEnableNotifications}
-                className="px-4 py-2 bg-primary text-white rounded-lg"
+                className="px-4 py-2 bg-gold/70 text-bronze rounded-lg"
               >
                 Enable
               </button>

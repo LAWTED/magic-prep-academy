@@ -15,6 +15,7 @@ import { useUserStore } from "@/store/userStore";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Document_METADATA } from "@/app/types";
+import LoadingCard from "@/app/components/LoadingCard";
 
 type SOPItem = {
   id: string;
@@ -88,9 +89,7 @@ export default function SOPList() {
         throw error;
       }
 
-      setSOPs((prev) =>
-        prev.map((sop) => (sop.id === id ? data : sop))
-      );
+      setSOPs((prev) => prev.map((sop) => (sop.id === id ? data : sop)));
       setEditMode(null);
       toast.success("SOP renamed successfully");
     } catch (error) {
@@ -132,104 +131,90 @@ export default function SOPList() {
   return (
     <div className="space-y-4">
       {isLoading ? (
-        <div className="flex justify-center items-center p-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <span className="ml-2 text-gray-500">Loading SOPs...</span>
+        <div className="flex justify-center py-8">
+          <LoadingCard message="Loading SOPs..." />
         </div>
       ) : sops.length === 0 ? (
-        <div className="text-center py-12 px-4 border rounded-xl bg-gray-50">
-          <p className="text-gray-500 mb-2">No SOPs found</p>
-          <p className="text-sm text-gray-400">
-            Use the Upload SOP button to get started
-          </p>
+        <div className="text-center py-8 text-black">
+          <p>You haven't uploaded any SOPs yet.</p>
         </div>
       ) : (
-        sops.map((sop) => (
-          <div
-            key={sop.id}
-            className="border rounded-xl p-5 hover:border-blue-200 transition-colors cursor-pointer relative"
-            onClick={() => handleViewVersions(sop)}
-          >
-            {editMode === sop.id ? (
+        <div className="space-y-4">
+          {sops.map((sop) => (
+            <div
+              key={sop.id}
+              className="border-b border-bronze/10 pb-4 last:border-0 last:pb-0"
+              onClick={() => handleViewVersions(sop)}
+            >
+              {editMode === sop.id ? (
+                <div
+                  className="flex items-center mb-3"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="flex-1 border rounded-lg p-2 mr-2"
+                    autoFocus
+                  />
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={(e) => handleSaveEdit(sop.id, e)}
+                    className="text-green-600"
+                  >
+                    <CheckCircle size={18} />
+                  </motion.button>
+                </div>
+              ) : (
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-medium text-bronze">{sop.name}</h3>
+                    <p className="text-xs text-black mt-1">
+                      Updated on {formatDate(sop.updated_at)}
+                    </p>
+                  </div>
+                  <div className="flex items-center bg-gold/30 px-3 py-1 rounded-full">
+                    <span className="text-xs capitalize text-bronze">SOP</span>
+                  </div>
+                </div>
+              )}
+
               <div
-                className="flex items-center mb-3"
+                className="flex flex-wrap gap-2 mt-3"
                 onClick={(e) => e.stopPropagation()}
               >
-                <input
-                  type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="flex-1 border rounded-lg p-2 mr-2"
-                  autoFocus
-                />
                 <motion.button
                   whileTap={{ scale: 0.95 }}
-                  onClick={(e) => handleSaveEdit(sop.id, e)}
-                  className="text-green-600"
+                  className="text-sm text-skyblue bg-skyblue/20 font-medium py-1.5 px-3 rounded-lg flex items-center"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewVersions(sop);
+                  }}
                 >
-                  <CheckCircle size={18} />
+                  <Eye size={14} className="mr-1.5" />
+                  View Versions
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={(e) => handleStartEdit(sop, e)}
+                  className="py-2 px-3 rounded-lg font-medium text-sm bg-gold/70 text-bronze flex items-center justify-center"
+                >
+                  <Edit size={14} className="mr-1.5" />
+                  Rename
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={(e) => handleDelete(sop.id, e)}
+                  className="py-2 px-3 rounded-lg font-medium text-sm bg-tomato/30 text-tomato flex items-center justify-center"
+                >
+                  <Trash2 size={14} className="mr-1.5" />
+                  Delete
                 </motion.button>
               </div>
-            ) : (
-              <div className="flex justify-between items-center mb-3">
-                <div className="flex items-center">
-                  <h3 className="font-medium text-lg">{sop.name}</h3>
-                </div>
-                <div className="flex items-center">
-                  <span className="text-xs text-gray-500 mr-2">
-                    {formatDate(sop.updated_at)}
-                  </span>
-                  <ChevronRight size={16} className="text-gray-400" />
-                </div>
-              </div>
-            )}
-
-            <div className="flex flex-wrap items-center text-sm mb-4 text-gray-600">
-              <span className="bg-gray-100 rounded-full px-3 py-1 text-xs mr-2 mb-1">
-                Statement of Purpose
-              </span>
-              {sop.metadata?.original_file_name && (
-                <span className="text-xs truncate max-w-[250px]">
-                  From: {sop.metadata.original_file_name}
-                </span>
-              )}
             </div>
-
-            <div
-              className="flex flex-wrap gap-2"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                className="text-xs bg-gray-100 hover:bg-gray-200 py-1.5 px-3 rounded-lg flex items-center"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleViewVersions(sop);
-                }}
-              >
-                <Eye size={14} className="mr-1.5" />
-                View Versions
-              </motion.button>
-
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={(e) => handleStartEdit(sop, e)}
-                className="text-xs bg-amber-50 text-amber-600 hover:bg-amber-100 py-1.5 px-3 rounded-lg flex items-center"
-              >
-                <Edit size={14} className="mr-1.5" />
-                Rename
-              </motion.button>
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={(e) => handleDelete(sop.id, e)}
-                className="text-xs bg-red-50 text-red-600 hover:bg-red-100 py-1.5 px-3 rounded-lg flex items-center"
-              >
-                <Trash2 size={14} className="mr-1.5" />
-                Delete
-              </motion.button>
-            </div>
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </div>
   );

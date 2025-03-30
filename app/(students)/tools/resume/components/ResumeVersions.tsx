@@ -7,6 +7,7 @@ import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Document_VERSIONS_METADATA } from "@/app/types";
+import LoadingCard from "@/app/components/LoadingCard";
 
 type ResumeVersion = {
   id: string;
@@ -187,14 +188,13 @@ export default function ResumeVersions({
     <div>
       <div className="space-y-4">
         {isLoading ? (
-          <div className="flex justify-center items-center py-12 bg-white rounded-xl shadow-sm border p-5">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="ml-2 text-gray-500">Loading versions...</span>
+          <div className="flex justify-center py-8 bg-sand rounded-xl shadow-sm border border-bronze/20 p-5">
+            <LoadingCard message="Loading versions..." />
           </div>
         ) : versions.length === 0 ? (
-          <div className="text-center py-12 px-4 bg-white rounded-xl shadow-sm border">
-            <p className="text-gray-500 mb-2">No versions found</p>
-            <p className="text-sm text-gray-400">
+          <div className="text-center py-8 px-4 bg-sand rounded-xl shadow-sm border border-bronze/20">
+            <p className="text-black mb-2">No versions found</p>
+            <p className="text-sm text-black">
               This resume doesn't have any versions yet
             </p>
           </div>
@@ -202,7 +202,7 @@ export default function ResumeVersions({
           versions.map((version) => (
             <div
               key={version.id}
-              className={`bg-white rounded-xl shadow-sm border p-5 hover:border-blue-200 transition-colors ${editingVersion !== version.id ? "cursor-pointer" : ""}`}
+              className={`bg-sand rounded-xl shadow-sm border border-bronze/20 p-5 hover:border-bronze/40 transition-colors ${editingVersion !== version.id ? "cursor-pointer" : ""}`}
               onClick={() => handleCardClick(version)}
             >
               <div className="flex justify-between items-center mb-3">
@@ -212,24 +212,23 @@ export default function ResumeVersions({
                       type="text"
                       value={editedName}
                       onChange={(e) => setEditedName(e.target.value)}
-                      className="border-b border-blue-300 focus:outline-none focus:border-blue-500 px-1 text-lg font-medium"
+                      className="border-b border-bronze focus:outline-none focus:border-bronze px-1 text-lg font-medium"
                       autoFocus
                       onClick={(e) => e.stopPropagation()}
                     />
                   ) : (
-                    <h3 className="font-medium text-lg">
+                    <h3 className="font-medium text-lg text-bronze">
                       {version.name || `Version ${version.version_number}`}
                     </h3>
                   )}
                   {version.version_number ===
                     Math.max(...versions.map((v) => v.version_number)) && (
-                    <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">
+                    <span className="ml-2 bg-gold/30 text-bronze text-xs px-2 py-0.5 rounded-full">
                       Latest
                     </span>
                   )}
                 </div>
-                <div className="flex items-center text-xs text-gray-500">
-                  <Calendar size={14} className="mr-1.5" />
+                <div className="flex items-center text-xs text-cement">
                   {formatDate(version.created_at)}
                 </div>
               </div>
@@ -241,7 +240,7 @@ export default function ResumeVersions({
                 {editingVersion === version.id ? (
                   <motion.button
                     whileTap={{ scale: 0.95 }}
-                    className="text-xs bg-green-50 text-green-600 hover:bg-green-100 py-1.5 px-3 rounded-lg flex items-center"
+                    className="py-2 px-3 rounded-lg font-medium text-sm bg-gold text-bronze flex items-center justify-center"
                     onClick={(e) => handleSaveRename(version, e)}
                   >
                     <CheckCircle size={14} className="mr-1.5" />
@@ -251,7 +250,7 @@ export default function ResumeVersions({
                   <>
                     <motion.button
                       whileTap={{ scale: 0.95 }}
-                      className="text-xs bg-amber-50 text-amber-600 hover:bg-amber-100 py-1.5 px-3 rounded-lg flex items-center"
+                      className="py-2 px-3 rounded-lg font-medium text-sm bg-gold/70 text-bronze flex items-center justify-center"
                       onClick={(e) => handleStartRename(version, e)}
                     >
                       <Edit size={14} className="mr-1.5" />
@@ -259,7 +258,7 @@ export default function ResumeVersions({
                     </motion.button>
                     <motion.button
                       whileTap={{ scale: 0.95 }}
-                      className="text-xs bg-red-50 text-red-600 hover:bg-red-100 py-1.5 px-3 rounded-lg flex items-center"
+                      className="py-2 px-3 rounded-lg font-medium text-sm bg-tomato/30 text-tomato flex items-center justify-center"
                       onClick={(e) => handleDeleteVersion(version, e)}
                       disabled={deletingVersion === version.id}
                     >

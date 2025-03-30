@@ -21,7 +21,8 @@ const welcomeVariants = {
 
 export function WelcomeScreen({ selectedPerson }: WelcomeScreenProps) {
   // Get welcome message or use default if not defined
-  const welcomeMessage = selectedPerson.welcomeMessage ||
+  const welcomeMessage =
+    selectedPerson.welcomeMessage ||
     "Feel free to ask me any questions. I'll do my best to provide professional guidance and advice.";
 
   return (
@@ -31,10 +32,7 @@ export function WelcomeScreen({ selectedPerson }: WelcomeScreenProps) {
       animate="visible"
       className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4 py-6 "
     >
-      <motion.div
-        whileHover={{ scale: 1.05 }}
-        className="mb-6"
-      >
+      <motion.div whileHover={{ scale: 1.05 }} className="mb-6">
         {selectedPerson.avatar ? (
           <div className="w-20 h-20 overflow-hidden rounded-full border-2 border-gold">
             <Image
@@ -56,7 +54,7 @@ export function WelcomeScreen({ selectedPerson }: WelcomeScreenProps) {
         Chat with {selectedPerson.name}
       </h1>
 
-      <p className="text-bronze/80 max-w-md text-center mb-6 bg-sand p-4 rounded-xl">
+      <p className="text-bronze/80 max-w-md text-center mb-6  p-4 rounded-xl">
         {welcomeMessage}
       </p>
 

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { themeConfig } from "@/app/config/themeConfig";
 import LORMilestone from "./LORMilestone";
 import DeadlineEvent from "./DeadlineEvent";
+import DocumentAttachmentEvent from "./DocumentAttachmentEvent";
 
 interface CalendarEvent {
   id: string;
@@ -65,6 +66,11 @@ export default function EventItem({ event }: EventItemProps) {
     return <DeadlineEvent event={eventWithContent} />;
   }
 
+  // Document attachment events (CV or SOP)
+  if (event.action_type === 'cv_attached' || event.action_type === 'sop_attached') {
+    return <DocumentAttachmentEvent event={eventWithContent} />;
+  }
+
   // 默认事件渲染（通用事件）
   const theme = themeConfig.actionThemes[event.action_type as keyof typeof themeConfig.actionThemes] || {
     color: "bg-gray-100 text-gray-600",
@@ -89,7 +95,7 @@ export default function EventItem({ event }: EventItemProps) {
 
       <div className="flex-1">
         <div>
-          <h3 className="font-semibold text-bronze">{event.title}</h3>
+          <h3 className="font-semibold text-black">{event.title}</h3>
 
           {event.program_id && (
             <span className="text-xs text-bronze/70 block">

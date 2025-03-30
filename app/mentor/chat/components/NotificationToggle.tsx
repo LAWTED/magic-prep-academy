@@ -34,7 +34,7 @@ export function NotificationToggle({
 
         if (storedPreference !== null) {
           // 如果有存储的偏好设置，使用它
-          setIsEnabled(storedPreference === 'enabled');
+          setIsEnabled(storedPreference === "enabled");
           return;
         }
 
@@ -49,10 +49,10 @@ export function NotificationToggle({
         if (!error && data && data.fcm_token) {
           setIsEnabled(true);
           // 保存到localStorage
-          localStorage.setItem(storageKey, 'enabled');
+          localStorage.setItem(storageKey, "enabled");
         } else {
           // 默认为关闭
-          localStorage.setItem(storageKey, 'disabled');
+          localStorage.setItem(storageKey, "disabled");
         }
       } catch (error) {
         console.error("Error checking notification status:", error);
@@ -87,7 +87,7 @@ export function NotificationToggle({
         setIsEnabled(false);
 
         // 保存到localStorage
-        localStorage.setItem(storageKey, 'disabled');
+        localStorage.setItem(storageKey, "disabled");
 
         toast.info("Notifications disabled", {
           description: "You won't receive message notifications anymore",
@@ -111,7 +111,7 @@ export function NotificationToggle({
         if (permission === "granted") {
           // 重新获取token（通过页面刷新）
           // 先保存用户意图
-          localStorage.setItem(storageKey, 'enabled');
+          localStorage.setItem(storageKey, "enabled");
           window.location.reload();
         } else {
           toast.error("Notification permission denied");
@@ -141,7 +141,7 @@ export function NotificationToggle({
       setIsEnabled(true);
 
       // 保存到localStorage
-      localStorage.setItem(storageKey, 'enabled');
+      localStorage.setItem(storageKey, "enabled");
 
       toast.success("Notifications enabled", {
         icon: <Bell className="h-5 w-5 text-green-500" />,
@@ -157,7 +157,7 @@ export function NotificationToggle({
       whileTap={{ scale: 0.9 }}
       onClick={handleToggleNotification}
       className={`p-2 rounded-full transition-colors ${
-        isEnabled ? "bg-lime text-grass" : "bg-gray-100 text-gray-500"
+        isEnabled ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-500"
       }`}
       title={isEnabled ? "Disable notifications" : "Enable notifications"}
     >

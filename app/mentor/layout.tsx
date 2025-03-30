@@ -3,5 +3,5 @@ export default function MentorLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <div className="bg-background">{children}</div>;
+  return <div className="w-full bg-background">{children}</div>;
 }

@@ -4,12 +4,20 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
-import { ArrowLeft, Edit, MessageCircle, Eye, Loader2, FileText } from "lucide-react";
+import {
+  ArrowLeft,
+  Edit,
+  MessageCircle,
+  Eye,
+  Loader2,
+  FileText,
+} from "lucide-react";
 import Link from "next/link";
 import { useUserStore } from "@/store/userStore";
 import SOPAnalysis from "../../components/SOPAnalysis";
 import TextPreview from "@/app/components/TextPreview";
 import { toast } from "sonner";
+import LoadingCard from "@/app/components/LoadingCard";
 
 export default function SOPVersionDetailPage() {
   const params = useParams();
@@ -100,24 +108,23 @@ export default function SOPVersionDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
-        <p className="text-gray-600">Loading SOP version...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-yellow">
+        <LoadingCard message="Loading SOP version..." />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <div className="w-full max-w-3xl bg-red-50 border border-red-200 rounded-xl p-6">
-          <h2 className="text-xl text-red-700 font-medium mb-2">
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-yellow">
+        <div className="w-full max-w-3xl bg-sand border border-bronze/20 rounded-xl p-6">
+          <h2 className="text-xl text-bronze font-medium mb-2">
             Error Loading SOP
           </h2>
-          <p className="text-red-600">{error}</p>
+          <p className="text-black">{error}</p>
           <button
             onClick={handleBack}
-            className="mt-4 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            className="mt-4 px-4 py-2 bg-gold text-bronze rounded-lg hover:bg-gold/80 transition-colors"
           >
             Go Back
           </button>
@@ -127,20 +134,22 @@ export default function SOPVersionDetailPage() {
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-6">
+    <div className="min-h-screen p-4 md:p-6 bg-yellow">
       <div className="w-full max-w-5xl mx-auto">
         {/* Header */}
         <div className="flex items-center mb-6">
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={handleBack}
-            className="mr-4 p-2 rounded-full hover:bg-gray-100"
+            className="mr-4 p-2 rounded-full text-bronze "
           >
             <ArrowLeft size={20} />
           </motion.button>
           <div>
-            <h1 className="text-xl font-semibold">{documentName}</h1>
-            <p className="text-sm text-gray-500">
+            <h1 className="text-xl font-semibold text-bronze">
+              {documentName}
+            </h1>
+            <p className="text-sm text-bronze">
               {versionName || `Version ${versionNumber}`}
             </p>
           </div>
@@ -151,7 +160,7 @@ export default function SOPVersionDetailPage() {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={handleAskMentor}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg flex items-center justify-center"
+            className="w-full bg-sand text-skyblue py-3 px-4 rounded-lg flex items-center justify-center"
           >
             <MessageCircle size={20} className="mr-2" />
             Ask PhD Mentor
@@ -169,20 +178,22 @@ export default function SOPVersionDetailPage() {
         {/* SOP Content */}
         <div className="mt-6">
           <div className="flex items-center mb-4">
-            <FileText className="text-blue-600 mr-3" size={20} />
-            <h2 className="text-lg font-medium">Statement of Purpose</h2>
+            <FileText className="text-bronze mr-3" size={20} />
+            <h2 className="text-lg font-medium text-bronze">
+              Statement of Purpose
+            </h2>
           </div>
 
-          <div className="bg-white rounded-xl border shadow-sm p-6">
+          <div className="bg-sand rounded-xl border border-bronze/20 shadow-sm p-6">
             {sopData && sopData.content ? (
               <TextPreview
                 content={sopData.content}
                 maxHeight="max-h-none"
-                className="text-gray-800"
+                className="text-black"
               />
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-500">
+                <p className="text-bronze/80">
                   No content available for this version
                 </p>
               </div>

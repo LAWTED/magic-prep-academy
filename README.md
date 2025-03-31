@@ -281,6 +281,13 @@ We use Vercel for CI/CD. Git push to main will deploy to Vercel.
 - **Icons**: use Lucide Icons.
 - **Other Images**: use OpenAI GPT-4o for image generation.
 
+## Upgrade
+Since this is a app built with Vercel and Supabase, we can easily upgrade the app to a production-ready app by upgrading the Vercel and Supabase plan.
+
+## Notes
+This is a vibe coding project within 2 weeks, so the code is fully well structured and elegant.
+
+
 ## Domain Transferability
 
 ### Modular Architecture

@@ -29,7 +29,7 @@ export default function LoadingCard({
         />
       </div>
       {message && (
-        <TextShimmer className="text-sm font-medium text-bronze" duration={1.5}>
+        <TextShimmer className="text-sm font-medium" duration={1.5}>
           {message}
         </TextShimmer>
       )}

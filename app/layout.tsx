@@ -15,6 +15,15 @@ export const metadata: Metadata = {
   title: "Magic Prep Academy",
   description: "Learn magic with fun!",
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icons/icon-192x192.png", sizes: "192x192" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512" }
+    ],
+    apple: [{ url: "/icons/icon-192x192.png", sizes: "192x192" }],
+    shortcut: ["/favicon.ico"],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -26,9 +35,6 @@ export const metadata: Metadata = {
           "(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)",
       },
     ],
-  },
-  icons: {
-    apple: [{ url: "/icons/icon-192x192.png", sizes: "192x192" }],
   },
 };
 

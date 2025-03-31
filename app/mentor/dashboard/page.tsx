@@ -103,14 +103,16 @@ export default async function MentorDashboard() {
   // Fetch LoR requests for this mentor
   const { data: requestsData, error: requestsError } = await supabase
     .from("mentor_student_interactions")
-    .select(`
+    .select(
+      `
       id,
       student_id,
       status,
       created_at,
       metadata,
       users:student_id(name, avatar_name)
-    `)
+    `
+    )
     .eq("mentor_id", profile.id)
     .eq("type", "lor_request")
     .order("created_at", { ascending: false })
@@ -127,11 +129,15 @@ export default async function MentorDashboard() {
       school_name: item.metadata?.school_name || "Unknown School",
       status: item.status,
       created_at: item.created_at,
-      request_date: formatDistanceToNow(new Date(item.created_at), { addSuffix: true }),
+      request_date: formatDistanceToNow(new Date(item.created_at), {
+        addSuffix: true,
+      }),
     }));
   }
 
-  const pendingRequestsCount = lorRequests.filter(r => r.status === 'pending').length;
+  const pendingRequestsCount = lorRequests.filter(
+    (r) => r.status === "pending"
+  ).length;
 
   // Get avatar path based on profile's avatar_name
   const avatarPath = `/images/avatars/${profile.avatar_name}.png`;
@@ -141,15 +147,6 @@ export default async function MentorDashboard() {
       <main className="container py-6 max-w-6xl mx-auto space-y-10">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Mentor Dashboard</h1>
-          <div>
-            <Link
-              href="/mentor/settings"
-              className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors p-2 rounded-full hover:bg-gray-100"
-            >
-              <Cog size={20} />
-              <span className="sr-only">Settings</span>
-            </Link>
-          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -171,14 +168,16 @@ export default async function MentorDashboard() {
                     <div>
                       <h3 className="font-medium">Recommendation Letters</h3>
                       <p className="text-sm text-muted-foreground">
-                        {pendingRequestsCount > 0 ?
-                          `${pendingRequestsCount} pending request${pendingRequestsCount !== 1 ? 's' : ''}` :
-                          'Manage recommendation letters'
-                        }
+                        {pendingRequestsCount > 0
+                          ? `${pendingRequestsCount} pending request${pendingRequestsCount !== 1 ? "s" : ""}`
+                          : "Manage recommendation letters"}
                       </p>
                     </div>
                   </div>
-                  <ChevronRight size={16} className="text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <ChevronRight
+                    size={16}
+                    className="text-muted-foreground group-hover:text-foreground transition-colors"
+                  />
                 </Link>
 
                 <Link
@@ -196,7 +195,10 @@ export default async function MentorDashboard() {
                       </p>
                     </div>
                   </div>
-                  <ChevronRight size={16} className="text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <ChevronRight
+                    size={16}
+                    className="text-muted-foreground group-hover:text-foreground transition-colors"
+                  />
                 </Link>
 
                 <Link
@@ -214,7 +216,10 @@ export default async function MentorDashboard() {
                       </p>
                     </div>
                   </div>
-                  <ChevronRight size={16} className="text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <ChevronRight
+                    size={16}
+                    className="text-muted-foreground group-hover:text-foreground transition-colors"
+                  />
                 </Link>
 
                 {/* Analytics link removed */}
@@ -262,7 +267,9 @@ export default async function MentorDashboard() {
                             )}
                           </div>
                           <div>
-                            <h4 className="text-sm font-medium">{student.name}</h4>
+                            <h4 className="text-sm font-medium">
+                              {student.name}
+                            </h4>
                             <p className="text-xs text-muted-foreground">
                               {student.program || "Student"}
                             </p>
@@ -289,7 +296,9 @@ export default async function MentorDashboard() {
                       <Users size={16} className="text-muted-foreground" />
                       <span className="text-sm">Total Students</span>
                     </div>
-                    <span className="font-semibold">{subjectsWithStudents.flatMap((s) => s.students).length}</span>
+                    <span className="font-semibold">
+                      {subjectsWithStudents.flatMap((s) => s.students).length}
+                    </span>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -297,7 +306,9 @@ export default async function MentorDashboard() {
                       <BookOpen size={16} className="text-muted-foreground" />
                       <span className="text-sm">Subjects</span>
                     </div>
-                    <span className="font-semibold">{subjectsWithStudents.length}</span>
+                    <span className="font-semibold">
+                      {subjectsWithStudents.length}
+                    </span>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -319,13 +330,6 @@ export default async function MentorDashboard() {
               <div className="p-4">
                 <div className="space-y-3">
                   <Link
-                    href="/mentor/profile"
-                    className="text-sm text-primary hover:underline flex items-center gap-1"
-                  >
-                    <ChevronRight size={14} />
-                    <span>Edit Profile</span>
-                  </Link>
-                  <Link
                     href="/mentor/lor"
                     className="text-sm text-primary hover:underline flex items-center gap-1"
                   >
@@ -338,13 +342,6 @@ export default async function MentorDashboard() {
                   >
                     <ChevronRight size={14} />
                     <span>Chat History</span>
-                  </Link>
-                  <Link
-                    href="/mentor/support"
-                    className="text-sm text-primary hover:underline flex items-center gap-1"
-                  >
-                    <ChevronRight size={14} />
-                    <span>Help & Support</span>
                   </Link>
                 </div>
               </div>

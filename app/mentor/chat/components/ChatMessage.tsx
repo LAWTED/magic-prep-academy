@@ -133,6 +133,7 @@ export function ChatMessage({
           {sopFeedback && (
             <FeedbackPreview
               sopId={sopFeedback.sopId}
+              studentId={selectedPerson.id}
               documentName={sopFeedback.documentName}
               feedbackCount={sopFeedback.feedbackCount}
               mentorName={sopFeedback.mentorName}

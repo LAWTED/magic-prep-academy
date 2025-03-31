@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 
 interface FeedbackPreviewProps {
   sopId: string;
+  studentId: string;
   documentName: string;
   feedbackCount: number;
   mentorName: string;
@@ -15,6 +16,7 @@ interface FeedbackPreviewProps {
 
 export default function FeedbackPreview({
   sopId,
+  studentId,
   documentName,
   feedbackCount,
   mentorName,
@@ -50,7 +52,7 @@ export default function FeedbackPreview({
           Document: {documentName}
         </p>
 
-        <Link href={`/tools/sop/${sopId}`} className="block w-full">
+        <Link href={`/mentor/student/${studentId}/sop/${sopId}/feedback`} className="block w-full">
           <motion.button
             whileTap={{ scale: 0.95 }}
             className="w-full py-2 rounded-lg font-medium bg-blue-600 text-white text-sm flex items-center justify-center"

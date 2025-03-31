@@ -26,7 +26,7 @@
 
 ## Features
 
-<img src="public/images/loading/loading.gif" width="24" alt="Loading" style="vertical-align: middle; margin-right: 8px;">[Magic Prep Academy Overview (must read 👀)](https://oil-pulsar-411.notion.site/Magic-Prep-Academy-1c681b98a3a580419e5af1148f8fbeaf)
+<img src="public/images/loading/loading.gif" width="24" alt="Loading" style="vertical-align: middle; margin-right: 8px;">  [Magic Prep Academy Overview (must read 👀)](https://oil-pulsar-411.notion.site/Magic-Prep-Academy-1c681b98a3a580419e5af1148f8fbeaf)
 
 ## Tech Stack
 

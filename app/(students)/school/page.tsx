@@ -35,6 +35,7 @@ import {
 interface ProgramWithSubmissionStatus extends Program {
   subject_name: string;
   is_submitted?: boolean;
+  subjects?: Subject;
 }
 
 interface SchoolWithProgramsAndStatus extends SchoolType {
@@ -65,23 +66,19 @@ export default function SchoolPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // Fetch all schools
-        const { data: schoolsData, error: schoolsError } = await supabase
+        // Single optimized query to fetch schools with their programs and subjects
+        const { data: schoolsWithProgramsData, error: fetchError } = await supabase
           .from("schools")
-          .select("*");
+          .select(`
+            *,
+            programs:programs(
+              *,
+              subjects:subject_id(*)
+            )
+          `);
 
-        if (schoolsError) {
-          console.error("Error fetching schools:", schoolsError);
-          return;
-        }
-
-        // Fetch all programs
-        const { data: programsData, error: programsError } = await supabase
-          .from("programs")
-          .select("*");
-
-        if (programsError) {
-          console.error("Error fetching programs:", programsError);
+        if (fetchError) {
+          console.error("Error fetching schools and programs:", fetchError);
           return;
         }
 
@@ -90,89 +87,66 @@ export default function SchoolPage() {
         let submittedProgramIds: string[] = [];
 
         if (user) {
-          // Get favorited programs
-          const { data: favoritesData, error: favoritesError } = await supabase
+          // Get favorited programs and submitted applications in a single query
+          const { data: userProgressData, error: progressError } = await supabase
             .from("user_programs_progress")
-            .select("program_id")
-            .eq("user_id", user.id)
-            .eq("status", "favorited");
-
-          if (!favoritesError && favoritesData) {
-            favoritedProgramIds = favoritesData.map((item) => item.program_id);
-            setFavoritedPrograms(favoritedProgramIds);
-          }
-
-          // Get submitted applications
-          const { data: progressData, error: progressError } = await supabase
-            .from("user_programs_progress")
-            .select("program_id, content")
+            .select("program_id, status, content")
             .eq("user_id", user.id);
 
-          if (!progressError && progressData) {
-            submittedProgramIds = progressData
-              .filter((item) => item.content?.application_submitted === true)
-              .map((item) => item.program_id);
+          if (!progressError && userProgressData) {
+            // Extract favorited programs
+            favoritedProgramIds = userProgressData
+              .filter(item => item.status === "favorited")
+              .map(item => item.program_id);
+
+            // Extract submitted applications
+            submittedProgramIds = userProgressData
+              .filter(item => item.content?.application_submitted === true)
+              .map(item => item.program_id);
+
+            setFavoritedPrograms(favoritedProgramIds);
             setSubmittedPrograms(submittedProgramIds);
           }
         }
 
-        // Get all unique subject IDs from programs
-        const subjectIds = Array.from(
-          new Set(programsData.map((program) => program.subject_id))
-        );
-
-        // Fetch all subjects
-        const { data: subjectsData, error: subjectsError } = await supabase
-          .from("subjects")
-          .select("*")
-          .in("id", subjectIds);
-
-        if (subjectsError) {
-          console.error("Error fetching subjects:", subjectsError);
-          return;
-        }
-
-        setSubjects(subjectsData);
-
-        // Create a mapping of subject IDs to subject names
-        const subjectMap: Record<string, string> = {};
-        subjectsData.forEach((subject: Subject) => {
-          subjectMap[subject.id] = subject.subject_name;
-        });
-
-        // Organize programs by school
-        const schoolsMap: Record<string, SchoolWithProgramsAndStatus> = {};
-
-        schoolsData.forEach((school: SchoolType) => {
-          schoolsMap[school.id] = {
-            ...school,
-            programs: [],
-          };
-        });
-
-        programsData.forEach((program: Program) => {
-          if (schoolsMap[program.school_id]) {
-            schoolsMap[program.school_id].programs.push({
+        // Process the data to match the expected format
+        const processedSchools = schoolsWithProgramsData
+          .map((school: any) => {
+            // Add subject_name to each program and check submission status
+            const processedPrograms = school.programs.map((program: any) => ({
               ...program,
-              subject_name: subjectMap[program.subject_id] || "Unknown Subject",
-              is_submitted: submittedProgramIds.includes(program.id),
-            });
-          }
-        });
+              subject_name: program.subjects ? program.subjects.subject_name : "Unknown Subject",
+              is_submitted: submittedProgramIds.includes(program.id)
+            }));
 
-        // Convert the map to an array and sort by school name
-        const schoolsWithProgramsArray = Object.values(schoolsMap)
-          .filter((school) => school.programs.length > 0)
-          .sort((a, b) => a.name.localeCompare(b.name));
+            return {
+              ...school,
+              programs: processedPrograms
+            };
+          })
+          .filter((school: SchoolWithProgramsAndStatus) => school.programs.length > 0)
+          .sort((a: SchoolWithProgramsAndStatus, b: SchoolWithProgramsAndStatus) =>
+            a.name.localeCompare(b.name)
+          );
 
         // Extract unique locations for filtering
         const uniqueLocations = Array.from(
-          new Set(schoolsWithProgramsArray.map((school) => school.location))
+          new Set(processedSchools.map((school: SchoolWithProgramsAndStatus) => school.location))
         ).sort();
 
+        // Extract unique subjects
+        const uniqueSubjects = Array.from(
+          new Set(
+            processedSchools.flatMap((school: SchoolWithProgramsAndStatus) =>
+              school.programs.map(program => program.subjects)
+            ).filter(Boolean)
+          )
+        ) as Subject[];
+
         setLocations(uniqueLocations);
-        setAllSchoolsWithPrograms(schoolsWithProgramsArray);
-        setSchoolsWithPrograms(schoolsWithProgramsArray);
+        setSubjects(uniqueSubjects);
+        setAllSchoolsWithPrograms(processedSchools);
+        setSchoolsWithPrograms(processedSchools);
       } catch (error) {
         console.error("Error loading school data:", error);
       } finally {

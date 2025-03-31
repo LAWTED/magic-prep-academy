@@ -68,30 +68,6 @@ export default function ProgramDetailPage({
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
 
-  // Check if program is already favorited
-  useEffect(() => {
-    async function checkFavoriteStatus() {
-      if (!user || !programId) return;
-
-      try {
-        const { data, error } = await supabase
-          .from("user_programs_progress")
-          .select("id, status")
-          .eq("user_id", user.id)
-          .eq("program_id", programId)
-          .single();
-
-        if (data && data.status === "favorited") {
-          setIsFavorited(true);
-        }
-      } catch (error) {
-        console.error("Error checking favorite status:", error);
-      }
-    }
-
-    checkFavoriteStatus();
-  }, [programId, user, supabase]);
-
   useEffect(() => {
     async function fetchData() {
       try {
@@ -101,45 +77,37 @@ export default function ProgramDetailPage({
           return;
         }
 
-        // Fetch program details
-        const { data: programData, error: programError } = await supabase
+        // Fetch program details with joined school and subject data in a single query
+        const { data, error } = await supabase
           .from("programs")
-          .select("*")
+          .select(`
+            *,
+            schools:school_id(*),
+            subjects:subject_id(*)
+          `)
           .eq("id", programId)
           .single();
 
-        if (programError || !programData) {
-          console.error("Error fetching program:", programError);
+        if (error || !data) {
+          console.error("Error fetching program data:", error);
           router.push("/school");
           return;
         }
 
-        setProgram(programData);
+        setProgram(data);
+        setSchool(data.schools);
+        setSubject(data.subjects);
 
-        // Fetch school details
-        const { data: schoolData, error: schoolError } = await supabase
-          .from("schools")
-          .select("*")
-          .eq("id", programData.school_id)
+        // Check favorite status in parallel
+        const { data: favoriteData, error: favoriteError } = await supabase
+          .from("user_programs_progress")
+          .select("id, status")
+          .eq("user_id", user.id)
+          .eq("program_id", programId)
           .single();
 
-        if (schoolError || !schoolData) {
-          console.error("Error fetching school:", schoolError);
-        } else {
-          setSchool(schoolData);
-        }
-
-        // Fetch subject details
-        const { data: subjectData, error: subjectError } = await supabase
-          .from("subjects")
-          .select("*")
-          .eq("id", programData.subject_id)
-          .single();
-
-        if (subjectError || !subjectData) {
-          console.error("Error fetching subject:", subjectError);
-        } else {
-          setSubject(subjectData);
+        if (!favoriteError && favoriteData && favoriteData.status === "favorited") {
+          setIsFavorited(true);
         }
       } catch (error) {
         console.error("Error loading program data:", error);

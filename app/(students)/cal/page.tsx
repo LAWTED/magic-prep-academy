@@ -884,7 +884,7 @@ function Calendar() {
 
                   {isSelected && eventImage && (
                     <motion.div
-                      layoutId="selected-overlay"
+                      layoutId="selected-date-overlay"
                       className="absolute inset-0 bg-gold/40 rounded-lg flex items-center justify-center border border-bronze/30"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -900,14 +900,17 @@ function Calendar() {
                           src={eventImage}
                           alt="Event"
                           fill
+                          priority
+                          quality={90}
                           className="object-contain"
+                          key={`event-image-${eventImage}`}
                         />
                       </motion.div>
                     </motion.div>
                   )}
                   {isSelected && !eventImage && (
                     <motion.div
-                      layoutId="selected-overlay"
+                      layoutId="selected-date-overlay"
                       className="absolute inset-0 bg-gold/40 rounded-lg flex items-center justify-center border border-bronze/30"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -923,7 +926,10 @@ function Calendar() {
                           src="/images/cal/stamp.png"
                           alt="Selected"
                           fill
+                          priority
+                          quality={90}
                           className="object-contain"
+                          key="default-stamp-image"
                         />
                       </motion.div>
                     </motion.div>

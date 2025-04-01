@@ -39,9 +39,45 @@
 - ![](https://api.iconify.design/logos:firebase.svg) Firebase
 - ![](https://api.iconify.design/logos:openai-icon.svg) OpenAI
 
+## Notes
+This project was developed as a rapid prototype within a 2-week timeframe through "vibe coding" - prioritizing functionality and innovation. Future iterations will focus on structural refinements and code elegance.
+
+## UI/UX
+
+Just see the product overview for the UI/UX design.
+
+
+
 ## Auth
 
 Authentication is done via Supabase Auth.
+
+
+## AI/LLM
+- **Model Selection**: GPT-4o-mini for all LLM tasks.
+- **Prompt Engineering**: Structured prompts with config files.
+- **Response API**: use [OpenAI Response API](https://platform.openai.com/docs/api-reference/responses) instead of completion API.
+- **Streaming**: use OpenAI Streaming API for some streaming responses, like the chat response.
+- **File Search**: use [OpenAI File Search API](https://platform.openai.com/docs/guides/tools-file-search) for file search and retrieval.
+- **Validator**: JSON validator for output formatting.
+   - [] use [OpenAI JSON schema](https://platform.openai.com/docs/guides/structured-outputs?api-mode=chat#tips-for-your-json-schema) control the output format.
+
+
+## CI/CD
+
+We use Vercel for CI/CD. Git push to main will deploy to Vercel.
+
+
+
+## Assets
+- **Avatars**: use Party Animals Characters.
+- **Icons**: use Lucide Icons.
+- **Other Images**: use OpenAI GPT-4o for image generation.
+
+## Upgrade
+Since this is a app built with Vercel and Supabase, we can easily upgrade the app to a production-ready app by upgrading the Vercel and Supabase plan.
+
+
 
 ## Database
 
@@ -252,32 +288,6 @@ We will do these in the future.
 4. **Security**
    - Row-level security policies, currently disabled.
    - Role-based access control
-
-## UI/UX
-
-Just see the product overview for the UI/UX design.
-
-
-## CI/CD
-
-We use Vercel for CI/CD. Git push to main will deploy to Vercel.
-
-## AI/LLM
-- **Model Selection**: GPT-4o-mini for all LLM tasks.
-- **Prompt Engineering**: Structured prompts with config files.
-- **Validator**: JSON validator for output formatting.
-   - [] use OpenAI JSON schema validator for document formatting.
-
-## Assets
-- **Avatars**: use Party Animals Characters.
-- **Icons**: use Lucide Icons.
-- **Other Images**: use OpenAI GPT-4o for image generation.
-
-## Upgrade
-Since this is a app built with Vercel and Supabase, we can easily upgrade the app to a production-ready app by upgrading the Vercel and Supabase plan.
-
-## Notes
-This is a vibe coding project within 2 weeks, so the code is fully well structured and elegant.
 
 
 ## Domain Transferability

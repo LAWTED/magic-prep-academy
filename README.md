@@ -220,23 +220,15 @@ We will do these in the future.
 
 ### Future Optimizations
 
-1. **Indexing Strategy**
-   ```sql
-   -- Add indexes for common queries
-   CREATE INDEX idx_documents_user_type ON documents(user_id, type);
-   CREATE INDEX idx_programs_school_subject ON programs(school_id, subject_id);
-   CREATE INDEX idx_interactions_participants ON mentor_student_interactions(mentor_id, student_id);
-   ```
-
-2. **Partitioning**
+1. **Partitioning**
    - Consider time-based partitioning for `mentor_student_interactions`
    - Consider user-based partitioning for `documents`
 
-3. **Archiving Strategy**
+2. **Archiving Strategy**
    - Implement historical data archiving mechanism
    - Set up data retention policies
 
-4. **Performance Monitoring**
+3. **Performance Monitoring**
    - Add query performance monitoring
    - Implement automated maintenance plans
 
